@@ -1,0 +1,55 @@
+name: optiomax-app
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'temp-v*.*.*'
+
+
+jobs:
+  set_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Example output creation"
+        id: "get_release_version"
+        run: |
+          RELEASE_VERSION=${GITHUB_REF#refs/*/}
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_OUTPUT          
+    outputs:
+      RELEASE_VERSION: ${{steps.get_release_version.outputs.RELEASE_VERSION}}
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [set_version]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+        
+      - name: Login to GitHub Packages
+        run: |
+          RELEASE_VERSION=${{needs.set_version.outputs.RELEASE_VERSION}}
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io --username sachintha00 --password-stdin
+
+          docker build -t ghcr.io/sachintha00/nimzu-motors-production:latest --build-arg VERSION=$RELEASE_VERSION -f ./docker_files/production.Dockerfile .
+          docker push ghcr.io/sachintha00/nimzu-motors-production:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [ build, set_version ]
+    steps:
+    - name: Login to Droplet
+      run: |
+        sudo apt-get update --quiet
+        sudo apt-get install openssh-client -y
+        eval $(ssh-agent -s)
+        echo "${{ secrets.SSH_KEY }}" | tr -d '\r' | ssh-add -
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+        ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} "\
+        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io --username sachintha00 --password-stdin \
+        && docker pull ghcr.io/sachintha00/nimzu-motors-production:latest \
+        && docker compose -f docker-compose-production.yml up -d --build --remove-orphans \
+        && docker logout"
+        
