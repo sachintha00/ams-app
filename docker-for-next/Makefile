@@ -4,6 +4,7 @@ UID := $(shell id -u)
 GID := $(shell id -g)
 export UID
 export GID
+include .env
 
 up-f:
 	docker compose -f docker-compose-dev.yml up --build --remove-orphans
@@ -15,5 +16,5 @@ down:
 	docker compose -f docker-compose-dev.yml down --remove-orphans
 
 shell-app:
-	docker exec -it next-app /bin/sh
+	docker exec -it $(APP_NAME) /bin/sh
 
