@@ -7,7 +7,50 @@ import { BsSunFill } from "react-icons/bs";
 import { MdAlternateEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 
+import { useLoginMutation } from './_lib/redux/features/auth/auth_api';
+import { useRouter } from 'next/navigation';
+
 export default function Home() {
+  const [login, { isSuccess, error }] = useLoginMutation();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isSuccess) {
+      router.push("/dashboard");
+    } else if (error && error.message) {
+      console.log("Login failed:", error.message);
+    }
+  }, [isSuccess, error, router]);
+
+  const onSubmithandler = async (values, actions) => {
+    // try {
+    //   await login({
+    //     email: values.username,
+    //     password: values.password,
+    //   });
+    // } catch (error) {
+    //   console.error("Login error:", error);
+    // }
+  };
+
+    //states
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    // Submit From
+    const submitForm = async e => {
+        e.preventDefault();
+
+        try {
+      await login({
+        email: email,
+        password: password,
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+    }
+
   const [lightMode, setLightMode] = useState(true);
 
   useEffect(() => {
@@ -65,7 +108,7 @@ export default function Home() {
                   </div>
 
                   <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                      <form class="max-w-sm mx-auto" action='#'>
+                      <form class="max-w-sm mx-auto" onSubmit={submitForm}>
                         <div class="mb-5">
                           <label
                             htmlFor="email"
@@ -80,6 +123,8 @@ export default function Home() {
                             <input
                               type="email"
                               id="email"
+                              value={email}
+                              onChange={e => setEmail(e.target.value)}
                               className="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5  dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                               placeholder="jhon@gmail.com"
                             />
@@ -99,6 +144,8 @@ export default function Home() {
                             <input
                               type="password"
                               id="password"
+                              value={password}
+                              onChange={e => setPassword(e.target.value)}
                               className="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                               placeholder="Bonnie Green"
                             />

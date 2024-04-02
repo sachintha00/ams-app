@@ -4,26 +4,20 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: rgb(249 250 251);
   --background-end-rgb: 255, 255, 255;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
+    --background-start-rgb: #121212;
     --background-end-rgb: 0, 0, 0;
   }
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
 }
 
 img, svg, video, canvas, audio, iframe, embed, object{
@@ -72,49 +66,38 @@ img, svg, video, canvas, audio, iframe, embed, object{
   }
 }
 
-[data-collapse="true"] .sidebarmain{
+/* [data-collapse="true"] .sidebarmain{
   width: auto;
 }
 
 [data-collapse="true"] .sidebarmain{
   width: auto;
-}
-
-[data-collapse="true"] .navlink:hover .ms-3{
-  display: block;
-  position: absolute;
-  margin-left: 30px;
-  background-color: aliceblue;
-  opacity: 0.8;
-  width: 100px;
-  border-radius: 5px;
-  padding: 5px 10px;
-  color: #20368c;  
-}
-
-[data-collapse="true"] .navlink:hover .subnavlink{
-  display: block;
-  position: absolute;
-  margin-left: 75px;
-  background-color: aliceblue;
-  opacity: 0.8;
-  width: 100px;
-  border-radius: 5px;
-  padding: 5px 10px;
-  color: #20368c;
 }
 
 [data-collapse="true"] .ms-3{
   display: none;
 }
 
-[data-collapse="true"] .subnavlink{
-  display: none;
+[data-collapse="true"] .content{ 
+  margin-left: 4rem;
+} */
+
+
+
+
+.mainnavlink:hover .hoverspan{
+  display: block;
 }
 
-[data-collapse="true"] .content{
-  margin-left: 4rem;
+.hoverspan:hover .hoverspansub{
+  display: block;
+  margin-left: 200px;
 }
+
+.sidebar.collapsed {
+  width: 200px;
+}
+ 
 
 /* notifications */
 
@@ -164,14 +147,11 @@ img, svg, video, canvas, audio, iframe, embed, object{
   [data-collapse="true"] .responsivesidebarsub{
     width: fit-content;
   }
-  [data-collapse="true"] .ms-3{
+  [data-collapse="true"] .ms-3{  
     display: block;
   }
 }
-[data-collapse="true"] .tablelist{
-  display: block;
-}
 
-[data-collapse="true"] .cardlistdefult{
-  display: none;
+[data-collapse="true"] .CardDropdownlist{
+  display: contents;
 }
