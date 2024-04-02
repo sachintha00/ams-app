@@ -4,30 +4,154 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: rgb(249 250 251);
   --background-end-rgb: 255, 255, 255;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
+    --background-start-rgb: #121212;
     --background-end-rgb: 0, 0, 0;
   }
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+}
+
+img, svg, video, canvas, audio, iframe, embed, object{
+  color: #6b7280;
+}
+
+/* login page */
+.loginart{
+  margin-top: 500px;
+  margin-left: 724px;
+}
+
+.navitemicon{
+  font-size: 25px;
+}
+
+.antialiased{
+  position: fixed;
+  width: -webkit-fill-available;
+}
+
+.sidebarmain{
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.subcontent{
+  margin-top: 65px;
+}
+
+.responsivesidebar{
+  display: none;
+}
+
+.subnavlink{
+  margin-left: 30px;
+}
+
+/* form */
+.formdiv{
+  padding: 30px;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* [data-collapse="true"] .sidebarmain{
+  width: auto;
+}
+
+[data-collapse="true"] .sidebarmain{
+  width: auto;
+}
+
+[data-collapse="true"] .ms-3{
+  display: none;
+}
+
+[data-collapse="true"] .content{ 
+  margin-left: 4rem;
+} */
+
+
+
+
+.mainnavlink:hover .hoverspan{
+  display: block;
+}
+
+.hoverspan:hover .hoverspansub{
+  display: block;
+  margin-left: 200px;
+}
+
+.sidebar.collapsed {
+  width: 200px;
+}
+ 
+
+/* notifications */
+
+.mainnotificationsdiv{
+  margin-top: 640px;
+}
+
+[data-collapse="true"] .subnotificationsdiv{
+  display: block;
+}
+
+/* app menu */
+.mainappdiv{
+  margin-top: 425px;
+}
+
+[data-collapse="true"] .appmenu{
+  display: block;
+}
+
+/* user menu */
+.maindivusermenu{
+  margin-top: 352px;
+  margin-left: 140px;
+}
+
+[data-collapse="true"] .usermenu{
+  display: block;
+}
+
+@media (max-width: 640px){
+  .subcontent{
+    margin-top: 0;
+  }
+  .sidebarmain{
+    display: none;
+  }
+  [data-collapse="true"] .content{
+    margin-left: 0;
+  }
+  [data-collapse="true"] .sidebarmain{
+    display: none;
+  }
+  [data-collapse="true"] {
+    display: contents;
+  }
+  [data-collapse="true"] .responsivesidebarsub{
+    width: fit-content;
+  }
+  [data-collapse="true"] .ms-3{  
+    display: block;
+  }
+}
+
+[data-collapse="true"] .CardDropdownlist{
+  display: contents;
 }
