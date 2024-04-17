@@ -82,9 +82,6 @@ img, svg, video, canvas, audio, iframe, embed, object{
   margin-left: 4rem;
 } */
 
-
-
-
 .mainnavlink:hover .hoverspan{
   display: block;
 }
@@ -102,7 +99,7 @@ img, svg, video, canvas, audio, iframe, embed, object{
 /* notifications */
 
 .mainnotificationsdiv{
-  margin-top: 640px;
+  margin-top: 619px;
 }
 
 [data-collapse="true"] .subnotificationsdiv{
@@ -154,4 +151,10 @@ img, svg, video, canvas, audio, iframe, embed, object{
 
 [data-collapse="true"] .CardDropdownlist{
   display: contents;
+}
+
+/* form role list */
+
+[data-collapse="true"] .rolelist{
+  display: block;
 }

@@ -4,6 +4,9 @@ import { FaMoon } from "react-icons/fa";
 import { BsSunFill } from "react-icons/bs";
 import Image from 'next/image'
 import Link from 'next/link';
+import { useSelector } from 'react-redux';
+import { useUserLogoutMutation } from '@/app/_lib/redux/features/auth/logout_api';
+import { redirect, useRouter } from 'next/navigation';
 
 const Navbar = ({ onToggleSidebar }) => {
 
@@ -67,6 +70,35 @@ const Navbar = ({ onToggleSidebar }) => {
             localStorage.setItem("theme", "dark")
         }
       }, [lightMode])
+
+      const user = useSelector(state => state.auth.user);
+
+      useEffect(() => {
+      }, [user]);
+
+    // add user
+    const [userLogout] = useUserLogoutMutation();  
+    const router = useRouter();
+
+    // Submit logout From
+    const submitlogoutForm = async e => {
+        e.preventDefault();
+
+        try {
+            userLogout()
+            .unwrap()
+            .then((response) => {
+                console.log("New node added:", response);
+                router.push("/");
+                localStorage.clear();
+            })
+            .catch((error) => {
+                console.error("Error adding new node:", error);
+            });
+        } catch (error) {
+            console.error("Login error:", error);
+        }
+    }
 
     return (
         <nav className="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-[#1e1e1e]">
@@ -164,14 +196,14 @@ const Navbar = ({ onToggleSidebar }) => {
                 </div>
                 </form>
             </div>
-            <div className="flex items-center lg:order-2">
+            <div className="flex items-center lg:order-2 w-96 justify-end">
                 <div className='relative w-16 h-8 flex items-center bg-slate-300 dark:bg-[#121212] bg-teal-500bg-teal-500 cursor-pointer rounded-full p-1 mr-10' onClick={() => setLightMode(!lightMode)}>
                     <BsSunFill className="text-yellow" size={18} />
                     <div className='absolute bg-white dark:bg-[#3c4042] w-6 h-6 rounded-full shadow-md transform transition-transform duration-300' style={ lightMode ? { left: "2px" } : { right:"2px"}}>
                     </div>
                     <FaMoon className="ml-auto text-yellow-400" size={18}/>
                 </div>
-                <button
+                {/* <button
                 type="button"
                 className="hidden bg-[#213395] sm:inline-flex items-center justify-center text-white hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-xs px-3 py-1.5 mr-2 dark:bg-[#213395] dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800" 
                 >
@@ -190,6 +222,7 @@ const Navbar = ({ onToggleSidebar }) => {
                 </svg>{" "}
                 New Widget
                 </button>
+                */}
                 <button
                 id="toggleSidebarMobileSearch"
                 type="button"
@@ -680,10 +713,10 @@ const Navbar = ({ onToggleSidebar }) => {
                     >
                     <div className="py-3 px-4">
                         <span className="block text-sm font-semibold text-gray-900 dark:text-white">
-                        Neil sims
+                        {user ? user.user_name : "user"}
                         </span>
                         <span className="block text-sm text-gray-500 truncate dark:text-gray-400">
-                        name@flowbite.com
+                        {user ? user.email : "email"}
                         </span>
                     </div>
                     <ul
@@ -754,13 +787,15 @@ const Navbar = ({ onToggleSidebar }) => {
                         aria-labelledby="dropdown"
                     >
                         <li>
-                        <a
-                            href="#"
-                            className="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                        >
-                            Sign out
-                        </a>
-                        </li>
+                        <form onSubmit={submitlogoutForm} className="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                            <button
+                                type="submit"
+                                className="text-left w-[100%]"
+                            >
+                                Sign out
+                            </button>
+                        </form>
+                        </li> 
                     </ul>
                     </div>
                 </div>
