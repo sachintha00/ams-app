@@ -40,7 +40,7 @@ import {
             <div
               key={item.i}
               data-grid={item}
-              className="border-gray-300 border-[0.1px] rounded-sm flex justify-center items-center bg-white"
+              className="border-gray-300 border-[0.1px] flex justify-center items-center bg-white rounded-lg dark:bg-[#3c4042]"
             >
               {/* <div dangerouslySetInnerHTML={{ __html: item.content }} /> */}
               <div dangerouslySetInnerHTML={{ __html: design }} />

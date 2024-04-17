@@ -10,7 +10,7 @@ export const authApi = apiSlice.injectEndpoints({
         method: "POST",
         body: { email, password },
         credentials: "include",
-      }),
+      }), 
       async onQueryStarted(arg, { queryFulfilled, dispatch }) {
         try {
           const result = await queryFulfilled;
@@ -19,6 +19,8 @@ export const authApi = apiSlice.injectEndpoints({
             userLoggedIn({
               accessToken: result.data.access_token,
               user: result.data.user,
+              permissions: result.data.permissions,
+              sidebaritem: result.data.sidebaritem,
             })
           );
         } catch (error) {
