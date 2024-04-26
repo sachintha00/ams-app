@@ -10,7 +10,7 @@ function WidgetDrawer({ isOpenWidgetBar, setWidgetBar }) {
         id="drawer-right-example"
         className={`fixed top-0 ${
           isOpenWidgetBar ? "right-[600px]" : "right-[0px]"
-        } z-40 h-screen p-4 overflow-y-auto transition-transform translate-x-full bg-white w-[600px] border-l-[.1px] border-black-800`}
+        } z-40 h-screen p-4 overflow-y-auto transition-transform translate-x-full bg-white w-[600px] border-l-[.1px] border-b border-black-800 dark:border-[#3c4042] dark:bg-[#1e1e1e]`}
         tabIndex={-1}
         aria-labelledby="drawer-right-label"
       >
@@ -33,7 +33,7 @@ function WidgetDrawer({ isOpenWidgetBar, setWidgetBar }) {
           type="button"
           data-drawer-hide="drawer-right-example"
           aria-controls="drawer-right-example"
-          className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-black-800 rounded-lg text-sm w-8 h-8 absolute top-2.5 end-2.5 inline-flex items-center justify-center "
+          className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-black-800 rounded-lg text-sm w-8 h-8 absolute top-2.5 end-2.5 inline-flex items-center justify-center dark:bg-[#3c4042] dark:hover:bg-[#606368]"
           onClick={(e) => setWidgetBar(!isOpenWidgetBar)}
         >
           <svg

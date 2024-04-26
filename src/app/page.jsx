@@ -8,30 +8,21 @@ import { MdAlternateEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 
 import { useLoginMutation } from './_lib/redux/features/auth/auth_api';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 
 export default function Home() {
-  const [login, { isSuccess, error }] = useLoginMutation();
+  const [login, { data, isSuccess, error }] = useLoginMutation();  
   const router = useRouter();
 
   useEffect(() => {
     if (isSuccess) {
       router.push("/dashboard");
+      console.log(data);
     } else if (error && error.message) {
       console.log("Login failed:", error.message);
+      redirect('/');
     }
   }, [isSuccess, error, router]);
-
-  const onSubmithandler = async (values, actions) => {
-    // try {
-    //   await login({
-    //     email: values.username,
-    //     password: values.password,
-    //   });
-    // } catch (error) {
-    //   console.error("Login error:", error);
-    // }
-  };
 
     //states
     const [email, setEmail] = useState("");
@@ -42,13 +33,13 @@ export default function Home() {
         e.preventDefault();
 
         try {
-      await login({
-        email: email,
-        password: password,
-      });
-    } catch (error) {
-      console.error("Login error:", error);
-    }
+          await login({
+            email: email,
+            password: password,
+          });
+        } catch (error) {
+          console.error("Login error:", error);
+        }
     }
 
   const [lightMode, setLightMode] = useState(true);
