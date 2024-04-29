@@ -52,53 +52,55 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
         refetch,
       } = useSidebarListQuery();
       
-      function buildTree(data, parentId = null) {
-        const children = data.filter((node) => node.parent_id === parentId);
-        return children.map((child) => ({
-          id: child.id,
-          permission_id: child.permission_id,
-          parentNode: parentId,
-          RightsCode: child.RightsCode,
-          MenuTxtCode: child.MenuTxtCode,
-          MenuName: child.MenuName,
-          Description: child.Description,
-          path: child.path,
-          MenuLink: child.MenuLink,
-          MenuOrder: child.MenuOrder,
-          Enabled: child.Enabled,
-          MenuPath: child.MenuPath,
-          icon: child.icon,
-          children: buildTree(data, child.id),
-        }));
-      }
-      
-      const organizationTableDataToTreeStructure = (organizationData) => {
-        const rootNodes = organizationData.filter((node) => node.parent_id === null);
-        const transformedData = rootNodes.map((root) => ({
-          id: root.id,
-          permission_id: root.permission_id,
-          parentNode: null,
-          RightsCode: root.RightsCode,
-          MenuTxtCode: root.MenuTxtCode,
-          MenuName: root.MenuName,
-          Description: root.Description,
-          path: root.path,
-          MenuLink: root.MenuLink,
-          MenuOrder: root.MenuOrder,
-          Enabled: root.Enabled,
-          MenuPath: root.MenuPath,
-          icon: iconMapping[root.icon] || null, // Use iconMapping to select the icon component
-          children: buildTree(organizationData, root.id),
-        }));
-        return transformedData;
-      };
-      
-      useEffect(() => {
-        if (!isLoading && !isError && SidebarList) {
-          const menuItems = organizationTableDataToTreeStructure(SidebarList.sidebaritem);
-          setMenuItems(menuItems);
-        }
-      }, [isLoading, isError, SidebarList, refetch]);
+  // Update buildTree function to check for null or undefined
+  function buildTree(data, parentId = null) {
+    const children = data.filter((node) => node && node.parent_id === parentId);
+    return children.map((child) => ({
+      id: child.id,
+      permission_id: child.permission_id,
+      parentNode: parentId,
+      RightsCode: child.RightsCode,
+      MenuTxtCode: child.MenuTxtCode,
+      MenuName: child.MenuName,
+      Description: child.Description,
+      path: child.path,
+      MenuLink: child.MenuLink,
+      MenuOrder: child.MenuOrder,
+      Enabled: child.Enabled,
+      MenuPath: child.MenuPath,
+      icon: child.icon,
+      children: buildTree(data, child.id),
+    }));
+  }
+
+  // Update organizationTableDataToTreeStructure function to check for null or undefined
+  const organizationTableDataToTreeStructure = (organizationData) => {
+    const rootNodes = organizationData.filter((node) => node && node.parent_id === null);
+    const transformedData = rootNodes.map((root) => ({
+      id: root.id,
+      permission_id: root.permission_id,
+      parentNode: null,
+      RightsCode: root.RightsCode,
+      MenuTxtCode: root.MenuTxtCode,
+      MenuName: root.MenuName,
+      Description: root.Description,
+      path: root.path,
+      MenuLink: root.MenuLink,
+      MenuOrder: root.MenuOrder,
+      Enabled: root.Enabled,
+      MenuPath: root.MenuPath,
+      icon: iconMapping[root.icon] || null, // Use iconMapping to select the icon component
+      children: buildTree(organizationData, root.id),
+    }));
+    return transformedData;
+  };
+
+  useEffect(() => {
+    if (!isLoading && !isError && SidebarList && SidebarList.sidebaritem) {
+      const menuItems = organizationTableDataToTreeStructure(SidebarList.sidebaritem);
+      setMenuItems(menuItems);
+    }
+  }, [isLoading, isError, SidebarList, refetch]);
 
     return (
       <aside 
