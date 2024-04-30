@@ -84,7 +84,7 @@ export default function Home() {
               }}
             />
           </div>
-          <div className="mx-auto max-w-2xl pt-32 sm:pt-48">
+          <div className="mx-auto max-w-2xl">
             <div>
               <div className="flex min-h-full flex-1 flex-col justify-center px-6 lg:px-8">
                   <div className="sm:mx-auto sm:w-full sm:max-w-sm">
