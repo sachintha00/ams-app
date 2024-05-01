@@ -2,17 +2,16 @@
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import { IoGrid } from "react-icons/io5";
 import { FaList } from "react-icons/fa";
-import { FaUserCog } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { FaPenToSquare } from "react-icons/fa6";
-import { FaUserLock } from "react-icons/fa";
 import { FaUserAlt } from "react-icons/fa";
-import { CgProfile } from "react-icons/cg";
+import { IoClose } from "react-icons/io5";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { redirect, useRouter } from 'next/navigation';
 import { useAddNewUserMutation, useDeleteUserMutation, useEditeUserMutation, useUsersListQuery, useStatuschangeUserMutation, useUserpasswordresetMutation } from '@/app/_lib/redux/features/user/user_api';
 import { useSelector } from 'react-redux';
 import Link from 'next/link';
+import { useAuthpermissionsQuery } from '@/app/_lib/redux/features/authpermission/auth_permission_api';
 
 export default function users() {
     const [view, setView] = useState('grid');
@@ -20,9 +19,19 @@ export default function users() {
     const [expandedEditeRoleModel, setExpandedEditeRoleModel] = useState(false);
     const [expandedDeleteRoleModel, setExpandedDeleteRoleModel] = useState(false);
     const [isOpenAddForm, setIsOpenAddFormModel] = useState(false);
-    const [formerror, setError] = useState('');
+    const [passwordreseterror, setPasswordResetError] = useState('');
+    const [usercreateerror, setUserCreateError] = useState('');
+    const [userediteerror, setUserEditeError] = useState('');
+    const [userdeleteerror, setUserDeleteError] = useState('');
     const [formemessage, setmessage] = useState('');
     const [isOpenRoleList, setIsOpenRoleList] = useState(false);
+    const [editeUserUserName, setEditeUserUserName] = useState('');
+    const [editeUserEmail, setEditeUserEmail] = useState('');
+    const [editeUserName, setEditeUserName] = useState('');
+    const [editeUserContactNo, setEditeUserContactNo] = useState('');
+    const [editeUserAddress, setEditeUserAddress] = useState('');
+    const [editeselectedValues, setEditeSelectedValues] = useState([]);
+    const [editeuser_description, setEditeuser_description] = useState("");
 
     const refRoleList = useRef(null);
 
@@ -47,6 +56,17 @@ export default function users() {
         setIsOpenRoleList((prev) => !prev);
     };
 
+    //Toast notifications
+    const handleClose = () => {
+        setmessage('');
+    };
+
+    const handleErrorClose = () => {
+        setPasswordResetError('');
+        setUserEditeError('');
+        setUserDeleteError('');
+    };
+
     // reset password model
     const handleToggleResetpasswordModel = (rowId) => {
         setExpandedResetpasswordModel(rowId === expandedResetpasswordModel ? false : rowId);
@@ -56,9 +76,15 @@ export default function users() {
         setExpandedResetpasswordModel(false);
     };
 
-    // edite role model
-    const handleToggleEditeRoleModel = (rowId) => {
+    // edite user model
+    const handleToggleEditeRoleModel = (rowId, rowusername, rowemail, rowname, rowcontact, rowaddress, userRoles) => {
         setExpandedEditeRoleModel(rowId === expandedDeleteRoleModel ? false : rowId);
+        setEditeUserUserName(rowusername);
+        setEditeUserEmail(rowemail);
+        setEditeUserName(rowname);
+        setEditeUserContactNo(rowcontact);
+        setEditeUserAddress(rowaddress);
+        setEditeSelectedValues(userRoles.map(role => role.name));
     };
 
     const closeEditeRoleModel = () => {
@@ -74,6 +100,7 @@ export default function users() {
         setExpandedDeleteRoleModel(false);
     };
 
+    // add user model
     const openAddFormModal = () => {
         setIsOpenAddFormModel(true);
     };
@@ -82,10 +109,38 @@ export default function users() {
         setIsOpenAddFormModel(false);
     };
 
+    //auth permissions
+    const [thisuserpermissionArray, setthisuserpermissionArray] = useState([]); 
+    const {
+        data: permissionList,
+      } = useAuthpermissionsQuery();
+
+    useEffect(() => {
+        if (permissionList) {
+            const permissions = Object.values(permissionList.thisuserpermission);
+            setthisuserpermissionArray(permissions);
+        }
+    }, [permissionList]);
+
     // user list
     const [userArray, setUserArray] = useState([]); // State to hold converted array
     const [roleArray, setRoleArray] = useState([]); // State to hold converted array
-    const [thisuserpermissionArray, setthisuserpermissionArray] = useState([]); 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(8);
+
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchUserInput, setSearchUserInput] = useState('');
+
+    const handleSearchUserInputChange = (event) => {
+        setSearchUserInput(event.target.value);
+    };
+
+    const [filteredRoles, setFilteredRoles] = useState([]);
+    const [searchInput, setSearchInput] = useState('');
+
+    const handleSearchInputChange = (event) => {
+        setSearchInput(event.target.value);
+    };
 
     const {
         data: UserList,
@@ -95,15 +150,36 @@ export default function users() {
         refetch,
       } = useUsersListQuery();
 
-    const permissions = useSelector(state => state.auth.permissions);
-
     useEffect(() => {
         if (!isLoading && !isError && UserList) {
-            setUserArray(Object.values(UserList.Users));
-            setRoleArray(Object.values(UserList.Role));
-            setthisuserpermissionArray(permissions);
+            const users = Object.values(UserList.Users);
+            // Sort users alphabetically by user_name
+            const sortedUsers = users.sort((a, b) => a.user_name.localeCompare(b.user_name));
+            const filteredusers = sortedUsers.filter(user => user.user_name.toLowerCase().includes(searchUserInput.toLowerCase()));
+            setFilteredUsers(filteredusers);
+
+            const roles = Object.values(UserList.Role);
+            const filtered = roles.filter(role => role.name.toLowerCase().includes(searchInput.toLowerCase()));
+            setFilteredRoles(filtered);
+
+            const timer = setTimeout(() => {
+                setmessage('');
+                setPasswordResetError('');
+                setUserEditeError('');
+                setUserDeleteError('');
+            }, 5000); // Adjust the duration (in milliseconds) as needed
+        
+            return () => clearTimeout(timer);
         }
-    }, [isLoading, isError, UserList, refetch]);
+    }, [isLoading, isError, UserList, searchInput, searchUserInput,  refetch]);
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const nextPage = () => setCurrentPage((prev) => prev + 1);
+    const prevPage = () => setCurrentPage((prev) => prev - 1);
 
     // add user
     const [addNewUser] = useAddNewUserMutation();  
@@ -118,14 +194,18 @@ export default function users() {
     const [selectedValues, setSelectedValues] = useState([]);
     const [user_description, setuser_description] = useState("");
 
-    const handleCheckboxChange = (event) => {
+    const handleCheckboxChange = (event, removedValue) => {
         const { value, checked } = event.target;
         if (checked) {
-          setSelectedValues([...selectedValues, value]);
+            setSelectedValues([...selectedValues, value]);
         } else {
-          setSelectedValues(selectedValues.filter((item) => item !== value));
+            setSelectedValues(selectedValues.filter((item) => item !== value));
         }
-      };
+        // Remove the specific value from selectedValues when the close button is clicked
+        if (removedValue) {
+            setSelectedValues(selectedValues.filter((item) => item !== removedValue));
+        }
+    };
 
     // Submit From
     const submitForm = async e => {
@@ -142,12 +222,18 @@ export default function users() {
                 setName("");
                 setContact_no("");
                 setAddress("");
-                setSelectedValues("");
                 setuser_description("");
+                setSelectedValues([]);
+                setmessage(response.message);
                 refetch();
             })
             .catch((error) => {
                 console.error("Error adding new node:", error);
+                setUserCreateError(error);
+                const timer = setTimeout(() => {
+                    setUserCreateError('');
+                }, 5000); // Adjust the duration (in milliseconds) as needed
+                return () => clearTimeout(timer);
             });
         } catch (error) {
             console.error("Login error:", error);
@@ -156,22 +242,19 @@ export default function users() {
 
     //edite role form data
     const [editeRole] = useEditeUserMutation();
-    const [editeuser_name, setEditeuser_name] = useState("");
-    const [editeemail, setEditeEmail] = useState("");
-    const [editename, setEditeName] = useState("");
-    const [editecontact_no, setEditeContact_no] = useState("");
-    const [editeaddress, setEditeAddress] = useState("");
-    const [editeselectedValues, setEditeSelectedValues] = useState([]);
-    const [editeuser_description, setEditeuser_description] = useState("");
 
-    const handleediteCheckboxChange = (event) => {
+    const handleediteCheckboxChange = (event, removedValue) => {
         const { value, checked } = event.target;
         if (checked) {
             setEditeSelectedValues([...editeselectedValues, value]);
         } else {
             setEditeSelectedValues(editeselectedValues.filter((item) => item !== value));
         }
-      };
+        // Remove the specific value from selectedValues when the close button is clicked
+        if (removedValue) {
+            setEditeSelectedValues(editeselectedValues.filter((item) => item !== removedValue));
+        }
+    };
 
     //edite Submit Role From
     const submitEditeForm = async e => {
@@ -180,17 +263,24 @@ export default function users() {
         e.preventDefault();
 
         try {
-            const user = {id: editeid, user_name: editeuser_name, email: editeemail, name: editename, contact_no: editecontact_no, address: editeaddress, roles: editeselectedValues, user_description: editeuser_description}
+            const user = {id: editeid, user_name: editeUserUserName, email: editeUserEmail, name: editeUserName, contact_no: editeUserContactNo, address: editeUserAddress, roles: editeselectedValues, user_description: editeuser_description}
             editeRole(user)
             .unwrap()
             .then((response) => {
                 console.log("New node added:", response);
                 // window.location.reload();
                 closeEditeRoleModel();
+                const message = `${editeUserUserName}'s ${response.message}`;
+                setmessage(message);
                 refetch();
             })
             .catch((error) => {
                 console.error("Error adding new node:", error);
+                setUserEditeError(error);
+                const timer = setTimeout(() => {
+                    setUserEditeError('');
+                }, 5000); // Adjust the duration (in milliseconds) as needed
+                return () => clearTimeout(timer);
             });
         } catch (error) {
             console.error("Login error:", error);
@@ -215,13 +305,24 @@ export default function users() {
                 .then((response) => {
                     console.log("New node added:", response);
                     // router.push("/dashboard");
+                    const message = `${deleterowname}'s ${response.message}`;
+                    setmessage(message);
                     refetch();
                 })
                 .catch((error) => {
                     console.error("Error adding new node:", error);
+                    setUserDeleteError(error);
+                    const timer = setTimeout(() => {
+                        setUserDeleteError('');
+                    }, 5000); // Adjust the duration (in milliseconds) as needed
+                    return () => clearTimeout(timer);
                 });
             } else {
-                setError('Input does not match the name of the User Name');
+                setUserDeleteError('Input does not match the name of the User Name');
+                const timer = setTimeout(() => {
+                    setUserDeleteError('');
+                }, 5000); // Adjust the duration (in milliseconds) as needed
+                return () => clearTimeout(timer);
             }
         } catch (error) {
             console.error("Login error:", error);
@@ -240,6 +341,7 @@ export default function users() {
             .then((response) => {
                 console.log("New node added:", response);
                 // router.push("/dashboard");
+                setmessage(response.message);
                 refetch();
             })
             .catch((error) => {
@@ -259,7 +361,6 @@ export default function users() {
     const [userpasswordreset] = useUserpasswordresetMutation();
     const [resetname, setResetName] = useState("");
 
-    //user password reset
     const submitPasswordForm = async e => {
         const deleteid = e.target.id.value;
         const resetrowname = e.target.resetrowname.value;
@@ -273,23 +374,84 @@ export default function users() {
                 .then((response) => {
                     console.log("New node added:", response);
                     // router.push("/dashboard");
-                    setmessage(response.message);
+                    const message = `${resetrowname}'s ${response.message}`;
+                    setmessage(message);
                     setResetName("");
+                    closeResetpasswordModel();
                     refetch();
                 })
                 .catch((error) => {
                     console.error("Error adding new node:", error);
+                    setPasswordResetError(error);
+                    const timer = setTimeout(() => {
+                        setPasswordResetError('');
+                    }, 5000); // Adjust the duration (in milliseconds) as needed
+                    return () => clearTimeout(timer);
                 });
             } else {
-                setError('Input does not match the name of the User Name');
+                setPasswordResetError('Input does not match the name of the User Name');
+                const timer = setTimeout(() => {
+                    setPasswordResetError('');
+                }, 5000); // Adjust the duration (in milliseconds) as needed
+                return () => clearTimeout(timer);
             }
         } catch (error) {
             console.error("Login error:", error);
         }
     }
 
+    // download user list with csv
+    const downloadCSV = () => {
+        const csvContent = "data:text/csv;charset=utf-8," +
+            "User Name,Email,Name,Contact No,Address,Description \n" +
+            filteredUsers.map(user => `${user.user_name},${user.email},${user.name},${user.contact_no},${user.address},${user.user_description}`).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "user_details.csv");
+        document.body.appendChild(link); // Required for Firefox
+        link.click();
+        setmessage("user_details.csv is downloading");
+    };
+
     return (
         <div className="p-4 pl-8 subcontent border-gray-200 rounded-lg dark:border-gray-700">
+            {/* notification Toast*/}
+            {formemessage && 
+                <div className='flex justify-end w-[100%] fixed'>
+                    <div
+                    id="toast-default"
+                    className="flex items-center opacity-90 w-full max-w-xs p-4 text-white bg-green-400 rounded-lg shadow mr-28"
+                    role="alert"
+                    >
+                    <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-blue-500 bg-blue-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">
+                        <svg
+                        className="w-4 h-4"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 18 20"
+                        >
+                        <path
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15.147 15.085a7.159 7.159 0 0 1-6.189 3.307A6.713 6.713 0 0 1 3.1 15.444c-2.679-4.513.287-8.737.888-9.548A4.373 4.373 0 0 0 5 1.608c1.287.953 6.445 3.218 5.537 10.5 1.5-1.122 2.706-3.01 2.853-6.14 1.433 1.049 3.993 5.395 1.757 9.117Z"
+                        />
+                        </svg>
+                        <span className="sr-only">Fire icon</span>
+                    </div>
+                    <div className="ms-3 text-sm font-normal">{formemessage}</div>
+                    <button type="button" onClick={handleClose} className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white" data-modal-toggle="crud-modal">
+                        <IoClose className='text-2xl text-white'/>
+                        <span className="sr-only">Close modal</span>
+                    </button>
+                    </div>
+                </div>
+            }
+
         <div className="flex items-center justify-center rounded bg-gray-50 dark:bg-[#121212]">
             <div className="w-full w-[-webkit-fill-available]">
                 {/* Start coding here */}
@@ -388,7 +550,7 @@ export default function users() {
                             >
                                 <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
                             </svg>
-                            Add New Users 
+                                Add New Users 
                             </button>
                         )}
 
@@ -396,38 +558,38 @@ export default function users() {
                         {isOpenAddForm && (
                             <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
                                 <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                <div className="bg-white w-3/4 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                    {/* Modal header */}
-                                    <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            Add New User
-                                        </h3>
-                                        <button
-                                            type="button"
-                                            onClick={closeAddFormModal}
-                                            className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                            data-modal-toggle="crud-modal"
-                                            >
-                                        <svg
-                                                className="w-3 h-3"
-                                                aria-hidden="true"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 14 14"
-                                            >
-                                                <path
-                                                stroke="currentColor"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                />
-                                            </svg>
+                                <div className="bg-white w-3/4 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                    <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                        <button type="button" onClick={closeAddFormModal} className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white" data-modal-toggle="crud-modal">
+                                            <IoClose className='text-2xl hover:text-white'/>
                                             <span className="sr-only">Close modal</span>
                                         </button>
                                     </div>
+                                    {/* Modal header */}
+                                    <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                            Add New User
+                                        </h3>
+                                    </div>
                                     {/* Modal body */}
-                                    <form className="p-4 md:p-5" onSubmit={submitForm} encType="multipart/form-data">
+                                    <form className="px-2 pt-2" onSubmit={submitForm} encType="multipart/form-data">
+                                        {usercreateerror &&
+                                            <div className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                                                {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                    <span className="block sm:inline">{usercreateerror}</span>
+                                                    <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                            <svg
+                                                                                className="fill-current h-6 w-6 text-red-500"
+                                                                                role="button"
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                viewBox="0 0 20 20"
+                                                                            >
+                                                                                <title>Close</title>
+                                                                                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                                                                            </svg>
+                                                    </span>
+                                            </div>
+                                        } 
                                         <div className="grid gap-6 mb-6 md:grid-cols-2">
                                             <div>
                                                 <div className="mb-6">
@@ -443,9 +605,9 @@ export default function users() {
                                                         onChange={e => setuser_name(e.target.value)}
                                                         name="user_name"
                                                         value={user_name}
-                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                        placeholder="John"
-                                                        required=""
+                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                        placeholder="Enter user user name"
+                                                        required
                                                     />
                                                 </div>
                                                 <div className="mb-6">
@@ -461,9 +623,9 @@ export default function users() {
                                                         onChange={e => setEmail(e.target.value)}
                                                         name="email"
                                                         value={email}
-                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                        placeholder="Doe"
-                                                        required=""
+                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                        placeholder="Enter user email address"
+                                                        required
                                                     />
                                                 </div>
                                                 <div>
@@ -479,23 +641,23 @@ export default function users() {
                                                         onChange={e => setName(e.target.value)}
                                                         name="name"
                                                         value={name}
-                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                        placeholder="Jhon"
-                                                        required=""
+                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                        placeholder="Enter user full name"
+                                                        required
                                                     />
                                                 </div>
                                             </div>
                                             <div>
-                                                <div class="flex items-center justify-center w-full">
-                                                    <label for="dropzone-file" class="flex flex-col items-center justify-center w-52 h-52 text-center border-2 border-gray-300 border-dashed rounded-[105px] cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                            <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                                <div className="flex items-center justify-center w-full">
+                                                    <label for="dropzone-file" className="flex flex-col items-center justify-center w-52 h-52 text-center border-2 border-gray-300 border-dashed rounded-[105px] cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                            <svg className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                                                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                                                             </svg>
-                                                            <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                                                            <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                                                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
                                                         </div>
-                                                        <input id="dropzone-file" type="file" class="hidden"/>
+                                                        <input id="dropzone-file" type="file" className="hidden"/>
                                                     </label>
                                                 </div>
                                             </div>
@@ -509,14 +671,14 @@ export default function users() {
                                                 Phone number
                                             </label>
                                             <input
-                                                type="num"
+                                                type="number"
                                                 id="contact_no"
                                                 onChange={e => setContact_no(e.target.value)}
                                                 name="name"
                                                 value={contact_no}
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                placeholder="123-45-678"
-                                                required=""
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                placeholder="Enter user mobile number"
+                                                required
                                             />
                                             </div>
                                             <div>
@@ -532,20 +694,20 @@ export default function users() {
                                                 onChange={e => setAddress(e.target.value)}
                                                 name="address"
                                                 value={address}
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                placeholder=""
-                                                required=""
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                placeholder="Enter user address"
+                                                required
                                             />
                                             </div>
                                             <div>
                                                 <button
                                                     id="dropdownSearchButton"
                                                     data-dropdown-toggle="dropdownSearch"
-                                                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                                    className="flex justify-between items-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                                     type="button"
                                                     onClick={toggleRoleListHandler}
                                                 >
-                                                    Dropdown search{" "}
+                                                    Add role to this user
                                                     <svg
                                                     className="w-2.5 h-2.5 ms-2.5"
                                                     aria-hidden="true"
@@ -562,6 +724,19 @@ export default function users() {
                                                     />
                                                     </svg>
                                                 </button>
+                                                <div className="flex mt-1 flex-wrap gap-2">
+                                                    {selectedValues.map(Role => (
+                                                        <span className='flex px-3 py-1 bg-gray-400 rounded-md'>
+                                                            {Role}
+                                                            <button
+                                                                className="ml-2"
+                                                                onClick={(event) => handleCheckboxChange(event, Role)}
+                                                            >
+                                                                <IoClose className='text-2xl text-white hover:text-red-400'/>
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                </div>
                                                 {/* Dropdown menu */}
                                                 <div data-collapse={isOpenRoleList} ref={refRoleList}>
                                                     <div
@@ -591,10 +766,9 @@ export default function users() {
                                                             </svg>
                                                             </div>
                                                             <input
-                                                            type="text"
-                                                            id="input-group-search"
-                                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                            placeholder="Search user"
+                                                            type="text" id="input-group-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search role name"
+                                                            value={searchInput}
+                                                            onChange={handleSearchInputChange}
                                                             />
                                                         </div>
                                                         </div>
@@ -602,7 +776,7 @@ export default function users() {
                                                         className="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200"
                                                         aria-labelledby="dropdownSearchButton"
                                                         >
-                                                        {roleArray.map(Role => (
+                                                        {filteredRoles.map(Role => (
                                                             <li>
                                                                 <div className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
                                                                 <input
@@ -623,24 +797,10 @@ export default function users() {
                                                             </li>
                                                         ))}
                                                         </ul>
-                                                        {/* <a
-                                                        href="#"
-                                                        className="flex items-center p-3 text-sm font-medium text-red-600 border-t border-gray-200 rounded-b-lg bg-gray-50 dark:border-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-red-500 hover:underline"
-                                                        >
-                                                        <svg
-                                                            className="w-4 h-4 me-2"
-                                                            aria-hidden="true"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="currentColor"
-                                                            viewBox="0 0 20 18"
-                                                        >
-                                                            <path d="M6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Zm11-3h-6a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2Z" />
-                                                        </svg>
-                                                        Delete user
-                                                        </a> */}
                                                     </div>
                                                 </div>
                                             </div>
+
                                             <div>
                                                 <label
                                                     htmlFor="user_description"
@@ -652,11 +812,11 @@ export default function users() {
                                                 onChange={e => setuser_description(e.target.value)}
                                                 name="user_description"
                                                 value={user_description}
-                                                class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Write your thoughts here..."></textarea>
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Write short description about this user"></textarea>
                                             </div>
                                         </div>
-                                        {/* 
-                                        <div className="flex items-start mb-6">
+                                        
+                                        {/* <div className="flex items-start mb-6">
                                             <div className="flex items-center h-5">
                                             <input
                                                 id="remember"
@@ -681,7 +841,7 @@ export default function users() {
                                             type="submit"
                                             className="text-white bg-[#213389] hover:bg-[#213389] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-[#213389] dark:hover:bg-[#213389] dark:focus:ring-blue-800"
                                         >
-                                            Save User details
+                                            Save
                                         </button>
                                     </form>
                                 </div>
@@ -690,26 +850,29 @@ export default function users() {
                     </div>
                     <div className="flex flex-col items-center justify-between py-4 px-1.5 space-y-3 md:flex-row md:space-y-0 md:space-x-4">
                         <div className="w-full md:w-1/2">
-                        <form className="flex items-center">
-                            <label htmlFor="simple-search" className="sr-only">
-                            Search
-                            </label>
-                            <div className="w-full">
-                            <input
-                                type="text"
-                                id="simple-search"
-                                className="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                placeholder="Search"
-                                required=""
-                            />
-                            </div>
-                        </form>
+                            {/* search bar */}
+                            <div className="flex items-center">
+                                <label htmlFor="simple-search" className="sr-only">
+                                Search
+                                </label>
+                                <div className="w-full">
+                                <input
+                                    type="text"
+                                    id="simple-search"
+                                    className="block w-full p-2 pl-5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                    placeholder="Search"
+                                    value={searchUserInput}
+                                    onChange={handleSearchUserInputChange}
+                                />
+                                </div>
+                            </div>                       
                         </div>
                         <div className="flex flex-col items-stretch justify-end flex-shrink-0 w-full space-y-2 md:w-auto md:flex-row md:space-y-0 md:items-center md:space-x-3">
                         <div className="flex items-center w-[500px] space-x-3 md:w-auto">
                             <button
                                 className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg md:w-auto focus:outline-none hover:bg-gray-100 hover:text-primary-700 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-[#3c4042] dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-[#606368]"
                                 type="button"
+                                onClick={downloadCSV}
                                 >
                                 Export CSV
                             </button>
@@ -888,7 +1051,7 @@ export default function users() {
             </div>
         </div>
         {view === 'list' ? 
-            <div className="flex items-center justify-center my-5 rounded bg-gray-50 dark:bg-[#1e1e1e] tablelist">
+            <div className="flex flex-col items-center justify-center my-5 rounded bg-gray-50 dark:bg-[#121212] tablelist">
                 <div className="overflow-x-auto border border-gray-200 sm:rounded-lg w-[-webkit-fill-available]">
                     <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-[#606368] dark:text-gray-400">
@@ -920,7 +1083,7 @@ export default function users() {
                         </tr>
                         </thead>
                         <tbody>
-                            {userArray.map(Users => (
+                            {currentItems.map(Users => (
                                 <tr className="odd:bg-white odd:dark:bg-[#1e1e1e] even:bg-gray-50 even:dark:bg-[#3c4042] border-b dark:border-gray-700">
                                     <td className="px-6 py-4">
                                         <img
@@ -985,8 +1148,8 @@ export default function users() {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <div className='flex w-[75%] justify-between'>
+                                    <td className="px-2 py-4">
+                                        <div className='flex w-auto justify-between'>
                                             {/* password reset */}
                                             {thisuserpermissionArray.includes('user password reset') && (
                                                 <a
@@ -999,41 +1162,34 @@ export default function users() {
                                             {expandedResetpasswordModel === Users.id && (
                                                 <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
                                                         <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                                        <div className="bg-white w-1/2 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                                            {/* Modal header */}
-                                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                                    If you want reset {Users.user_name}'s password, please enter "{Users.user_name}" on below feild
-                                                                </h3>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={closeResetpasswordModel}
-                                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                                    data-modal-toggle="crud-modal"
-                                                                    >
-                                                                <svg
-                                                                        className="w-3 h-3"
-                                                                        aria-hidden="true"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 14 14"
-                                                                    >
-                                                                        <path
-                                                                        stroke="currentColor"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                                        />
-                                                                    </svg>
+                                                        <div className="bg-white w-1/2 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                            <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                                                <button type="button" onClick={closeResetpasswordModel} className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white" data-modal-toggle="crud-modal">
+                                                                    <IoClose className='text-2xl hover:text-white'/>
                                                                     <span className="sr-only">Close modal</span>
                                                                 </button>
                                                             </div>
+                                                            {/* Modal header */}
+                                                            <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white w-[80%]">
+                                                                    If you want reset {Users.user_name}'s password, please enter "{Users.user_name}" on below feild
+                                                                </h3>
+                                                            </div>
                                                             {/* Modal body */}
-                                                            <form className="p-4 md:p-5" onSubmit={submitPasswordForm}>
+                                                            <form className="px-2 pt-2" onSubmit={submitPasswordForm}>
+                                                                    {passwordreseterror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{passwordreseterror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
                                                                 <div className="grid gap-4 mb-4 grid-cols-2">
-                                                                    {formerror && <p className="text-sm text-gray-500 dark:text-gray-400">{formerror}</p>}
-                                                                    {formemessage && <p className="text-sm text-green-600 dark:text-green-600">{formemessage}</p>}  
                                                                     <div className="col-span-2">
                                                                         <input
                                                                         type="hidden"
@@ -1061,7 +1217,7 @@ export default function users() {
                                                                     type="submit"
                                                                     className="text-white inline-flex items-center bg-[#D32D41] hover:bg-[#D32D41] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#D32D41] dark:hover:bg-[#D32D41] dark:focus:ring-blue-800"
                                                                     >
-                                                                    Reset {Users.user_name}'s password
+                                                                    Reset password
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -1071,47 +1227,42 @@ export default function users() {
                                             {/* edite user */}
                                             {thisuserpermissionArray.includes('update user') && (
                                                 <a
-                                                    onClick={() => handleToggleEditeRoleModel(Users.id)}
+                                                    onClick={() => handleToggleEditeRoleModel(Users.id, Users.user_name, Users.email, Users.name, Users.contact_no, Users.address, Users.roles)}
                                                 >
-                                                    <FaPenToSquare className='text-[#DBAE58] text-2xl'/>
+                                                    <FaPenToSquare className='text-[#DBAE58] text-2xl'/> 
                                                 </a>
                                             )}
                                             {/* Edite Modal */}
                                             {expandedEditeRoleModel === Users.id && (
                                                 <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
                                                         <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                                        <div className="bg-white w-3/4 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                                            {/* Modal header */}
-                                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                                    Update {Users.user_name}
-                                                                </h3>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={closeEditeRoleModel}
-                                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                                    data-modal-toggle="crud-modal"
-                                                                    >
-                                                                <svg
-                                                                        className="w-3 h-3"
-                                                                        aria-hidden="true"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 14 14"
-                                                                    >
-                                                                        <path
-                                                                        stroke="currentColor"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                                        />
-                                                                    </svg>
+                                                        <div className="bg-white w-3/4 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                            <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                                                <button type="button" onClick={closeEditeRoleModel} className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white" data-modal-toggle="crud-modal">
+                                                                    <IoClose className='text-2xl hover:text-white'/>
                                                                     <span className="sr-only">Close modal</span>
                                                                 </button>
                                                             </div>
+                                                            {/* Modal header */}
+                                                            <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                    Update {Users.user_name}
+                                                                </h3>
+                                                            </div>
                                                             {/* Modal body */}
-                                                            <form className="p-4 md:p-5" onSubmit={submitEditeForm}>
+                                                            <form className="px-2 pt-2" onSubmit={submitEditeForm}>
+                                                                    {userediteerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{userediteerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
                                                                 <div className="grid gap-6 mb-6 md:grid-cols-2">
                                                                     <input type="hidden" name="editid" id="editid" value={Users.id}/>
                                                                     <div>
@@ -1125,12 +1276,12 @@ export default function users() {
                                                                             <input
                                                                                 type="text"
                                                                                 id="user_name"
-                                                                                onChange={e => setEditeuser_name(e.target.value)}
+                                                                                onChange={(e) => setEditeUserUserName(e.target.value)}
                                                                                 name="user_name"
-                                                                                value={user_name}
-                                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                                placeholder="John"
-                                                                                required=""
+                                                                                value={editeUserUserName}
+                                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                                placeholder="Enter User name"
+                                                                                required
                                                                             />
                                                                         </div>
                                                                         <div className="mb-6">
@@ -1143,12 +1294,12 @@ export default function users() {
                                                                             <input
                                                                                 type="email"
                                                                                 id="email"
-                                                                                onChange={e => setEditeEmail(e.target.value)}
+                                                                                onChange={(e) => setEditeUserEmail(e.target.value)}
                                                                                 name="email"
-                                                                                value={email}
-                                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                                placeholder="Doe"
-                                                                                required=""
+                                                                                value={editeUserEmail}
+                                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                                placeholder="Enter user email address"
+                                                                                required
                                                                             />
                                                                         </div>
                                                                         <div>
@@ -1161,26 +1312,26 @@ export default function users() {
                                                                             <input
                                                                                 type="text"
                                                                                 id="name"
-                                                                                onChange={e => setEditeName(e.target.value)}
+                                                                                onChange={(e) => setEditeUserName(e.target.value)}
                                                                                 name="name"
-                                                                                value={name}
-                                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                                placeholder="Jhon"
-                                                                                required=""
+                                                                                value={editeUserName}
+                                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                                placeholder="Enter user full name"
+                                                                                required
                                                                             />
                                                                         </div>
                                                                     </div>
                                                                     <div>
-                                                                        <div class="flex items-center justify-center w-full">
-                                                                            <label for="dropzone-file" class="flex flex-col items-center justify-center w-52 h-52 text-center border-2 border-gray-300 border-dashed rounded-[105px] cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                                                                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                                                    <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                                                        <div className="flex items-center justify-center w-full">
+                                                                            <label for="dropzone-file" className="flex flex-col items-center justify-center w-52 h-52 text-center border-2 border-gray-300 border-dashed rounded-[105px] cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                                                    <svg className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                                                                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                                                                                     </svg>
-                                                                                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                                                                                    <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                                                                                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                                                    <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
                                                                                 </div>
-                                                                                <input id="dropzone-file" type="file" class="hidden"/>
+                                                                                <input id="dropzone-file" type="file" className="hidden"/>
                                                                             </label>
                                                                         </div>
                                                                     </div>
@@ -1194,14 +1345,14 @@ export default function users() {
                                                                         Phone number
                                                                     </label>
                                                                     <input
-                                                                        type="num"
+                                                                        type='number'
                                                                         id="contact_no"
-                                                                        onChange={e => setEditeContact_no(e.target.value)}
+                                                                        onChange={(e) => setEditeUserContactNo(e.target.value)}
                                                                         name="name"
-                                                                        value={contact_no}
-                                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                        placeholder="123-45-678"
-                                                                        required=""
+                                                                        value={editeUserContactNo}
+                                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                        placeholder="Enter user phon number"
+                                                                        required
                                                                     />
                                                                     </div>
                                                                     <div>
@@ -1214,23 +1365,23 @@ export default function users() {
                                                                     <input
                                                                         type="text"
                                                                         id="address"
-                                                                        onChange={e => setEditeAddress(e.target.value)}
+                                                                        onChange={e => setEditeUserAddress(e.target.value)}
                                                                         name="address"
-                                                                        value={address}
-                                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                        placeholder=""
-                                                                        required=""
+                                                                        value={editeUserAddress}
+                                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                        placeholder="Enter user address"
+                                                                        required
                                                                     />
-                                                                    </div>
+                                                                    </div>                                            
                                                                     <div>
                                                                         <button
                                                                             id="dropdownSearchButton"
                                                                             data-dropdown-toggle="dropdownSearch"
-                                                                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                                                            className="flex justify-between items-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                                                             type="button"
                                                                             onClick={toggleRoleListHandler}
                                                                         >
-                                                                            Dropdown search{" "}
+                                                                            Add role to this user
                                                                             <svg
                                                                             className="w-2.5 h-2.5 ms-2.5"
                                                                             aria-hidden="true"
@@ -1247,6 +1398,19 @@ export default function users() {
                                                                             />
                                                                             </svg>
                                                                         </button>
+                                                                        <div className="flex mt-1 flex-wrap gap-2">
+                                                                            {editeselectedValues.map(Role => (
+                                                                                <span className='flex px-3 py-1 bg-gray-400 rounded-md'>
+                                                                                    {Role}
+                                                                                    <button
+                                                                                        className="ml-2"
+                                                                                        onClick={(event) => handleediteCheckboxChange(event, Role)}
+                                                                                    >
+                                                                                        <IoClose className='text-2xl text-white hover:text-red-400'/>
+                                                                                    </button>
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
                                                                         {/* Dropdown menu */}
                                                                         <div data-collapse={isOpenRoleList} ref={refRoleList}>
                                                                             <div
@@ -1276,10 +1440,9 @@ export default function users() {
                                                                                     </svg>
                                                                                     </div>
                                                                                     <input
-                                                                                    type="text"
-                                                                                    id="input-group-search"
-                                                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                                    placeholder="Search user"
+                                                                                    type="text" id="input-group-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search role name"
+                                                                                    value={searchInput}
+                                                                                    onChange={handleSearchInputChange}
                                                                                     />
                                                                                 </div>
                                                                                 </div>
@@ -1287,7 +1450,7 @@ export default function users() {
                                                                                 className="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200"
                                                                                 aria-labelledby="dropdownSearchButton"
                                                                                 >
-                                                                                {roleArray.map(Role => (
+                                                                                {filteredRoles.map(Role => (
                                                                                     <li>
                                                                                         <div className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
                                                                                         <input
@@ -1308,21 +1471,6 @@ export default function users() {
                                                                                     </li>
                                                                                 ))}
                                                                                 </ul>
-                                                                                {/* <a
-                                                                                href="#"
-                                                                                className="flex items-center p-3 text-sm font-medium text-red-600 border-t border-gray-200 rounded-b-lg bg-gray-50 dark:border-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-red-500 hover:underline"
-                                                                                >
-                                                                                <svg
-                                                                                    className="w-4 h-4 me-2"
-                                                                                    aria-hidden="true"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                    fill="currentColor"
-                                                                                    viewBox="0 0 20 18"
-                                                                                >
-                                                                                    <path d="M6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Zm11-3h-6a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2Z" />
-                                                                                </svg>
-                                                                                Delete user
-                                                                                </a> */}
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -1336,37 +1484,14 @@ export default function users() {
                                                                         <textarea id="user_description" rows="4" 
                                                                         onChange={e => setEditeuser_description(e.target.value)}
                                                                         name="user_description"
-                                                                        value={user_description}
-                                                                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Write your thoughts here..."></textarea>
+                                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Write short description about this user">{Users.user_description}</textarea>
                                                                     </div>
                                                                 </div>
-                                                                {/* 
-                                                                <div className="flex items-start mb-6">
-                                                                    <div className="flex items-center h-5">
-                                                                    <input
-                                                                        id="remember"
-                                                                        type="checkbox"
-                                                                        defaultValue=""
-                                                                        className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
-                                                                        required=""
-                                                                    />
-                                                                    </div>
-                                                                    <label
-                                                                    htmlFor="remember"
-                                                                    className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                                                                    >
-                                                                    I agree with the{" "}
-                                                                    <a href="#" className="text-blue-600 hover:underline dark:text-blue-500">
-                                                                        terms and conditions
-                                                                    </a>
-                                                                    .
-                                                                    </label>
-                                                                </div> */}
                                                                 <button
                                                                     type="submit"
-                                                                    className="text-white bg-[#213389] hover:bg-[#213389] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-[#213389] dark:hover:bg-[#213389] dark:focus:ring-blue-800"
+                                                                    className="text-white inline-flex items-center bg-[#DBAE58] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#DBAE58] dark:hover:bg-[#DBAE58] dark:focus:ring-blue-800"
                                                                 >
-                                                                    Save User details
+                                                                    Update
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -1385,40 +1510,35 @@ export default function users() {
                                             {expandedDeleteRoleModel === Users.id && (
                                                 <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
                                                         <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                                        <div className="bg-white w-1/2 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                                            {/* Modal header */}
-                                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                                    If you want Delete {Users.user_name}, please enter "{Users.user_name}" on below feild
-                                                                </h3>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={closeDeleteRoleModel}
-                                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                                    data-modal-toggle="crud-modal"
-                                                                    >
-                                                                <svg
-                                                                        className="w-3 h-3"
-                                                                        aria-hidden="true"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 14 14"
-                                                                    >
-                                                                        <path
-                                                                        stroke="currentColor"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                                        />
-                                                                    </svg>
+                                                        <div className="bg-white w-1/2 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                            <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                                                <button type="button" onClick={closeDeleteRoleModel} className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white" data-modal-toggle="crud-modal">
+                                                                    <IoClose className='text-2xl hover:text-white'/>
                                                                     <span className="sr-only">Close modal</span>
                                                                 </button>
                                                             </div>
+                                                            {/* Modal header */}
+                                                            <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white w-[80%]">
+                                                                    If you want Delete {Users.user_name}, please enter "{Users.user_name}" on below feild
+                                                                </h3>
+                                                            </div>
+
                                                             {/* Modal body */}
-                                                            <form className="p-4 md:p-5" onSubmit={submitDeleteForm}>
-                                                                <div className="grid gap-4 mb-4 grid-cols-2">
-                                                                    {formerror && <p className="text-sm text-gray-500 dark:text-gray-400">{formerror}</p>}  
+                                                            <form className="px-2 pt-2" onSubmit={submitDeleteForm}>
+                                                                    {userdeleteerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{userdeleteerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
+                                                                <div className="grid gap-4 mb-4 grid-cols-2"> 
                                                                     <div className="col-span-2">
                                                                         <input
                                                                         type="hidden"
@@ -1446,7 +1566,7 @@ export default function users() {
                                                                     type="submit"
                                                                     className="text-white inline-flex items-center bg-[#D32D41] hover:bg-[#D32D41] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#D32D41] dark:hover:bg-[#D32D41] dark:focus:ring-blue-800"
                                                                     >
-                                                                    Delete {Users.user_name}
+                                                                    Delete
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -1459,566 +1579,574 @@ export default function users() {
                         </tbody>
                     </table>
                 </div>
+                {/* Pagination */}
+                <div className='flex w-[-webkit-fill-available] justify-end mt-2'>
+                    <nav aria-label="Page navigation example" className="flex justify-end">
+                        <ul className="inline-flex -space-x-px text-sm">
+                            <li>
+                                <button
+                                    onClick={prevPage}
+                                    disabled={currentPage === 1}
+                                    className={`flex items-center justify-center px-3 h-8 ms-0 leading-tight rounded-s-lg border border-e-0 border-gray-300 dark:border-gray-700 ${currentPage === 1 ? 'text-gray-500 dark:text-gray-400 bg-white dark:bg-[#3c4042]' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-white'}`}
+                                >
+                                    Previous
+                                </button>
+                            </li>
+                            {[...Array(Math.ceil(filteredUsers.length / itemsPerPage))].map((_, index) => (
+                                <li>
+                                    <button
+                                        key={index}
+                                        onClick={() => paginate(index + 1)}
+                                        className={`flex items-center justify-center px-3 h-8 border border-gray-300 dark:border-gray-700 dark:text-white ${
+                                            currentPage === index + 1 ? 'bg-gray-200 text-blue-700 dark:bg-[#3c4042]' : 'bg-blue-50 text-blue-600 dark:bg-[#606368]'
+                                        }`}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                </li>
+                            ))}
+                            <li>
+                                <button
+                                    onClick={nextPage}
+                                    disabled={currentPage === Math.ceil(filteredUsers.length / itemsPerPage)}
+                                    className={`flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 rounded-e-lg dark:border-gray-700 ${currentPage === Math.ceil(filteredUsers.length / itemsPerPage) ? 'text-gray-500 bg-white border dark:bg-[#3c4042] dark:text-gray-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-white'}`}
+                                >
+                                    Next
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         : 
-            <div className="grid gap-2 2xl:grid-cols-5 min-[1200px]:grid-cols-3 min-[840px]:grid-cols-2 mb-4 rounded bg-gray-50 dark:bg-[#121212]">
-            {userArray.map(Users => (
-                <div className="w-full p-5 my-5 max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
-                    <div className='flex'>
-                            <img
-                            className="w-24 h-24 mb-3 rounded-full shadow-lg"
-                            src="/avater.png"
-                            alt="Bonnie image"
-                            />
-                            <div className="ml-4">
-                                <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">
-                                {Users.user_name}
-                                </h5>
-                                {Users.roles.map(roles => (
-                                    <ul className="max-w-md space-y-1 text-gray-500 list-inside dark:text-gray-400">
-                                        <li className="flex items-center">
-                                        <svg
-                                            className="w-3.5 h-3.5 me-2 text-green-500 dark:text-green-400 flex-shrink-0"
-                                            aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                        >
-                                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
-                                        </svg>
-                                            {roles.name}
-                                        </li>
-                                    </ul>
-                                ))}
-                            </div>
-                    </div>
-                    <div className="flex mt-4 md:mt-6 justify-start items-center">
-                        <div className='flex flex-col w-[50%] justify-between items-center'>
-                            {/* <button onClick={() => handleToggle(Users.id, Users.status)}>
-                                {Users.status ? 'Deactivate' : 'Activate'}
-                            </button> */}
-
-                            {/* <label className="switch">
-                                <input
-                                    type="checkbox"
-                                    checked={Users.status}
-                                    onChange={() => handleToggle(Users.id, Users.status)}
+            <div className='flex flex-col'>
+                <div className="grid gap-2 2xl:grid-cols-5 min-[1200px]:grid-cols-4 min-[768px]:grid-cols-3 min-[640px]:grid-cols-2 mb-4 rounded bg-gray-50 dark:bg-[#121212]">
+                {currentItems.map(Users => (
+                    <div className="w-full p-5 my-5 max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
+                        <div className='flex'>
+                                <img
+                                className="w-24 h-24 mb-3 rounded-full shadow-lg"
+                                src="/avater.png"
+                                alt="Bonnie image"
                                 />
-                                <span className="slider round"></span>
-                            </label> */}
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                                {Users.status ? 'Active' : 'Inactive'}
-                            </span>
-                            {/* change user status */}
-                            {thisuserpermissionArray.includes('user status change') && (
-                                <label className="inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" checked={Users.status} className="sr-only peer" onChange={() => handleToggle(Users.id, Users.status)}/>
-                                    <div className="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600" />
-                                    {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                        Green
-                                    </span> */}
-                                </label>
-                            )}
+                                <div className="ml-4">
+                                    <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">
+                                    {Users.user_name}
+                                    </h5>
+                                    {Users.roles.map(roles => (
+                                        <ul className="max-w-md space-y-1 text-gray-500 list-inside dark:text-gray-400">
+                                            <li className="flex items-center">
+                                            <svg
+                                                className="w-3.5 h-3.5 me-2 text-green-500 dark:text-green-400 flex-shrink-0"
+                                                aria-hidden="true"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
+                                            </svg>
+                                                {roles.name}
+                                            </li>
+                                        </ul>
+                                    ))}
+                                </div>
                         </div>
-                        <div className='flex w-[35%] justify-between'>
+                        <div className="flex mt-4 md:mt-6 justify-start items-center">
+                            <div className='flex flex-col w-[50%] justify-between items-center'>
+                                {/* <button onClick={() => handleToggle(Users.id, Users.status)}>
+                                    {Users.status ? 'Deactivate' : 'Activate'}
+                                </button> */}
 
-                            {/* user password reset */}
-                            {thisuserpermissionArray.includes('user password reset') && (
-                                <a
-                                    onClick={() => handleToggleResetpasswordModel(Users.id)}
-                                >
-                                    <RiLockPasswordLine className='text-gray-700 text-2xl dark:text-white'/>
-                                </a>
-                            )}
-                            {/* password reset Modal */}
-                            {expandedResetpasswordModel === Users.id && (
-                                <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
-                                        <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                        <div className="bg-white w-1/2 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                            {/* Modal header */}
-                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                    If you want reset {Users.user_name}'s password, please enter "{Users.user_name}" on below feild
-                                                </h3>
-                                                <button
-                                                    type="button"
-                                                    onClick={closeResetpasswordModel}
-                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                    data-modal-toggle="crud-modal"
-                                                    >
-                                                <svg
-                                                        className="w-3 h-3"
-                                                        aria-hidden="true"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 14 14"
-                                                    >
-                                                        <path
-                                                        stroke="currentColor"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                        />
-                                                    </svg>
-                                                    <span className="sr-only">Close modal</span>
-                                                </button>
-                                            </div>
-                                            {/* Modal body */}
-                                            <form className="p-4 md:p-5" onSubmit={submitPasswordForm}>
-                                                <div className="grid gap-4 mb-4 grid-cols-2">
-                                                    {formerror && <p className="text-sm text-gray-500 dark:text-gray-400">{formerror}</p>}
-                                                    {formemessage && <p className="text-sm text-green-600 dark:text-green-600">{formemessage}</p>}  
-                                                    <div className="col-span-2">
-                                                        <input
-                                                        type="hidden"
-                                                        name="id"
-                                                        id="id"
-                                                        value={Users.id}
-                                                        />
-                                                        <input
-                                                        type="hidden"
-                                                        name="resetrowname"
-                                                        id="resetrowname"
-                                                        value={Users.user_name}
-                                                        />
-                                                        <input
-                                                        onChange={e => setResetName(e.target.value)}
-                                                        type="text"
-                                                        name="name"
-                                                        id="name"
-                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                        required=""
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    type="submit"
-                                                    className="text-white inline-flex items-center bg-[#D32D41] hover:bg-[#D32D41] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#D32D41] dark:hover:bg-[#D32D41] dark:focus:ring-blue-800"
-                                                    >
-                                                    Reset {Users.user_name}'s password
-                                                </button>
-                                            </form>
-                                        </div>
-                                </div>
-                            )}
-
-                            {/* edite user */}
-                            {thisuserpermissionArray.includes('update user') && (
-                                <a
-                                    onClick={() => handleToggleEditeRoleModel(Users.id)}
-                                >
-                                    <FaPenToSquare className='text-[#DBAE58] text-2xl'/>
-                                </a>
-                            )}
-                            {/* Edite Modal */}
-                            {expandedEditeRoleModel === Users.id && (
-                                <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
-                                        <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                        <div className="bg-white w-3/4 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                            {/* Modal header */}
-                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                    Update {Users.user_name}
-                                                </h3>
-                                                <button
-                                                    type="button"
-                                                    onClick={closeEditeRoleModel}
-                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                    data-modal-toggle="crud-modal"
-                                                    >
-                                                <svg
-                                                        className="w-3 h-3"
-                                                        aria-hidden="true"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 14 14"
-                                                    >
-                                                        <path
-                                                        stroke="currentColor"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                        />
-                                                    </svg>
-                                                    <span className="sr-only">Close modal</span>
-                                                </button>
-                                            </div>
-                                            {/* Modal body */}
-                                            <form className="p-4 md:p-5" onSubmit={submitEditeForm}>
-                                                <div className="grid gap-6 mb-6 md:grid-cols-2">
-                                                    <input type="hidden" name="editid" id="editid" value={Users.id}/>
-                                                    <div>
-                                                        <div className="mb-6">
-                                                            <label
-                                                                htmlFor="user_name"
-                                                                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                            >
-                                                                User Name
-                                                            </label>
-                                                            <input
-                                                                type="text"
-                                                                id="user_name"
-                                                                onChange={e => setEditeuser_name(e.target.value)}
-                                                                name="user_name"
-                                                                value={user_name}
-                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                placeholder="John"
-                                                                required=""
-                                                            />
-                                                        </div>
-                                                        <div className="mb-6">
-                                                            <label
-                                                                htmlFor="last_name"
-                                                                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                            >
-                                                                Email
-                                                            </label>
-                                                            <input
-                                                                type="email"
-                                                                id="email"
-                                                                onChange={e => setEditeEmail(e.target.value)}
-                                                                name="email"
-                                                                value={email}
-                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                placeholder="Doe"
-                                                                required=""
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <label
-                                                                htmlFor="company"
-                                                                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                            >
-                                                                Name
-                                                            </label>
-                                                            <input
-                                                                type="text"
-                                                                id="name"
-                                                                onChange={e => setEditeName(e.target.value)}
-                                                                name="name"
-                                                                value={name}
-                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                placeholder="Jhon"
-                                                                required=""
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <div class="flex items-center justify-center w-full">
-                                                            <label for="dropzone-file" class="flex flex-col items-center justify-center w-52 h-52 text-center border-2 border-gray-300 border-dashed rounded-[105px] cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                                                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                                    <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                                                                    </svg>
-                                                                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                                                                    <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
-                                                                </div>
-                                                                <input id="dropzone-file" type="file" class="hidden"/>
-                                                            </label>
-                                                        </div> 
-                                                    </div>
-                                                </div>
-                                                <div className="grid gap-6 mb-6 md:grid-cols-2">
-                                                    <div>
-                                                    <label
-                                                        htmlFor="contact_no"
-                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                    >
-                                                        Phone number
-                                                    </label>
-                                                    <input
-                                                        type="num"
-                                                        id="contact_no"
-                                                        onChange={e => setEditeContact_no(e.target.value)}
-                                                        name="name"
-                                                        value={contact_no}
-                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                        placeholder="123-45-678"
-                                                        required=""
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                    <label
-                                                        htmlFor="address"
-                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                    >
-                                                        Address
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        id="address"
-                                                        onChange={e => setEditeAddress(e.target.value)}
-                                                        name="address"
-                                                        value={address}
-                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                        placeholder=""
-                                                        required=""
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <button
-                                                            id="dropdownSearchButton"
-                                                            data-dropdown-toggle="dropdownSearch"
-                                                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                                            type="button"
-                                                            onClick={toggleRoleListHandler}
-                                                        >
-                                                            Dropdown search{" "}
-                                                            <svg
-                                                            className="w-2.5 h-2.5 ms-2.5"
-                                                            aria-hidden="true"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 10 6"
-                                                            >
-                                                            <path
-                                                                stroke="currentColor"
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="m1 1 4 4 4-4"
-                                                            />
-                                                            </svg>
-                                                        </button>
-                                                        {/* Dropdown menu */}
-                                                        <div data-collapse={isOpenRoleList} ref={refRoleList}>
-                                                            <div
-                                                                id="dropdownSearch"
-                                                                className="z-10 hidden absolute bg-white rounded-lg shadow w-60 dark:bg-gray-700 rolelist"
-                                                            >
-                                                                <div className="p-3">
-                                                                <label htmlFor="input-group-search" className="sr-only">
-                                                                    Search
-                                                                </label>
-                                                                <div className="relative">
-                                                                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                                                                    <svg
-                                                                        className="w-4 h-4 text-gray-500 dark:text-gray-400"
-                                                                        aria-hidden="true"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 20 20"
-                                                                    >
-                                                                        <path
-                                                                        stroke="currentColor"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                                                                        />
-                                                                    </svg>
-                                                                    </div>
-                                                                    <input
-                                                                    type="text"
-                                                                    id="input-group-search"
-                                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                    placeholder="Search user"
-                                                                    />
-                                                                </div>
-                                                                </div>
-                                                                <ul
-                                                                className="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200"
-                                                                aria-labelledby="dropdownSearchButton"
-                                                                >
-                                                                {roleArray.map(Role => (
-                                                                    <li>
-                                                                        <div className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                                        <input
-                                                                            id="checkbox-item-11"
-                                                                            type="checkbox"
-                                                                            value={Role.name}
-                                                                            onChange={handleediteCheckboxChange} 
-                                                                            checked={editeselectedValues.includes(Role.name)}
-                                                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                                                        />
-                                                                        <label
-                                                                            htmlFor="checkbox-item-11"
-                                                                            className="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300"
-                                                                        >
-                                                                            {Role.name}
-                                                                        </label>
-                                                                        </div>
-                                                                    </li>
-                                                                ))}
-                                                                </ul>
-                                                                {/* <a
-                                                                href="#"
-                                                                className="flex items-center p-3 text-sm font-medium text-red-600 border-t border-gray-200 rounded-b-lg bg-gray-50 dark:border-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-red-500 hover:underline"
-                                                                >
-                                                                <svg
-                                                                    className="w-4 h-4 me-2"
-                                                                    aria-hidden="true"
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    fill="currentColor"
-                                                                    viewBox="0 0 20 18"
-                                                                >
-                                                                    <path d="M6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Zm11-3h-6a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2Z" />
-                                                                </svg>
-                                                                Delete user
-                                                                </a> */}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <label
-                                                            htmlFor="user_description"
-                                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                        >
-                                                            Description
-                                                        </label>
-                                                        <textarea id="user_description" rows="4" 
-                                                        onChange={e => setEditeuser_description(e.target.value)}
-                                                        name="user_description"
-                                                        value={user_description}
-                                                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Write your thoughts here..."></textarea>
-                                                    </div>
-                                                </div>
-                                                {/* 
-                                                <div className="flex items-start mb-6">
-                                                    <div className="flex items-center h-5">
-                                                    <input
-                                                        id="remember"
-                                                        type="checkbox"
-                                                        defaultValue=""
-                                                        className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
-                                                        required=""
-                                                    />
-                                                    </div>
-                                                    <label
-                                                    htmlFor="remember"
-                                                    className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                                                    >
-                                                    I agree with the{" "}
-                                                    <a href="#" className="text-blue-600 hover:underline dark:text-blue-500">
-                                                        terms and conditions
-                                                    </a>
-                                                    .
-                                                    </label>
-                                                </div> */}
-                                                <button
-                                                    type="submit"
-                                                    className="text-white bg-[#213389] hover:bg-[#213389] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-[#213389] dark:hover:bg-[#213389] dark:focus:ring-blue-800"
+                                {/* <label className="switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={Users.status}
+                                        onChange={() => handleToggle(Users.id, Users.status)}
+                                    />
+                                    <span className="slider round"></span>
+                                </label> */}
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                    {Users.status ? 'Active' : 'Inactive'}
+                                </span>
+                                {/* change user status */}
+                                {thisuserpermissionArray.includes('user status change') && (
+                                    <label className="inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked={Users.status} className="sr-only peer" onChange={() => handleToggle(Users.id, Users.status)}/>
+                                        <div className="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600" />
+                                        {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                            Green
+                                        </span> */}
+                                    </label>
+                                )}
+                            </div>
+                            <div className='flex w-[35%] justify-between'>
+                                {/* password reset */}
+                                {thisuserpermissionArray.includes('user password reset') && (
+                                                <a
+                                                    onClick={() => handleToggleResetpasswordModel(Users.id)}
                                                 >
-                                                    Save User details
-                                                </button>
-                                            </form>
-                                        </div>
-                                </div>
-                            )}
-
-                            {/* delete user */}
-                            {thisuserpermissionArray.includes('delete user') && (
-                                <a
-                                    onClick={() => handleToggleDeleteRoleModel(Users.id)}
-                                >
-                                    <MdDelete className='text-[#D32D41] text-2xl'/>
-                                </a>
-                            )}
-                            {/* Delete Modal */}
-                            {expandedDeleteRoleModel === Users.id && (
-                                <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
-                                        <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                        <div className="bg-white w-1/2 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                            {/* Modal header */}
-                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                    If you want Delete {Users.user_name}, please enter "{Users.user_name}" on below feild
-                                                </h3>
-                                                <button
-                                                    type="button"
-                                                    onClick={closeDeleteRoleModel}
-                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                    data-modal-toggle="crud-modal"
-                                                    >
-                                                <svg
-                                                        className="w-3 h-3"
-                                                        aria-hidden="true"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 14 14"
-                                                    >
-                                                        <path
-                                                        stroke="currentColor"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                        />
-                                                    </svg>
-                                                    <span className="sr-only">Close modal</span>
-                                                </button>
-                                            </div>
-                                            {/* Modal body */}
-                                            <form className="p-4 md:p-5" onSubmit={submitDeleteForm}>
-                                                <div className="grid gap-4 mb-4 grid-cols-2">
-                                                    {formerror && <p className="text-sm text-gray-500 dark:text-gray-400">{formerror}</p>}  
-                                                    <div className="col-span-2">
-                                                        <input
-                                                        type="hidden"
-                                                        name="id"
-                                                        id="id"
-                                                        value={Users.id}
-                                                        />
-                                                        <input
-                                                        type="hidden"
-                                                        name="deleterowname"
-                                                        id="deleterowname"
-                                                        value={Users.user_name}
-                                                        />
-                                                        <input
-                                                        onChange={e => setDeleteName(e.target.value)}
-                                                        type="text"
-                                                        name="name"
-                                                        id="name"
-                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                        required=""
-                                                        />
-                                                    </div>
+                                                    <RiLockPasswordLine className='text-gray-700 text-2xl dark:text-white'/>
+                                                </a>
+                                )}
+                                {/* password reset Modal */}
+                                {expandedResetpasswordModel === Users.id && (
+                                                <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
+                                                        <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
+                                                        <div className="bg-white w-1/2 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                            <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                                                <button type="button" onClick={closeResetpasswordModel} className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white" data-modal-toggle="crud-modal">
+                                                                    <IoClose className='text-2xl hover:text-white'/>
+                                                                    <span className="sr-only">Close modal</span>
+                                                                </button>
+                                                            </div>
+                                                            {/* Modal header */}
+                                                            <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white w-[80%]">
+                                                                    If you want reset {Users.user_name}'s password, please enter "{Users.user_name}" on below feild
+                                                                </h3>
+                                                            </div>
+                                                            {/* Modal body */}
+                                                            <form className="px-2 pt-2" onSubmit={submitPasswordForm}>
+                                                                    {passwordreseterror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{passwordreseterror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
+                                                                <div className="grid gap-4 mb-4 grid-cols-2">
+                                                                    <div className="col-span-2">
+                                                                        <input
+                                                                        type="hidden"
+                                                                        name="id"
+                                                                        id="id"
+                                                                        value={Users.id}
+                                                                        />
+                                                                        <input
+                                                                        type="hidden"
+                                                                        name="resetrowname"
+                                                                        id="resetrowname"
+                                                                        value={Users.user_name}
+                                                                        />
+                                                                        <input
+                                                                        onChange={e => setResetName(e.target.value)}
+                                                                        type="text"
+                                                                        name="name"
+                                                                        id="name"
+                                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                        required=""
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <button
+                                                                    type="submit"
+                                                                    className="text-white inline-flex items-center bg-[#D32D41] hover:bg-[#D32D41] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#D32D41] dark:hover:bg-[#D32D41] dark:focus:ring-blue-800"
+                                                                    >
+                                                                    Reset password
+                                                                </button>
+                                                            </form>
+                                                        </div>
                                                 </div>
-                                                <button
-                                                    type="submit"
-                                                    className="text-white inline-flex items-center bg-[#D32D41] hover:bg-[#D32D41] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#D32D41] dark:hover:bg-[#D32D41] dark:focus:ring-blue-800"
-                                                    >
-                                                    Delete {Users.user_name}
-                                                </button>
-                                            </form>
-                                        </div>
-                                </div>
-                            )}
+                                )}
+
+                                {/* edite user */}
+                                {thisuserpermissionArray.includes('update user') && (
+                                                <a
+                                                    onClick={() => handleToggleEditeRoleModel(Users.id, Users.user_name, Users.email, Users.name, Users.contact_no, Users.address, Users.roles)}
+                                                >
+                                                    <FaPenToSquare className='text-[#DBAE58] text-2xl'/>
+                                                </a>
+                                )}
+                                {/* Edite Modal */}
+                                {expandedEditeRoleModel === Users.id && (
+                                                <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
+                                                        <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
+                                                        <div className="bg-white w-3/4 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                            <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                                                <button type="button" onClick={closeEditeRoleModel} className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white" data-modal-toggle="crud-modal">
+                                                                    <IoClose className='text-2xl hover:text-white'/>
+                                                                    <span className="sr-only">Close modal</span>
+                                                                </button>
+                                                            </div>
+                                                            {/* Modal header */}
+                                                            <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                    Update {Users.user_name}
+                                                                </h3>
+                                                            </div>
+                                                            {/* Modal body */}
+                                                            <form className="px-2 pt-2" onSubmit={submitEditeForm}>
+                                                                    {userediteerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{userediteerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
+                                                                <div className="grid gap-6 mb-6 md:grid-cols-2">
+                                                                    <input type="hidden" name="editid" id="editid" value={Users.id}/>
+                                                                    <div>
+                                                                        <div className="mb-6">
+                                                                            <label
+                                                                                htmlFor="user_name"
+                                                                                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                                            >
+                                                                                User Name
+                                                                            </label>
+                                                                            <input
+                                                                                type="text"
+                                                                                id="user_name"
+                                                                                onChange={(e) => setEditeUserUserName(e.target.value)}
+                                                                                name="user_name"
+                                                                                value={editeUserUserName}
+                                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                                placeholder="Enter User name"
+                                                                                required
+                                                                            />
+                                                                        </div>
+                                                                        <div className="mb-6">
+                                                                            <label
+                                                                                htmlFor="last_name"
+                                                                                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                                            >
+                                                                                Email
+                                                                            </label>
+                                                                            <input
+                                                                                type="email"
+                                                                                id="email"
+                                                                                onChange={(e) => setEditeUserEmail(e.target.value)}
+                                                                                name="email"
+                                                                                value={editeUserEmail}
+                                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                                placeholder="Enter user email address"
+                                                                                required
+                                                                            />
+                                                                        </div>
+                                                                        <div>
+                                                                            <label
+                                                                                htmlFor="company"
+                                                                                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                                            >
+                                                                                Name
+                                                                            </label>
+                                                                            <input
+                                                                                type="text"
+                                                                                id="name"
+                                                                                onChange={(e) => setEditeUserName(e.target.value)}
+                                                                                name="name"
+                                                                                value={editeUserName}
+                                                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                                placeholder="Enter user full name"
+                                                                                required
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="flex items-center justify-center w-full">
+                                                                            <label for="dropzone-file" className="flex flex-col items-center justify-center w-52 h-52 text-center border-2 border-gray-300 border-dashed rounded-[105px] cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                                                    <svg className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                                                                    </svg>
+                                                                                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                                                    <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                                                                                </div>
+                                                                                <input id="dropzone-file" type="file" className="hidden"/>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="grid gap-6 mb-6 md:grid-cols-2">
+                                                                    <div>
+                                                                    <label
+                                                                        htmlFor="contact_no"
+                                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                                    >
+                                                                        Phone number
+                                                                    </label>
+                                                                    <input
+                                                                        type='number'
+                                                                        id="contact_no"
+                                                                        onChange={(e) => setEditeUserContactNo(e.target.value)}
+                                                                        name="name"
+                                                                        value={editeUserContactNo}
+                                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                        placeholder="Enter user phon number"
+                                                                        required
+                                                                    />
+                                                                    </div>
+                                                                    <div>
+                                                                    <label
+                                                                        htmlFor="address"
+                                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                                    >
+                                                                        Address
+                                                                    </label>
+                                                                    <input
+                                                                        type="text"
+                                                                        id="address"
+                                                                        onChange={e => setEditeUserAddress(e.target.value)}
+                                                                        name="address"
+                                                                        value={editeUserAddress}
+                                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                        placeholder="Enter user address"
+                                                                        required
+                                                                    />
+                                                                    </div>                                            
+                                                                    <div>
+                                                                        <button
+                                                                            id="dropdownSearchButton"
+                                                                            data-dropdown-toggle="dropdownSearch"
+                                                                            className="flex justify-between items-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                            type="button"
+                                                                            onClick={toggleRoleListHandler}
+                                                                        >
+                                                                            Add role to this user
+                                                                            <svg
+                                                                            className="w-2.5 h-2.5 ms-2.5"
+                                                                            aria-hidden="true"
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="none"
+                                                                            viewBox="0 0 10 6"
+                                                                            >
+                                                                            <path
+                                                                                stroke="currentColor"
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth={2}
+                                                                                d="m1 1 4 4 4-4"
+                                                                            />
+                                                                            </svg>
+                                                                        </button>
+                                                                        <div className="flex mt-1 flex-wrap gap-2">
+                                                                            {editeselectedValues.map(Role => (
+                                                                                <span className='flex px-3 py-1 bg-gray-400 rounded-md'>
+                                                                                    {Role}
+                                                                                    <button
+                                                                                        className="ml-2"
+                                                                                        onClick={(event) => handleediteCheckboxChange(event, Role)}
+                                                                                    >
+                                                                                        <IoClose className='text-2xl text-white hover:text-red-400'/>
+                                                                                    </button>
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                        {/* Dropdown menu */}
+                                                                        <div data-collapse={isOpenRoleList} ref={refRoleList}>
+                                                                            <div
+                                                                                id="dropdownSearch"
+                                                                                className="z-10 hidden absolute bg-white rounded-lg shadow w-60 dark:bg-gray-700 rolelist"
+                                                                            >
+                                                                                <div className="p-3">
+                                                                                <label htmlFor="input-group-search" className="sr-only">
+                                                                                    Search
+                                                                                </label>
+                                                                                <div className="relative">
+                                                                                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                                                                                    <svg
+                                                                                        className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                                                                                        aria-hidden="true"
+                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                        fill="none"
+                                                                                        viewBox="0 0 20 20"
+                                                                                    >
+                                                                                        <path
+                                                                                        stroke="currentColor"
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth={2}
+                                                                                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                                                                                        />
+                                                                                    </svg>
+                                                                                    </div>
+                                                                                    <input
+                                                                                    type="text" id="input-group-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search role name"
+                                                                                    value={searchInput}
+                                                                                    onChange={handleSearchInputChange}
+                                                                                    />
+                                                                                </div>
+                                                                                </div>
+                                                                                <ul
+                                                                                className="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200"
+                                                                                aria-labelledby="dropdownSearchButton"
+                                                                                >
+                                                                                {filteredRoles.map(Role => (
+                                                                                    <li>
+                                                                                        <div className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                                                        <input
+                                                                                            id="checkbox-item-11"
+                                                                                            type="checkbox"
+                                                                                            value={Role.name}
+                                                                                            onChange={handleediteCheckboxChange} 
+                                                                                            checked={editeselectedValues.includes(Role.name)}
+                                                                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                                                                        />
+                                                                                        <label
+                                                                                            htmlFor="checkbox-item-11"
+                                                                                            className="w-full ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300"
+                                                                                        >
+                                                                                            {Role.name}
+                                                                                        </label>
+                                                                                        </div>
+                                                                                    </li>
+                                                                                ))}
+                                                                                </ul>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label
+                                                                            htmlFor="user_description"
+                                                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                                        >
+                                                                            Description
+                                                                        </label>
+                                                                        <textarea id="user_description" rows="4" 
+                                                                        onChange={e => setEditeuser_description(e.target.value)}
+                                                                        name="user_description"
+                                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Write short description about this user">{Users.user_description}</textarea>
+                                                                    </div>
+                                                                </div>
+                                                                <button
+                                                                    type="submit"
+                                                                    className="text-white inline-flex items-center bg-[#DBAE58] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#DBAE58] dark:hover:bg-[#DBAE58] dark:focus:ring-blue-800"
+                                                                >
+                                                                    Update
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                </div>
+                                )}
+
+                                {/* delete user */}
+                                {thisuserpermissionArray.includes('delete user') && (
+                                                <a
+                                                    onClick={() => handleToggleDeleteRoleModel(Users.id)}
+                                                >
+                                                    <MdDelete className='text-[#D32D41] text-2xl'/>
+                                                </a>
+                                )}
+                                {/* Delete Modal */}
+                                {expandedDeleteRoleModel === Users.id && (
+                                                <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
+                                                        <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
+                                                        <div className="bg-white w-1/2 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                            <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                                                <button type="button" onClick={closeDeleteRoleModel} className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white" data-modal-toggle="crud-modal">
+                                                                    <IoClose className='text-2xl hover:text-white'/>
+                                                                    <span className="sr-only">Close modal</span>
+                                                                </button>
+                                                            </div>
+                                                            {/* Modal header */}
+                                                            <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white w-[80%]">
+                                                                    If you want Delete {Users.user_name}, please enter "{Users.user_name}" on below feild
+                                                                </h3>
+                                                            </div>
+
+                                                            {/* Modal body */}
+                                                            <form className="px-2 pt-2" onSubmit={submitDeleteForm}>
+                                                                    {userdeleteerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{userdeleteerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
+                                                                <div className="grid gap-4 mb-4 grid-cols-2">
+                                                                    <div className="col-span-2">
+                                                                        <input
+                                                                        type="hidden"
+                                                                        name="id"
+                                                                        id="id"
+                                                                        value={Users.id}
+                                                                        />
+                                                                        <input
+                                                                        type="hidden"
+                                                                        name="deleterowname"
+                                                                        id="deleterowname"
+                                                                        value={Users.user_name}
+                                                                        />
+                                                                        <input
+                                                                        onChange={e => setDeleteName(e.target.value)}
+                                                                        type="text"
+                                                                        name="name"
+                                                                        id="name"
+                                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                        required=""
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <button
+                                                                    type="submit"
+                                                                    className="text-white inline-flex items-center bg-[#D32D41] hover:bg-[#D32D41] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#D32D41] dark:hover:bg-[#D32D41] dark:focus:ring-blue-800"
+                                                                    >
+                                                                    Delete
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                </div>
+                                )}
+                            </div>
                         </div>
                     </div>
+                ))}
                 </div>
-            ))}
+                {/* Pagination */}
+                <div className='flex w-[-webkit-fill-available] justify-end'>
+                    <nav aria-label="Page navigation example" className="flex justify-end">
+                        <ul className="inline-flex -space-x-px text-sm">
+                            <li>
+                                <button
+                                    onClick={prevPage}
+                                    disabled={currentPage === 1}
+                                    className={`flex items-center justify-center px-3 h-8 ms-0 leading-tight rounded-s-lg border border-e-0 border-gray-300 dark:border-gray-700 ${currentPage === 1 ? 'text-gray-500 dark:text-gray-400 bg-white dark:bg-[#3c4042]' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-white'}`}
+                                >
+                                    Previous
+                                </button>
+                            </li>
+                            {[...Array(Math.ceil(filteredUsers.length / itemsPerPage))].map((_, index) => (
+                                <li>
+                                    <button
+                                        key={index}
+                                        onClick={() => paginate(index + 1)}
+                                        className={`flex items-center justify-center px-3 h-8 border border-gray-300 dark:border-gray-700 dark:text-white ${
+                                            currentPage === index + 1 ? 'bg-gray-200 text-blue-700 dark:bg-[#3c4042]' : 'bg-blue-50 text-blue-600 dark:bg-[#606368]'
+                                        }`}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                </li>
+                            ))}
+                            <li>
+                                <button
+                                    onClick={nextPage}
+                                    disabled={currentPage === Math.ceil(filteredUsers.length / itemsPerPage)}
+                                    className={`flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 rounded-e-lg dark:border-gray-700 ${currentPage === Math.ceil(filteredUsers.length / itemsPerPage) ? 'text-gray-500 bg-white border dark:bg-[#3c4042] dark:text-gray-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-white'}`}
+                                >
+                                    Next
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         }
-
-        <nav aria-label="Page navigation example" className="flex justify-end">
-            <ul class="inline-flex -space-x-px text-sm">
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Previous</a>
-                </li>
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">1</a>
-                </li>
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">2</a>
-                </li>
-                <li>
-                <a href="#" aria-current="page" class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-[#606368] hover:text-blue-700 dark:border-gray-700 dark:bg-[#606368] dark:hover:bg-[#3c4042] dark:text-white">3</a>
-                </li>
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">4</a>
-                </li>
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">5</a>
-                </li>
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Next</a>
-                </li>
-            </ul>
-        </nav>
         </div>
     );
 }
