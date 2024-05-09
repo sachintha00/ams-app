@@ -47,7 +47,7 @@ export default function DashboardLayout({ children }) {
   return (
     <Protected>
       <div>
-              <header className="antialiased border-b border-black-800 dark:border-[#3c4042]">
+              <header className="antialiased border-b border-black-800 dark:border-[#3c4042] w-[-moz-available]">
                 <Navbar onToggleSidebar={toggleSidebar}/>
         
                 {/* responsive navbar */}
