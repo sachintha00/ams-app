@@ -6,10 +6,12 @@ import { FaUserCog } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { FaPenToSquare } from "react-icons/fa6";
 import { FaUserLock } from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
 import { redirect, useRouter } from 'next/navigation';
-import { useAddNewRoleMutation, useDeleteRoleMutation, useEditeRoleMutation, useGivePermissiontoRoleMutation, useRolesListQuery } from '@/app/_lib/redux/features/role/role_api';
+import { useAddNewRoleMutation, useDeleteRoleMutation, useEditeRoleMutation, useGivePermissiontoRoleMutation, useRemovePermissionfromRoleMutation, useRolesListQuery } from '@/app/_lib/redux/features/role/role_api';
 import { useSelector } from 'react-redux';
 import Link from 'next/link';
+import { useAuthpermissionsQuery } from '@/app/_lib/redux/features/authpermission/auth_permission_api';
 
 export default function Roles() {
     const [view, setView] = useState('grid');
@@ -17,15 +19,33 @@ export default function Roles() {
     const [expandedEditeRoleModel, setExpandedEditeRoleModel] = useState(false);
     const [expandedDeleteRoleModel, setExpandedDeleteRoleModel] = useState(false);
     const [isOpenAddForm, setIsOpenAddFormModel] = useState(false);
-    const [formerror, setError] = useState('');
+    const [formemessage, setmessage] = useState('');
+    const [editeRoleName, setEditeRoleName] = useState('');
+    const [rolehaspermissionarray, setRoleHasPermissionArray] = useState([]);
+    const [rolecreateerror, setRoleCreateError] = useState('');
+    const [givepermissionerror, setGivePermissionError] = useState('');
+    const [roleediteerror, setRoleEditeError] = useState('');
+    const [roledeleteerror, setRoleDeleteError] = useState('');
 
     const handleSwitchView = (newView) => {
         setView(newView);
     };
 
+    //Toast notifications
+    const handleClose = () => {
+        setmessage('');
+    };
+
+    const handleErrorClose = () => {
+        setGivePermissionError('');
+        setRoleEditeError('');
+        setRoleDeleteError('');
+    };
+
     // add permisson model
-    const handleToggleAddPermisionModel = (rowId) => {
+    const handleToggleAddPermisionModel = (rowId, rolePermission) => {
         setExpandedAddPermisionModel(rowId === expandedAddPermisionModel ? false : rowId);
+        setRoleHasPermissionArray(rolePermission.map(permission => permission.name));
     };
 
     const closeAddPermisionModel = () => {
@@ -33,8 +53,9 @@ export default function Roles() {
     };
 
     // edite role model
-    const handleToggleEditeRoleModel = (rowId) => {
+    const handleToggleEditeRoleModel = (rowId, rowname) => {
         setExpandedEditeRoleModel(rowId === expandedDeleteRoleModel ? false : rowId);
+        setEditeRoleName(rowname);
     };
 
     const closeEditeRoleModel = () => {
@@ -58,10 +79,31 @@ export default function Roles() {
         setIsOpenAddFormModel(false);
     };
 
+    //auth permissions
+    const [thisuserpermissionArray, setthisuserpermissionArray] = useState([]); 
+    const {
+        data: permissionList,
+      } = useAuthpermissionsQuery();
+
+    useEffect(() => {
+        if (permissionList) {
+            const permissions = Object.values(permissionList.thisuserpermission);
+            setthisuserpermissionArray(permissions);
+        }
+    }, [permissionList]);
+
     // role list and permission list(for give permission)
-    const [roleArray, setRoleArray] = useState([]); // State to hold converted array
     const [permissionlistItems, setPermissionlistItems] = useState([]);
-    const [thisuserpermissionArray, setthisuserpermissionArray] = useState([]);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(8);
+
+    const [filteredRoles, setFilteredRoles] = useState([]);
+    const [searchRoleInput, setSearchRoleInput] = useState('');
+
+    const handleSearchRoleInputChange = (event) => {
+        setSearchRoleInput(event.target.value);
+    };
 
     const {
         data: RoleList,
@@ -98,13 +140,32 @@ export default function Roles() {
   
     useEffect(() => {
         if (!isLoading && !isError && RoleList) {
-            setRoleArray(Object.values(RoleList.Role));
-            setthisuserpermissionArray(permissions);
+            const roleitem = Object.values(RoleList.Role);
+
+            // Sort users alphabetically by user_name
+            const sortedRoles = roleitem.sort((a, b) => a.name.localeCompare(b.name));
+            const filteredroles = sortedRoles.filter(role => role.name.toLowerCase().includes(searchRoleInput.toLowerCase()));
+            setFilteredRoles(filteredroles);
 
             const permissionmenuItems = organizationTableDataToTreeStructure(RoleList.Permission);
             setPermissionlistItems(permissionmenuItems);
+
+            const timer = setTimeout(() => {
+                setmessage('');
+            }, 5000); // Adjust the duration (in milliseconds) as needed
+        
+            return () => clearTimeout(timer);
         }
-    }, [isLoading, isError, RoleList, refetch]);
+    }, [isLoading, isError, RoleList, searchRoleInput, refetch]);
+
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredRoles.slice(indexOfFirstItem, indexOfLastItem);
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const nextPage = () => setCurrentPage((prev) => prev + 1);
+    const prevPage = () => setCurrentPage((prev) => prev - 1);
 
     // add role
     const [addNewRole] = useAddNewRoleMutation();  
@@ -127,10 +188,16 @@ export default function Roles() {
                 // router.push("/dashboard/usergroups");
                 setName("");
                 setrole_description("");
+                setmessage(response.message);
                 refetch();
             })
             .catch((error) => {
                 console.error("Error adding new node:", error);
+                setRoleCreateError(error);
+                const timer = setTimeout(() => {
+                    setRoleCreateError('');
+                }, 5000); // Adjust the duration (in milliseconds) as needed
+                return () => clearTimeout(timer);
             });
         } catch (error) {
             console.error("Login error:", error);
@@ -139,7 +206,6 @@ export default function Roles() {
 
     //edite role form data
     const [editeRole] = useEditeRoleMutation();
-    const [editename, setEditeName] = useState("");
     const [editerole_description, setEditerole_description] = useState("");
 
     //edite Submit Role From
@@ -149,17 +215,24 @@ export default function Roles() {
         e.preventDefault();
 
         try {
-            const role = {id: editeid, name: editename, description: editerole_description}
+            const role = {id: editeid, name: editeRoleName, description: editerole_description}
             editeRole(role)
             .unwrap()
             .then((response) => {
                 console.log("New node added:", response);
                 // window.location.reload();
                 closeEditeRoleModel();
+                const message = `${editeRoleName}'s ${response.message}`;
+                setmessage(message);
                 refetch();
             })
             .catch((error) => {
                 console.error("Error adding new node:", error);
+                setRoleEditeError(error);
+                const timer = setTimeout(() => {
+                    setRoleEditeError('');
+                }, 5000); // Adjust the duration (in milliseconds) as needed
+                return () => clearTimeout(timer);
             });
         } catch (error) {
             console.error("Login error:", error);
@@ -183,14 +256,24 @@ export default function Roles() {
                 .unwrap()
                 .then((response) => {
                     console.log("New node added:", response);
-                    // router.push("/dashboard");
+                    const message = `${deleterowname}'s ${response.message}`;
+                    setmessage(message);
                     refetch();
                 })
                 .catch((error) => {
                     console.error("Error adding new node:", error);
+                    setRoleDeleteError(error);
+                    const timer = setTimeout(() => {
+                        setRoleDeleteError('');
+                    }, 5000); // Adjust the duration (in milliseconds) as needed
+                    return () => clearTimeout(timer);
                 });
             } else {
-                setError('Input does not match the name of the Role Name');
+                setRoleDeleteError('Input does not match the name of the Role Name');
+                const timer = setTimeout(() => {
+                    setRoleDeleteError('');
+                }, 5000); // Adjust the duration (in milliseconds) as needed
+                return () => clearTimeout(timer);
             }
         } catch (error) {
             console.error("Login error:", error);
@@ -204,29 +287,118 @@ export default function Roles() {
     };
 
     // give permission
-    const [givePermissiontoRole] = useGivePermissiontoRoleMutation();  
+    const [givePermissiontoRole] = useGivePermissiontoRoleMutation();
+    // remove permission
+    const [removePermissionfromRole] = useRemovePermissionfromRoleMutation();
 
-    const togglePermissionForRole = (roleId, permissionName, isChecked) => {
-        console.log(permissionName);
-        try {
-                const role = {roleId: roleId, permission: permissionName}
-                givePermissiontoRole(role)
-                .unwrap()
-                .then((response) => {
-                    console.log("New node added:", response);
-                    // router.push("/dashboard/usergroups");
-                    refetch();
-                })
-                .catch((error) => {
-                    console.error("Error adding new node:", error);
-                });
-        } catch (error) {
-            console.error("Login error:", error);
+    const handleCheckboxChange = (roleId, permissionName) => {
+        const updatedPermissions = rolehaspermissionarray.includes(permissionName)
+            ? rolehaspermissionarray.filter(id => id !== permissionName)
+            : [...rolehaspermissionarray, permissionName];
+
+        setRoleHasPermissionArray(updatedPermissions);
+
+        // Handle API requests for adding or removing permissions
+        if (updatedPermissions.includes(permissionName)) {
+            // Send request to addpermission API endpoint
+            console.log(roleId);
+            try {
+                    const role = {roleId: roleId, permission: permissionName}
+                    givePermissiontoRole(role)
+                    .unwrap()
+                    .then((response) => {
+                        console.log("New node added:", response);
+                        setmessage(response.message);
+                        refetch();
+                    })
+                    .catch((error) => {
+                        console.error("Error adding new node:", error);
+                        setGivePermissionError(error);
+                        const timer = setTimeout(() => {
+                            setGivePermissionError('');
+                        }, 5000); // Adjust the duration (in milliseconds) as needed
+                        return () => clearTimeout(timer);
+                    });
+            } catch (error) {
+                console.error("Login error:", error);
+            }
+        } else {
+            // Send request to deletepermission API endpoint
+            console.log(permissionName);
+            try {
+                    const role = {roleId: roleId, permission: permissionName}
+                    removePermissionfromRole(role)
+                    .unwrap()
+                    .then((response) => {
+                        console.log("New node added:", response);
+                        setmessage(response.message);
+                        refetch();
+                    })
+                    .catch((error) => {
+                        console.error("Error adding new node:", error);
+                        setGivePermissionError(error);
+                        const timer = setTimeout(() => {
+                            setGivePermissionError('');
+                        }, 5000); // Adjust the duration (in milliseconds) as needed
+                        return () => clearTimeout(timer);
+                    });
+            } catch (error) {
+                console.error("Login error:", error);
+            }
         }
+    };
+
+    // download user list with csv
+    const downloadCSV = () => {
+        const csvContent = "data:text/csv;charset=utf-8," +
+            "Role Name,Description \n" +
+            filteredRoles.map(role => `${role.name},${role.description}`).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "role_details.csv");
+        document.body.appendChild(link); // Required for Firefox
+        link.click();
+        setmessage("role_details.csv is downloading");
     };
 
     return (
         <div className="p-4 pl-8 subcontent border-gray-200 rounded-lg dark:border-gray-700">
+            {/* notification Toast*/}
+            {formemessage && 
+                <div className='flex justify-end w-[100%] fixed'>
+                    <div
+                    id="toast-default"
+                    className="flex items-center opacity-90 w-full max-w-xs p-4 text-white bg-green-400 rounded-lg shadow mr-28"
+                    role="alert"
+                    >
+                    <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-blue-500 bg-blue-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">
+                        <svg
+                        className="w-4 h-4"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 18 20"
+                        >
+                        <path
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15.147 15.085a7.159 7.159 0 0 1-6.189 3.307A6.713 6.713 0 0 1 3.1 15.444c-2.679-4.513.287-8.737.888-9.548A4.373 4.373 0 0 0 5 1.608c1.287.953 6.445 3.218 5.537 10.5 1.5-1.122 2.706-3.01 2.853-6.14 1.433 1.049 3.993 5.395 1.757 9.117Z"
+                        />
+                        </svg>
+                        <span className="sr-only">Fire icon</span>
+                    </div>
+                    <div className="ms-3 text-sm font-normal">{formemessage}</div>
+                    <button type="button" onClick={handleClose} className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white" data-modal-toggle="crud-modal">
+                        <IoClose className='text-2xl text-white'/>
+                        <span className="sr-only">Close modal</span>
+                    </button>
+                    </div>
+                </div>
+            }
         <div className="flex items-center justify-center rounded bg-gray-50 dark:bg-[#121212]">
             <div className="w-full w-[-webkit-fill-available]">
                 {/* Start coding here */}
@@ -333,38 +505,34 @@ export default function Roles() {
                         {isOpenAddForm && (
                             <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
                                 <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                <div className="bg-white w-1/2 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                    {/* Modal header */}
-                                    <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            Add New Role
-                                        </h3>
-                                        <button
-                                            type="button"
-                                            onClick={closeAddFormModal}
-                                            className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                            data-modal-toggle="crud-modal"
-                                            >
-                                        <svg
-                                                className="w-3 h-3"
-                                                aria-hidden="true"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 14 14"
-                                            >
-                                                <path
-                                                stroke="currentColor"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                />
-                                            </svg>
+                                <div className="bg-white w-1/2 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                    <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                        <button type="button" onClick={closeAddFormModal} className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white" data-modal-toggle="crud-modal">
+                                            <IoClose className='text-2xl hover:text-white'/>
                                             <span className="sr-only">Close modal</span>
                                         </button>
                                     </div>
+                                    {/* Modal header */}
+                                    <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                            Add New Role
+                                        </h3>
+                                    </div>
+
                                     {/* Modal body */}
-                                    <form className="p-4 md:p-5" onSubmit={submitForm}>
+                                    <form className="px-2 pt-2" onSubmit={submitForm}>
+                                                                    {rolecreateerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{rolecreateerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
                                         <div className="grid gap-4 mb-4 grid-cols-2">  
                                             <div className="col-span-2">
                                                 <label
@@ -380,7 +548,7 @@ export default function Roles() {
                                                 id="name"
                                                 value={name}
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                placeholder="Type permission name"
+                                                placeholder="Type Role name"
                                                 required=""
                                                 />
                                             </div>
@@ -395,14 +563,14 @@ export default function Roles() {
                                                 onChange={e => setrole_description(e.target.value)}
                                                 name="role_description"
                                                 value={role_description}
-                                                class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Write your thoughts here..."></textarea>
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Type Role description"></textarea>
                                             </div>
                                         </div>
                                         <button
                                             type="submit"
                                             className="text-white inline-flex items-center bg-[#213389] hover:bg-[#213389] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#213389] dark:hover:bg-[#213389] dark:focus:ring-blue-800"
                                             >
-                                            Create Role
+                                            Create
                                         </button>
                                     </form>
                                 </div>
@@ -411,26 +579,29 @@ export default function Roles() {
                     </div>
                     <div className="flex flex-col items-center justify-between py-4 px-1.5 space-y-3 md:flex-row md:space-y-0 md:space-x-4">
                         <div className="w-full md:w-1/2">
-                        <form className="flex items-center">
-                            <label htmlFor="simple-search" className="sr-only">
-                            Search
-                            </label>
-                            <div className="w-full">
-                            <input
-                                type="text"
-                                id="simple-search"
-                                className="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                placeholder="Search"
-                                required=""
-                            />
-                            </div>
-                        </form>
+                            {/* search bar */}
+                            <div className="flex items-center">
+                                <label htmlFor="simple-search" className="sr-only">
+                                Search
+                                </label>
+                                <div className="w-full">
+                                <input
+                                    type="text"
+                                    id="simple-search"
+                                    className="block w-full p-2 pl-5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                    placeholder="Search"
+                                    value={searchRoleInput}
+                                    onChange={handleSearchRoleInputChange}
+                                />
+                                </div>
+                            </div>                       
                         </div>
                         <div className="flex flex-col items-stretch justify-end flex-shrink-0 w-full space-y-2 md:w-auto md:flex-row md:space-y-0 md:items-center md:space-x-3">
                         <div className="flex items-center w-[500px] space-x-3 md:w-auto">
                             <button
                                 className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg md:w-auto focus:outline-none hover:bg-gray-100 hover:text-primary-700 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-[#3c4042] dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-[#606368]"
                                 type="button"
+                                onClick={downloadCSV}
                                 >
                                 Export CSV
                             </button>
@@ -609,7 +780,7 @@ export default function Roles() {
             </div>
         </div>
         {view === 'list' ? 
-            <div className="flex items-center justify-center my-5 rounded bg-gray-50 dark:bg-[#1e1e1e] tablelist">
+            <div className="flex flex-col items-center justify-center my-5 rounded bg-gray-50 dark:bg-[#1e1e1e] tablelist">
                 <div className="overflow-x-auto border border-gray-200 sm:rounded-lg w-[-webkit-fill-available]">
                     <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-[#606368] dark:text-gray-400">
@@ -626,7 +797,7 @@ export default function Roles() {
                         </tr>
                         </thead>
                         <tbody>
-                            {roleArray.map(Role => (
+                            {currentItems.map(Role => (
                                 <tr className="odd:bg-white odd:dark:bg-[#1e1e1e] even:bg-gray-50 even:dark:bg-[#3c4042] border-b dark:border-gray-700">
                                     <th
                                     scope="row"
@@ -640,7 +811,7 @@ export default function Roles() {
                                             {/* add permission to role */}
                                             {thisuserpermissionArray.includes('give permissions to role') && (
                                                 <a
-                                                    onClick={() => handleToggleAddPermisionModel(Role.id)}
+                                                    onClick={() => handleToggleAddPermisionModel(Role.id, Role.permissions)}
                                                 >
                                                     <FaUserLock className='text-gray-700 text-2xl dark:text-white'/>
                                                 </a>
@@ -649,40 +820,40 @@ export default function Roles() {
                                             {expandedAddPermisionModel === Role.id && (
                                                 <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
                                                         <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                                        <div className="bg-white w-3/4 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                                            {/* Modal header */}
-                                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                                    Managing {Role.name}'s Parmison
-                                                                </h3>
+                                                        <div className="bg-white w-3/4 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                            <div className="flex items-center justify-between rounded-t dark:border-gray-600">
                                                                 <button
                                                                     type="button"
                                                                     onClick={closeAddPermisionModel}
-                                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                    className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
                                                                     data-modal-toggle="crud-modal"
                                                                     >
-                                                                <svg
-                                                                        className="w-3 h-3"
-                                                                        aria-hidden="true"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 14 14"
-                                                                    >
-                                                                        <path
-                                                                        stroke="currentColor"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                                        />
-                                                                    </svg>
+                                                                    <IoClose className='text-2xl hover:text-white'/>
                                                                     <span className="sr-only">Close modal</span>
                                                                 </button>
                                                             </div>
+                                                            {/* Modal header */}
+                                                            <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                    Managing {Role.name}'s Parmison
+                                                                </h3>
+                                                            </div>
                                                             {/* Modal body */}
-                                                            <form className="p-4 md:p-5">
-                                                                <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-[#1e1e1e]">
-                                                                    <ul className="space-y-2 font-medium">
+                                                            <form>
+                                                                    {givepermissionerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{givepermissionerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
+                                                                <div className="h-full py-4 overflow-y-auto bg-gray-50 dark:bg-[#1e1e1e]">
+                                                                    <ul className="space-y-2 font-medium overflow-y-scroll h-[500px]" style={{ scrollbarWidth: 'thin'}}>
                                                                         {permissionlistItems.map(permissionlist => (
                                                                             <li>
                                                                                 <div
@@ -699,7 +870,7 @@ export default function Roles() {
                                                                                     >
                                                                                         <path d="M15 12a1 1 0 0 0 .962-.726l2-7A1 1 0 0 0 17 3H3.77L3.175.745A1 1 0 0 0 2.208 0H1a1 1 0 0 0 0 2h.438l.6 2.255v.019l2 7 .746 2.986A3 3 0 1 0 9 17a2.966 2.966 0 0 0-.184-1h2.368c-.118.32-.18.659-.184 1a3 3 0 1 0 3-3H6.78l-.5-2H15Z" />
                                                                                     </svg>
-                                                                                    <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
+                                                                                    <span className="flex-1 ms-3 text-left rtl:text-right whitespace-normal">
                                                                                         {permissionlist.name}
                                                                                     </span>
                                                                                     {/* <svg
@@ -718,7 +889,7 @@ export default function Roles() {
                                                                                         />
                                                                                     </svg> */}
                                                                                     <label className="inline-flex items-center cursor-pointer">
-                                                                                        <input type="checkbox" className="sr-only peer" onChange={() => togglePermissionForRole(Role.id, permissionlist.name)}/>
+                                                                                        <input type="checkbox" className="sr-only peer" checked={rolehaspermissionarray.includes(permissionlist.name)} onChange={() => handleCheckboxChange(Role.id, permissionlist.name)}/>
                                                                                         <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
                                                                                         {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                                                                                             Toggle me
@@ -741,7 +912,7 @@ export default function Roles() {
                                                                                                 >
                                                                                                     <path d="M15 12a1 1 0 0 0 .962-.726l2-7A1 1 0 0 0 17 3H3.77L3.175.745A1 1 0 0 0 2.208 0H1a1 1 0 0 0 0 2h.438l.6 2.255v.019l2 7 .746 2.986A3 3 0 1 0 9 17a2.966 2.966 0 0 0-.184-1h2.368c-.118.32-.18.659-.184 1a3 3 0 1 0 3-3H6.78l-.5-2H15Z" />
                                                                                                 </svg> */}
-                                                                                                <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
+                                                                                                <span className="flex-1 ms-3 text-left rtl:text-right whitespace-normal">
                                                                                                     {submenu1.name}
                                                                                                 </span>
                                                                                                 {/* <svg
@@ -760,8 +931,7 @@ export default function Roles() {
                                                                                                     />
                                                                                                 </svg> */}
                                                                                                 <label className="inline-flex items-center cursor-pointer">
-                                                                                                    <input type="checkbox" className="sr-only peer" onChange={() => togglePermissionForRole(Role.id, submenu1.name)}/>
-                                                                                                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+                                                                                                    <input type="checkbox" className="sr-only peer" checked={rolehaspermissionarray.includes(submenu1.name)} onChange={() => handleCheckboxChange(Role.id, submenu1.name)}/>                                                                                                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
                                                                                                     {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                                                                                                         Toggle me
                                                                                                     </span> */}
@@ -773,7 +943,7 @@ export default function Roles() {
                                                                                                             <div
                                                                                                             className="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-[#3c4042]"
                                                                                                             >
-                                                                                                                <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
+                                                                                                                <span className="flex-1 ms-3 mr-8 text-left rtl:text-right whitespace-normal">
                                                                                                                     {subsubmenu.name}
                                                                                                                 </span>                                                          
                                                                                                                 {/* <svg
@@ -792,7 +962,7 @@ export default function Roles() {
                                                                                                                     />
                                                                                                                 </svg> */}
                                                                                                                 <label className="inline-flex items-center cursor-pointer">
-                                                                                                                    <input type="checkbox" className="sr-only peer" onChange={() => togglePermissionForRole(Role.id, subsubmenu.name)}/>
+                                                                                                                    <input type="checkbox" className="sr-only peer" checked={rolehaspermissionarray.includes(subsubmenu.name)} onChange={() => handleCheckboxChange(Role.id, subsubmenu.name)}/>
                                                                                                                     <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
                                                                                                                     {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                                                                                                                         Toggle me
@@ -818,7 +988,7 @@ export default function Roles() {
                                             {/* edite role */}
                                             {thisuserpermissionArray.includes('update role') && (
                                                 <a
-                                                    onClick={() => handleToggleEditeRoleModel(Role.id)}
+                                                    onClick={() => handleToggleEditeRoleModel(Role.id, Role.name)}
                                                 >
                                                     <FaPenToSquare className='text-[#DBAE58] text-2xl'/>
                                                 </a>
@@ -827,38 +997,38 @@ export default function Roles() {
                                             {expandedEditeRoleModel === Role.id && (
                                                 <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
                                                         <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                                        <div className="bg-white w-1/2 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                                            {/* Modal header */}
-                                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                                    Update {Role.name} Role
-                                                                </h3>
+                                                        <div className="bg-white w-1/2 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                            <div className="flex items-center justify-between rounded-t dark:border-gray-600">
                                                                 <button
                                                                     type="button"
                                                                     onClick={closeEditeRoleModel}
-                                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                    className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
                                                                     data-modal-toggle="crud-modal"
                                                                     >
-                                                                <svg
-                                                                        className="w-3 h-3"
-                                                                        aria-hidden="true"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 14 14"
-                                                                    >
-                                                                        <path
-                                                                        stroke="currentColor"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                                        />
-                                                                    </svg>
+                                                                    <IoClose className='text-2xl hover:text-white'/>
                                                                     <span className="sr-only">Close modal</span>
                                                                 </button>
                                                             </div>
+                                                            {/* Modal header */}
+                                                            <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                    Update {Role.name} Role
+                                                                </h3>
+                                                            </div>
                                                             {/* Modal body */}
-                                                            <form className="p-4 md:p-5" onSubmit={submitEditeForm}>
+                                                            <form className='px-2 pt-2' onSubmit={submitEditeForm}>
+                                                                    {roleediteerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{roleediteerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
                                                                 <div className="grid gap-4 mb-4 grid-cols-2">  
                                                                     <div className="col-span-2">
                                                                         <input
@@ -874,7 +1044,8 @@ export default function Roles() {
                                                                         Role Name
                                                                         </label>
                                                                         <input
-                                                                        onChange={e => setEditeName(e.target.value)}
+                                                                        onChange={(e) => setEditeRoleName(e.target.value)}
+                                                                        value={editeRoleName}
                                                                         type="text"
                                                                         name="name"
                                                                         id="name"
@@ -893,14 +1064,14 @@ export default function Roles() {
                                                                         <textarea id="role_description" rows="4" 
                                                                         onChange={e => setEditerole_description(e.target.value)}
                                                                         name="role_description"
-                                                                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Write your thoughts here..."></textarea>
+                                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Write your thoughts here...">{Role.description}</textarea>
                                                                     </div>
                                                                 </div>
                                                                 <button
                                                                     type="submit"
                                                                     className="text-white inline-flex items-center bg-[#DBAE58] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#DBAE58] dark:hover:bg-[#DBAE58] dark:focus:ring-blue-800"
                                                                     >
-                                                                    Update {Role.name} Role
+                                                                    Update
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -919,40 +1090,39 @@ export default function Roles() {
                                             {expandedDeleteRoleModel === Role.id && (
                                                 <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
                                                         <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                                        <div className="bg-white w-1/2 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                                            {/* Modal header */}
-                                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                                    If you want Delete {Role.name}, please enter "{Role.name}" on below feild
-                                                                </h3>
+                                                        <div className="bg-white w-1/2 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                            <div className="flex items-center justify-between rounded-t dark:border-gray-600">
                                                                 <button
                                                                     type="button"
                                                                     onClick={closeDeleteRoleModel}
-                                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                    className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
                                                                     data-modal-toggle="crud-modal"
                                                                     >
-                                                                <svg
-                                                                        className="w-3 h-3"
-                                                                        aria-hidden="true"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 14 14"
-                                                                    >
-                                                                        <path
-                                                                        stroke="currentColor"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                                        />
-                                                                    </svg>
+                                                                    <IoClose className='text-2xl hover:text-white'/>
                                                                     <span className="sr-only">Close modal</span>
                                                                 </button>
                                                             </div>
+                                                            {/* Modal header */}
+                                                            <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                                <h3 className="text-lg font-semibold w-[80%] text-gray-900 dark:text-white">
+                                                                    If you want Delete {Role.name}, please enter "{Role.name}" on below feild
+                                                                </h3>
+                                                            </div>
                                                             {/* Modal body */}
-                                                            <form className="p-4 md:p-5" onSubmit={submitDeleteForm}>
+                                                            <form className="px-2 pt-2" onSubmit={submitDeleteForm}>
+                                                                    {roledeleteerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{roledeleteerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
                                                                 <div className="grid gap-4 mb-4 grid-cols-2">
-                                                                    {formerror && <p className="text-sm text-gray-500 dark:text-gray-400">{formerror}</p>}  
                                                                     <div className="col-span-2">
                                                                         <input
                                                                         type="hidden"
@@ -980,7 +1150,7 @@ export default function Roles() {
                                                                     type="submit"
                                                                     className="text-white inline-flex items-center bg-[#D32D41] hover:bg-[#D32D41] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#D32D41] dark:hover:bg-[#D32D41] dark:focus:ring-blue-800"
                                                                     >
-                                                                    Delete {Role.name} Role
+                                                                    Delete
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -993,406 +1163,458 @@ export default function Roles() {
                         </tbody>
                     </table>
                 </div>
+                {/* Pagination */}
+                <div className='flex w-[-webkit-fill-available] justify-end mt-2'>
+                    <nav aria-label="Page navigation example" className="flex justify-end">
+                        <ul class="inline-flex -space-x-px text-sm">
+                            <li>
+                                <button
+                                    onClick={prevPage}
+                                    disabled={currentPage === 1}
+                                    className={`flex items-center justify-center px-3 h-8 ms-0 leading-tight rounded-s-lg border border-e-0 border-gray-300 dark:border-gray-700 ${currentPage === 1 ? 'text-gray-500 dark:text-gray-400 bg-white dark:bg-[#3c4042]' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-white'}`}
+                                >
+                                    Previous
+                                </button>
+                            </li>
+                            {[...Array(Math.ceil(filteredRoles.length / itemsPerPage))].map((_, index) => (
+                                <li>
+                                    <button
+                                        key={index}
+                                        onClick={() => paginate(index + 1)}
+                                        className={`flex items-center justify-center px-3 h-8 border border-gray-300 dark:border-gray-700 dark:text-white ${
+                                            currentPage === index + 1 ? 'bg-gray-200 text-blue-700 dark:bg-[#3c4042]' : 'bg-blue-50 text-blue-600 dark:bg-[#606368]'
+                                        }`}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                </li>
+                            ))}
+                            <li>
+                                <button
+                                    onClick={nextPage}
+                                    disabled={currentPage === Math.ceil(filteredRoles.length / itemsPerPage)}
+                                    className={`flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 rounded-e-lg dark:border-gray-700 ${currentPage === Math.ceil(filteredRoles.length / itemsPerPage) ? 'text-gray-500 bg-white border dark:bg-[#3c4042] dark:text-gray-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-white'}`}
+                                >
+                                    Next
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         : 
-            <div className="grid gap-2 2xl:grid-cols-5 min-[1200px]:grid-cols-3 min-[840px]:grid-cols-2 mb-4 rounded bg-gray-50 dark:bg-[#121212]">
-            {roleArray.map(Role => (
-                <div className="w-full p-5 my-5 max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
-                    <div className='flex'>
-                            <FaUserCog className="mr-3 font-semibold text-gray-700 dark:text-white text-[54px]"/>
-                            <div>
-                                <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">
-                                {Role.name}
-                                </h5>
-                                <span className="text-sm text-gray-500 dark:text-gray-400">
-                                {Role.description}
-                                </span>
-                            </div>
-                    </div>
-                    <div className="flex mt-4 md:mt-6 justify-end items-center">
+            <div className='flex flex-col'>
+                <div className="grid gap-2 2xl:grid-cols-5 min-[1200px]:grid-cols-4 min-[768px]:grid-cols-3 min-[640px]:grid-cols-2 mb-4 rounded bg-gray-50 dark:bg-[#121212]">
+                {currentItems.map(Role => (
+                    <div className="w-full p-5 my-5 max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
+                        <div className='flex'>
+                                <FaUserCog className="mr-3 font-semibold text-gray-700 dark:text-white text-[54px]"/>
+                                <div>
+                                    <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">
+                                    {Role.name}
+                                    </h5>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                                    {Role.description}
+                                    </span>
+                                </div>
+                        </div>
+                        <div className="flex mt-4 md:mt-6 justify-end items-center">
 
-                        <div className='flex w-[35%] justify-between'>
-                            {/* add permission to role */}
-                            {thisuserpermissionArray.includes('give permissions to role') && (
-                                <a
-                                    onClick={() => handleToggleAddPermisionModel(Role.id)}
-                                >
-                                    <FaUserLock className='text-gray-700 text-2xl dark:text-white'/>
-                                </a>
-                            )}
-                            {/* Add permission Modal */}
-                            {expandedAddPermisionModel === Role.id && (
-                                <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
-                                        <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                        <div className="bg-white w-3/4 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                            {/* Modal header */}
-                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                    Managing {Role.name}'s Parmison
-                                                </h3>
-                                                <button
-                                                    type="button"
-                                                    onClick={closeAddPermisionModel}
-                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                    data-modal-toggle="crud-modal"
-                                                    >
-                                                <svg
-                                                        className="w-3 h-3"
-                                                        aria-hidden="true"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 14 14"
-                                                    >
-                                                        <path
-                                                        stroke="currentColor"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                        />
-                                                    </svg>
-                                                    <span className="sr-only">Close modal</span>
-                                                </button>
-                                            </div>
-                                            {/* Modal body */}
-                                            <form className="p-4 md:p-5">
-                                                <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-[#1e1e1e]">
-                                                    <ul className="space-y-2 font-medium">
-                                                        {permissionlistItems.map(permissionlist => (
-                                                            <li>
-                                                                <div
-                                                                className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-[#3c4042]"
-                                                                aria-controls="dropdown-example"
-                                                                data-collapse-toggle="dropdown-example"
-                                                                >
-                                                                    <svg
-                                                                        className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
-                                                                        aria-hidden="true"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="currentColor"
-                                                                        viewBox="0 0 18 21"
+                            <div className='flex w-[35%] justify-between'>
+                                {/* add permission to role */}
+                                {thisuserpermissionArray.includes('give permissions to role') && (
+                                    <a
+                                        onClick={() => handleToggleAddPermisionModel(Role.id, Role.permissions)}
+                                    >
+                                        <FaUserLock className='text-gray-700 text-2xl dark:text-white'/>
+                                    </a>
+                                )}
+                                {/* Add permission Modal */}
+                                {expandedAddPermisionModel === Role.id && (
+                                    <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
+                                            <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
+                                            <div className="bg-white w-3/4 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                                    <button
+                                                        type="button"
+                                                        onClick={closeAddPermisionModel}
+                                                        className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
+                                                        data-modal-toggle="crud-modal"
+                                                        >
+                                                        <IoClose className='text-2xl hover:text-white'/>
+                                                        <span className="sr-only">Close modal</span>
+                                                    </button>
+                                                </div>
+                                                {/* Modal header */}
+                                                <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                        Managing {Role.name}'s Parmison
+                                                    </h3>
+                                                </div>
+                                                {/* Modal body */}
+                                                <form>
+                                                                    {givepermissionerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{givepermissionerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
+                                                    <div className="h-full py-4 overflow-y-auto bg-gray-50 dark:bg-[#1e1e1e]">
+                                                        <ul className="space-y-2 font-medium overflow-y-scroll h-[500px]" style={{ scrollbarWidth: 'thin'}}>
+                                                            {permissionlistItems.map(permissionlist => (
+                                                                <li>
+                                                                    <div
+                                                                    className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-[#3c4042]"
+                                                                    aria-controls="dropdown-example"
+                                                                    data-collapse-toggle="dropdown-example"
                                                                     >
-                                                                        <path d="M15 12a1 1 0 0 0 .962-.726l2-7A1 1 0 0 0 17 3H3.77L3.175.745A1 1 0 0 0 2.208 0H1a1 1 0 0 0 0 2h.438l.6 2.255v.019l2 7 .746 2.986A3 3 0 1 0 9 17a2.966 2.966 0 0 0-.184-1h2.368c-.118.32-.18.659-.184 1a3 3 0 1 0 3-3H6.78l-.5-2H15Z" />
-                                                                    </svg>
-                                                                    <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
-                                                                        {permissionlist.name}
-                                                                    </span>
-                                                                    {/* <svg
-                                                                        className="w-3 h-3"
-                                                                        aria-hidden="true"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 10 6"
-                                                                    >
-                                                                        <path
-                                                                        stroke="currentColor"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={2}
-                                                                        d="m1 1 4 4 4-4"
-                                                                        />
-                                                                    </svg> */}
-                                                                    <label className="inline-flex items-center cursor-pointer">
-                                                                        <input type="checkbox" className="sr-only peer" checked={Role.permissions.some(permission => permission.name === permissionlist.name)} onChange={(e) => togglePermissionForRole(Role.id, permissionlist.name, e.target.checked)}/>
-                                                                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
-                                                                        {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                                            Toggle me
-                                                                        </span> */}
-                                                                    </label>
-                                                                </div>
-                                                                {permissionlist.children && (
-                                                                    <ul id="dropdown-example" className="py-2 space-y-2">
-                                                                    {permissionlist.children.map(submenu1 => (
-                                                                        <li>
-                                                                            <div
-                                                                            className="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-[#3c4042]"
-                                                                    >
-                                                                                {/* <svg
-                                                                                    className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
-                                                                                    aria-hidden="true"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                    fill="currentColor"
-                                                                                    viewBox="0 0 18 21"
-                                                                                >
-                                                                                    <path d="M15 12a1 1 0 0 0 .962-.726l2-7A1 1 0 0 0 17 3H3.77L3.175.745A1 1 0 0 0 2.208 0H1a1 1 0 0 0 0 2h.438l.6 2.255v.019l2 7 .746 2.986A3 3 0 1 0 9 17a2.966 2.966 0 0 0-.184-1h2.368c-.118.32-.18.659-.184 1a3 3 0 1 0 3-3H6.78l-.5-2H15Z" />
-                                                                                </svg> */}
-                                                                                <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
-                                                                                    {submenu1.name}
-                                                                                </span>
-                                                                                {/* <svg
-                                                                                    className="w-3 h-3"
-                                                                                    aria-hidden="true"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                    fill="none"
-                                                                                    viewBox="0 0 10 6"
-                                                                                >
-                                                                                    <path
-                                                                                    stroke="currentColor"
-                                                                                    strokeLinecap="round"
-                                                                                    strokeLinejoin="round"
-                                                                                    strokeWidth={2}
-                                                                                    d="m1 1 4 4 4-4"
-                                                                                    />
-                                                                                </svg> */}
-                                                                                <label className="inline-flex items-center cursor-pointer">
-                                                                                    <input type="checkbox" className="sr-only peer" checked={Role.permissions.some(permission => permission.name === submenu1.name)} onChange={() => togglePermissionForRole(Role.id, submenu1.name)}/>
-                                                                                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
-                                                                                    {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                                                        Toggle me
-                                                                                    </span> */}
-                                                                                </label>
-                                                                            </div>
-                                                                            {submenu1.children && (
-                                                                                <div class="grid grid-cols-4 gap-4 pl-16">
-                                                                                    {submenu1.children.map(subsubmenu => (
-                                                                                            <div
-                                                                                            className="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-[#3c4042]"
-                                                                                            >
-                                                                                                <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
-                                                                                                    {subsubmenu.name}
-                                                                                                </span>                                                          
-                                                                                                {/* <svg
-                                                                                                    className="w-3 h-3"
-                                                                                                    aria-hidden="true"
-                                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                                    fill="none"
-                                                                                                    viewBox="0 0 10 6"
-                                                                                                >
-                                                                                                    <path
-                                                                                                    stroke="currentColor"
-                                                                                                    strokeLinecap="round"
-                                                                                                    strokeLinejoin="round"
-                                                                                                    strokeWidth={2}
-                                                                                                    d="m1 1 4 4 4-4"
-                                                                                                    />
-                                                                                                </svg> */}
-                                                                                                <label className="inline-flex items-center cursor-pointer">
-                                                                                                    <input type="checkbox" className="sr-only peer" checked={Role.permissions.some(permission => permission.name === subsubmenu.name)} onChange={() => togglePermissionForRole(Role.id, subsubmenu.name)}/>
-                                                                                                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
-                                                                                                    {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                                                                        Toggle me
-                                                                                                    </span> */}
-                                                                                                </label>
-                                                                                            </div>
-                                                                                    ))}
+                                                                        <svg
+                                                                            className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                                                            aria-hidden="true"
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="currentColor"
+                                                                            viewBox="0 0 18 21"
+                                                                        >
+                                                                            <path d="M15 12a1 1 0 0 0 .962-.726l2-7A1 1 0 0 0 17 3H3.77L3.175.745A1 1 0 0 0 2.208 0H1a1 1 0 0 0 0 2h.438l.6 2.255v.019l2 7 .746 2.986A3 3 0 1 0 9 17a2.966 2.966 0 0 0-.184-1h2.368c-.118.32-.18.659-.184 1a3 3 0 1 0 3-3H6.78l-.5-2H15Z" />
+                                                                        </svg>
+                                                                        <span className="flex-1 ms-3 text-left rtl:text-right whitespace-normal">
+                                                                            {permissionlist.name}
+                                                                        </span>
+                                                                        {/* <svg
+                                                                            className="w-3 h-3"
+                                                                            aria-hidden="true"
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="none"
+                                                                            viewBox="0 0 10 6"
+                                                                        >
+                                                                            <path
+                                                                            stroke="currentColor"
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            strokeWidth={2}
+                                                                            d="m1 1 4 4 4-4"
+                                                                            />
+                                                                        </svg> */}
+                                                                        <label className="inline-flex items-center cursor-pointer">
+                                                                            <input type="checkbox" className="sr-only peer" checked={rolehaspermissionarray.includes(permissionlist.name)} onChange={() => handleCheckboxChange(Role.id, permissionlist.name)}/>
+                                                                            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+                                                                            {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                                                Toggle me
+                                                                            </span> */}
+                                                                        </label>
+                                                                    </div>
+                                                                    {permissionlist.children && (
+                                                                        <ul id="dropdown-example" className="py-2 space-y-2">
+                                                                        {permissionlist.children.map(submenu1 => (
+                                                                            <li>
+                                                                                <div
+                                                                                className="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-[#3c4042]"
+                                                                        >
+                                                                                    {/* <svg
+                                                                                        className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                                                                        aria-hidden="true"
+                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                        fill="currentColor"
+                                                                                        viewBox="0 0 18 21"
+                                                                                    >
+                                                                                        <path d="M15 12a1 1 0 0 0 .962-.726l2-7A1 1 0 0 0 17 3H3.77L3.175.745A1 1 0 0 0 2.208 0H1a1 1 0 0 0 0 2h.438l.6 2.255v.019l2 7 .746 2.986A3 3 0 1 0 9 17a2.966 2.966 0 0 0-.184-1h2.368c-.118.32-.18.659-.184 1a3 3 0 1 0 3-3H6.78l-.5-2H15Z" />
+                                                                                    </svg> */}
+                                                                                    <span className="flex-1 ms-3 text-left rtl:text-right whitespace-normal">
+                                                                                        {submenu1.name}
+                                                                                    </span>
+                                                                                    {/* <svg
+                                                                                        className="w-3 h-3"
+                                                                                        aria-hidden="true"
+                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                        fill="none"
+                                                                                        viewBox="0 0 10 6"
+                                                                                    >
+                                                                                        <path
+                                                                                        stroke="currentColor"
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth={2}
+                                                                                        d="m1 1 4 4 4-4"
+                                                                                        />
+                                                                                    </svg> */}
+                                                                                    <label className="inline-flex items-center cursor-pointer">
+                                                                                        <input type="checkbox" className="sr-only peer" checked={rolehaspermissionarray.includes(submenu1.name)} onChange={() => handleCheckboxChange(Role.id, submenu1.name)}/>
+                                                                                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+                                                                                        {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                                                            Toggle me
+                                                                                        </span> */}
+                                                                                    </label>
                                                                                 </div>
-                                                                            )}
-                                                                        </li>
-                                                                    ))}
-                                                                    </ul>
-                                                                )}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            </form>
-                                        </div>
-                                </div>
-                            )}
-
-                            {/* edite role */}
-                            {thisuserpermissionArray.includes('update role') && (
-                                <a
-                                    onClick={() => handleToggleEditeRoleModel(Role.id)}
-                                >
-                                    <FaPenToSquare className='text-[#DBAE58] text-2xl'/>
-                                </a>
-                            )}
-                            {/* Edite Modal */}
-                            {expandedEditeRoleModel === Role.id && (
-                                <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
-                                        <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                        <div className="bg-white w-1/2 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                            {/* Modal header */}
-                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                    Update {Role.name} Role
-                                                </h3>
-                                                <button
-                                                    type="button"
-                                                    onClick={closeEditeRoleModel}
-                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                    data-modal-toggle="crud-modal"
-                                                    >
-                                                <svg
-                                                        className="w-3 h-3"
-                                                        aria-hidden="true"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 14 14"
-                                                    >
-                                                        <path
-                                                        stroke="currentColor"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                        />
-                                                    </svg>
-                                                    <span className="sr-only">Close modal</span>
-                                                </button>
+                                                                                {submenu1.children && (
+                                                                                    <div class="grid grid-cols-4 gap-4 pl-16">
+                                                                                        {submenu1.children.map(subsubmenu => (
+                                                                                                <div
+                                                                                                className="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-[#3c4042]"
+                                                                                                >
+                                                                                                    <span className="flex-1 ms-3 mr-8 text-left rtl:text-right whitespace-normal">
+                                                                                                        {subsubmenu.name}
+                                                                                                    </span>                                                          
+                                                                                                    {/* <svg
+                                                                                                        className="w-3 h-3"
+                                                                                                        aria-hidden="true"
+                                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                                        fill="none"
+                                                                                                        viewBox="0 0 10 6"
+                                                                                                    >
+                                                                                                        <path
+                                                                                                        stroke="currentColor"
+                                                                                                        strokeLinecap="round"
+                                                                                                        strokeLinejoin="round"
+                                                                                                        strokeWidth={2}
+                                                                                                        d="m1 1 4 4 4-4"
+                                                                                                        />
+                                                                                                    </svg> */}
+                                                                                                    <label className="inline-flex items-center cursor-pointer">
+                                                                                                        <input type="checkbox" className="sr-only peer" checked={rolehaspermissionarray.includes(subsubmenu.name)} onChange={() => handleCheckboxChange(Role.id, subsubmenu.name)}/>
+                                                                                                        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+                                                                                                        {/* <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                                                                            Toggle me
+                                                                                                        </span> */}
+                                                                                                    </label>
+                                                                                                </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                )}
+                                                                            </li>
+                                                                        ))}
+                                                                        </ul>
+                                                                    )}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                </form>
                                             </div>
-                                            {/* Modal body */}
-                                            <form className="p-4 md:p-5" onSubmit={submitEditeForm}>
-                                                <div className="grid gap-4 mb-4 grid-cols-2">  
-                                                    <div className="col-span-2">
-                                                        <input
-                                                        type="hidden"
-                                                        name="editid"
-                                                        id="editid"
-                                                        value={Role.id}
-                                                        />
-                                                        <label
-                                                        htmlFor="name"
-                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                        >
-                                                        Role Name
-                                                        </label>
-                                                        <input
-                                                        onChange={e => setEditeName(e.target.value)}
-                                                        type="text"
-                                                        name="name"
-                                                        id="name"
-                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                        placeholder="Type permission name"
-                                                        required=""
-                                                        />
-                                                    </div>
-                                                    <div className="col-span-2">
-                                                        <label
-                                                        htmlFor="name"
-                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                        >
-                                                        Role Description
-                                                        </label>
-                                                        <textarea id="role_description" rows="4" 
-                                                        onChange={e => setEditerole_description(e.target.value)}
-                                                        name="role_description"
-                                                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Write your thoughts here...">{Role.description}</textarea>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    type="submit"
-                                                    className="text-white inline-flex items-center bg-[#DBAE58] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#DBAE58] dark:hover:bg-[#DBAE58] dark:focus:ring-blue-800"
-                                                    >
-                                                    Update {Role.name} Role
-                                                </button>
-                                            </form>
-                                        </div>
-                                </div>
-                            )}
+                                    </div>
+                                )}
 
-                            {/* delete role */}
-                            {thisuserpermissionArray.includes('delete role') && (
-                                <a
-                                    onClick={() => handleToggleDeleteRoleModel(Role.id)}
-                                >
-                                    <MdDelete className='text-[#D32D41] text-2xl'/>
-                                </a>
-                            )}
-                            {/* Delete Modal */}
-                            {expandedDeleteRoleModel === Role.id && (
-                                <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
-                                        <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-                                        <div className="bg-white w-1/2 p-6 rounded-lg z-50 dark:bg-[#1e1e1e]">
-                                            {/* Modal header */}
-                                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                    If you want Delete {Role.name}, please enter "{Role.name}" on below feild
-                                                </h3>
-                                                <button
-                                                    type="button"
-                                                    onClick={closeDeleteRoleModel}
-                                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                                    data-modal-toggle="crud-modal"
-                                                    >
-                                                <svg
-                                                        className="w-3 h-3"
-                                                        aria-hidden="true"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 14 14"
-                                                    >
-                                                        <path
-                                                        stroke="currentColor"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                                        />
-                                                    </svg>
-                                                    <span className="sr-only">Close modal</span>
-                                                </button>
-                                            </div>
-                                            {/* Modal body */}
-                                            <form className="p-4 md:p-5" onSubmit={submitDeleteForm}>
-                                                <div className="grid gap-4 mb-4 grid-cols-2">
-                                                    {formerror && <p className="text-sm text-gray-500 dark:text-gray-400">{formerror}</p>}  
-                                                    <div className="col-span-2">
-                                                        <input
-                                                        type="hidden"
-                                                        name="id"
-                                                        id="id"
-                                                        value={Role.id}
-                                                        />
-                                                        <input
-                                                        type="hidden"
-                                                        name="deleterowname"
-                                                        id="deleterowname"
-                                                        value={Role.name}
-                                                        />
-                                                        <input
-                                                        onChange={e => setDeleteName(e.target.value)}
-                                                        type="text"
-                                                        name="name"
-                                                        id="name"
-                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                        required=""
-                                                        />
-                                                    </div>
+                                {/* edite role */}
+                                {thisuserpermissionArray.includes('update role') && (
+                                    <a
+                                        onClick={() => handleToggleEditeRoleModel(Role.id, Role.name)}
+                                    >
+                                        <FaPenToSquare className='text-[#DBAE58] text-2xl'/>
+                                    </a>
+                                )}
+                                {/* Edite Modal */}
+                                {expandedEditeRoleModel === Role.id && (
+                                    <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
+                                            <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
+                                            <div className="bg-white w-1/2 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                                    <button
+                                                        type="button"
+                                                        onClick={closeEditeRoleModel}
+                                                        className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
+                                                        data-modal-toggle="crud-modal"
+                                                        >
+                                                        <IoClose className='text-2xl hover:text-white'/>
+                                                        <span className="sr-only">Close modal</span>
+                                                    </button>
                                                 </div>
-                                                <button
-                                                    type="submit"
-                                                    className="text-white inline-flex items-center bg-[#D32D41] hover:bg-[#D32D41] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#D32D41] dark:hover:bg-[#D32D41] dark:focus:ring-blue-800"
-                                                    >
-                                                    Delete {Role.name} Role
-                                                </button>
-                                            </form>
-                                        </div>
-                                </div>
-                            )}
+                                                {/* Modal header */}
+                                                <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                        Update {Role.name} Role
+                                                    </h3>
+                                                </div>
+                                                {/* Modal body */}
+                                                <form className='px-2 pt-2' onSubmit={submitEditeForm}>
+                                                                    {roleediteerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{roleediteerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
+                                                    <div className="grid gap-4 mb-4 grid-cols-2">  
+                                                        <div className="col-span-2">
+                                                            <input
+                                                            type="hidden"
+                                                            name="editid"
+                                                            id="editid"
+                                                            value={Role.id}
+                                                            />
+                                                            <label
+                                                            htmlFor="name"
+                                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                            >
+                                                            Role Name
+                                                            </label>
+                                                            <input
+                                                            onChange={(e) => setEditeRoleName(e.target.value)}
+                                                            value={editeRoleName}
+                                                            type="text"
+                                                            name="name"
+                                                            id="name"
+                                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                            placeholder="Type permission name"
+                                                            required=""
+                                                            />
+                                                        </div>
+                                                        <div className="col-span-2">
+                                                            <label
+                                                            htmlFor="name"
+                                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                            >
+                                                            Role Description
+                                                            </label>
+                                                            <textarea id="role_description" rows="4" 
+                                                            onChange={e => setEditerole_description(e.target.value)}
+                                                            name="role_description"
+                                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Write your thoughts here...">{Role.description}</textarea>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="submit"
+                                                        className="text-white inline-flex items-center bg-[#DBAE58] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#DBAE58] dark:hover:bg-[#DBAE58] dark:focus:ring-blue-800"
+                                                        >
+                                                        Update
+                                                    </button>
+                                                </form>
+                                            </div>
+                                    </div>
+                                )}
+
+                                {/* delete role */}
+                                {thisuserpermissionArray.includes('delete role') && (
+                                    <a
+                                        onClick={() => handleToggleDeleteRoleModel(Role.id)}
+                                    >
+                                        <MdDelete className='text-[#D32D41] text-2xl'/>
+                                    </a>
+                                )}
+                                {/* Delete Modal */}
+                                {expandedDeleteRoleModel === Role.id && (
+                                    <div className="fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center" style={{ marginLeft:0 }}>
+                                            <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
+                                            <div className="bg-white w-1/2 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+                                                <div className="flex items-center justify-between rounded-t dark:border-gray-600">
+                                                    <button
+                                                        type="button"
+                                                        onClick={closeDeleteRoleModel}
+                                                        className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
+                                                        data-modal-toggle="crud-modal"
+                                                        >
+                                                        <IoClose className='text-2xl hover:text-white'/>
+                                                        <span className="sr-only">Close modal</span>
+                                                    </button>
+                                                </div>
+                                                {/* Modal header */}
+                                                <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
+                                                    <h3 className="text-lg font-semibold w-[80%] text-gray-900 dark:text-white">
+                                                        If you want Delete {Role.name}, please enter "{Role.name}" on below feild
+                                                    </h3>
+                                                </div>
+                                                {/* Modal body */}
+                                                <form className="px-2 pt-2" onSubmit={submitDeleteForm}>
+                                                                    {roledeleteerror &&
+                                                                        <div
+                                                                            className="bg-red-100 border mb-2 border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                                                            role="alert"
+                                                                        >
+                                                                            {/* <strong className="font-bold">Holy smokes!</strong> */}
+                                                                            <span className="block sm:inline">{roledeleteerror}</span>
+                                                                            <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={handleErrorClose}>
+                                                                                <IoClose className='text-2xl text-red-700'/>
+                                                                            </span>
+                                                                        </div>
+                                                                    } 
+                                                    <div className="grid gap-4 mb-4 grid-cols-2">
+                                                        <div className="col-span-2">
+                                                            <input
+                                                            type="hidden"
+                                                            name="id"
+                                                            id="id"
+                                                            value={Role.id}
+                                                            />
+                                                            <input
+                                                            type="hidden"
+                                                            name="deleterowname"
+                                                            id="deleterowname"
+                                                            value={Role.name}
+                                                            />
+                                                            <input
+                                                            onChange={e => setDeleteName(e.target.value)}
+                                                            type="text"
+                                                            name="name"
+                                                            id="name"
+                                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                            required=""
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="submit"
+                                                        className="text-white inline-flex items-center bg-[#D32D41] hover:bg-[#D32D41] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#D32D41] dark:hover:bg-[#D32D41] dark:focus:ring-blue-800"
+                                                        >
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
+                ))}
                 </div>
-            ))}
+                {/* Pagination */}
+                <div className='flex w-[-webkit-fill-available] justify-end'>
+                    <nav aria-label="Page navigation example" className="flex justify-end">
+                        <ul class="inline-flex -space-x-px text-sm">
+                            <li>
+                                <button
+                                    onClick={prevPage}
+                                    disabled={currentPage === 1}
+                                    className={`flex items-center justify-center px-3 h-8 ms-0 leading-tight rounded-s-lg border border-e-0 border-gray-300 dark:border-gray-700 ${currentPage === 1 ? 'text-gray-500 dark:text-gray-400 bg-white dark:bg-[#3c4042]' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-white'}`}
+                                >
+                                    Previous
+                                </button>
+                            </li>
+                            {[...Array(Math.ceil(filteredRoles.length / itemsPerPage))].map((_, index) => (
+                                <li>
+                                    <button
+                                        key={index}
+                                        onClick={() => paginate(index + 1)}
+                                        className={`flex items-center justify-center px-3 h-8 border border-gray-300 dark:border-gray-700 dark:text-white ${
+                                            currentPage === index + 1 ? 'bg-gray-200 text-blue-700 dark:bg-[#3c4042]' : 'bg-blue-50 text-blue-600 dark:bg-[#606368]'
+                                        }`}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                </li>
+                            ))}
+                            <li>
+                                <button
+                                    onClick={nextPage}
+                                    disabled={currentPage === Math.ceil(filteredRoles.length / itemsPerPage)}
+                                    className={`flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 rounded-e-lg dark:border-gray-700 ${currentPage === Math.ceil(filteredRoles.length / itemsPerPage) ? 'text-gray-500 bg-white border dark:bg-[#3c4042] dark:text-gray-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-white'}`}
+                                >
+                                    Next
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         }
-
-        <nav aria-label="Page navigation example" className="flex justify-end">
-            <ul class="inline-flex -space-x-px text-sm">
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Previous</a>
-                </li>
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">1</a>
-                </li>
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">2</a>
-                </li>
-                <li>
-                <a href="#" aria-current="page" class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-[#606368] hover:text-blue-700 dark:border-gray-700 dark:bg-[#606368] dark:hover:bg-[#3c4042] dark:text-white">3</a>
-                </li>
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">4</a>
-                </li>
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">5</a>
-                </li>
-                <li>
-                <a href="#" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-[#3c4042] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Next</a>
-                </li>
-            </ul>
-        </nav>
         </div>
     );
 }
