@@ -30,6 +30,7 @@ function WidgetComponent() {
     }
 
     if (drawerItemList && drawerItemList.items.length > 0) {
+      console.log(drawerItemList);
       setWidgets(drawerItemList.items);
       setSelectedMenu(
         drawerItemList.items?.length > 0
@@ -43,14 +44,14 @@ function WidgetComponent() {
     setSelectedMenu(menuName);
   };
 
-  const handleDrawerIconClick = async (designObject, index) => {
+  const handleDrawerIconClick = async (designObject, index, content) => {
     const newItem = {
       x: designObject.x_value,
       y: designObject.y_value,
       w: designObject.width,
       h: designObject.height,
       i: index,
-      style: designObject.style,
+      style: content,
     };
     dispatch(addItem(newItem));
   };
@@ -80,7 +81,8 @@ function WidgetComponent() {
                     onClick={() =>
                       handleDrawerIconClick(
                         widgetComponent.design_obj,
-                        widgetComponent.id
+                        widgetComponent.id,
+                        widgetComponent.content
                       )
                     }
                   />
