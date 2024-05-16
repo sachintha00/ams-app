@@ -89,6 +89,13 @@ export const workflowApi = apiSlice.injectEndpoints({
         { type: "WorkflowDetails", id: workflowId },
       ],
     }),
+    designationsRetrieveFromQuerySearch: builder.mutation({
+      query: ({ query }) => ({
+        url: `workflow/retrieve-all-designation-from-search?query=${query}`,
+        method: "GET",
+        credentials: "include",
+      }),
+    }),
   }),
 });
 
@@ -102,6 +109,7 @@ export const {
   useDeleteWorkflowDetailNodeMutation,
   useGetworkflowDetailNodesQuery,
   useUpdateWorkflowOrConditionNodeMutation,
+  useDesignationsRetrieveFromQuerySearchMutation
 } = workflowApi;
 
 export default workflowApi;

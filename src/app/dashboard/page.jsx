@@ -9,7 +9,7 @@ const dashboard = ({ collapsed }) => {
   const [isOpenWidgetBar, setWidgetBar] = useState(false);
   return (
     <Protected>
-      <div className="p-4 border-gray-200 rounded-lg subcontent dark:border-gray-700">
+      <div className="p-4 border-gray-200 rounded-lg subcontent dark:border-gray-700 mt-10">
         <DragableSurface />
         <div className="fixed bottom-0 right-0 m-10 text-center">
           <button
