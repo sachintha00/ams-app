@@ -42,22 +42,32 @@ export default function Home() {
         }
     }
 
-  const [lightMode, setLightMode] = useState(true);
+    // Initialize state with value from localStorage, default to light mode
+    const [lightMode, setLightMode] = useState(() => {
+        const theme = localStorage.getItem("theme");
+        return theme === "dark" ? false : true; // Default to light mode
+    });
 
-  useEffect(() => {
-    const theme = localStorage.getItem("theme")
-    if (theme === "light") setLightMode(true)
-  }, [])
+    // Set the initial theme based on localStorage value
+    useEffect(() => {
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark") {
+        document.documentElement.classList.add('dark');
+        } else {
+        document.documentElement.classList.remove('dark');
+        }
+    }, []);
 
-  useEffect(() =>{
-    if (lightMode) {
-        document.documentElement.classList.remove('dark')
-        localStorage.setItem("theme", "light")
-    } else {
-        document.documentElement.classList.add('dark')
-        localStorage.setItem("theme", "dark")
-    }
-  }, [lightMode])
+    // Update theme and localStorage whenever lightMode changes
+    useEffect(() => {
+        if (lightMode) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem("theme", "light");
+        } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem("theme", "dark");
+        }
+    }, [lightMode]);
   return (
       <div className="min-h-screen h-screen bg-white dark:bg-[#1e1e1e]">
         <header className="absolute inset-x-0 top-0 z-50">

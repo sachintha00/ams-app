@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import HeaderListView from "../components/pageHeader/HeaderListView";
 import HeaderGridView from "../components/pageHeader/HeaderGridView";
 import WorkflowHomeGridComponent from "../components/workflow/workflowHomeGridComponent";
@@ -13,7 +13,16 @@ import WorkflowHomeListComponent from "../components/workflow/workflowHomeListCo
 
 export default function Roles() {
   const view = useSelector((state) => state.pageHeader.view);
-  const { data: workflowsData } = useGetworkflowsQuery();
+  const { data: workflowsData, isSuccess } = useGetworkflowsQuery();
+  const [workflowDataArray, setWorkflowDataArray] = useState()
+
+  useEffect(() => {
+    if (isSuccess) {
+      setWorkflowDataArray(workflowsData.data)
+    }
+  }, [workflowsData])
+
+  console.log("hello ", workflowsData?.data)
 
   const form = {
     addForm: {
@@ -37,7 +46,7 @@ export default function Roles() {
   ];
 
   return (
-    <div className="p-4 pl-8 border-gray-200 rounded-lg subcontent dark:border-gray-700 mt-10">
+    <div className="px-4 pt-2 pl-8 border-gray-200 rounded-lg subcontent dark:border-gray-700">
       <PageHeader
         HeaderIcon={
           <LuWorkflow className="mr-3 font-semibold text-gray-700 dark:text-white text-[25px]" />
@@ -57,6 +66,7 @@ export default function Roles() {
         <HeaderGridView
           component={WorkflowHomeGridComponent}
           data={workflowsData?.data}
+          searchField={'workflow_name'}
           icon={
             <LuWorkflow className="mr-3 font-semibold text-gray-700 dark:text-white text-[40px]" />
           }
