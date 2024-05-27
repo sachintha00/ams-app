@@ -4,7 +4,10 @@ import { apiSlice } from "./features/api/api_slice";
 import authReducer from "./features/auth/auth_slice";
 import dragableSurfaceReducer from "./features/dashboard/dragableSurfaceSlice";
 import drawerItemReducer from "./features/dashboard/drawerItemSlice";
-
+import conditionsReducer from "./features/workflow/condtionsSlice";
+import updateConditionsReducer from "./features/workflow/updateConditionSlice";
+import pageHeaderReducer from "./features/pageHeader/pageHeaderSlice";
+import popupModelReducer from "./features/popupModel/popupModelSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,12 +15,15 @@ export const store = configureStore({
     auth: authReducer,
     dragableSurface: dragableSurfaceReducer,
     dashboardItem: drawerItemReducer,
+    conditions: conditionsReducer,
+    pageHeader: pageHeaderReducer,
+    popupModel: popupModelReducer,
+    updateConditions: updateConditionsReducer,
   },
   devTools: false,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),
 });
-
 
 // const initializeApp = async () => {
 //   await store.dispatch(

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@craftjs/core": "^0.2.5",
     "@reduxjs/toolkit": "^2.2.2",
     "formik": "^2.4.5",
     "next": "14.1.0",
