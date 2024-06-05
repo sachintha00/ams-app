@@ -4,7 +4,7 @@ function WidgetMenuItem({ menuName, onClick }) {
   return (
     <p
       onClick={onClick}
-      className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-[#3c4042] group"
+      className="w-full p-2 rounded-sm cursor-pointer hover:bg-slate-200"
     >
       {menuName}
     </p>
