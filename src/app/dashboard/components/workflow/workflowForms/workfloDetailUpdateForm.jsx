@@ -30,6 +30,7 @@ function WorkfloDetailUpdateForm() {
   const [selected, setSetSelected] = useState({
     behaviourType: "",
     condition: false,
+    isConditionResult: false,
     type: "",
     users: [],
   });
@@ -48,8 +49,15 @@ function WorkfloDetailUpdateForm() {
         workflowDetailData = workflowDetailData[0];
       }
 
-      const { behaviourType, condition, type, users } = workflowDetailData;
-      setSetSelected({ behaviourType, condition, type, users: users || [] });
+      const { behaviourType, condition, isConditionResult, type, users } =
+        workflowDetailData;
+      setSetSelected({
+        behaviourType,
+        condition,
+        isConditionResult,
+        type,
+        users: users || [],
+      });
       setIsWorkflowBehaviourTypeAdded(true);
     }
   }, [isSuccess, userData, isSuccessWorkflowDetailNode, workflowDetailNode]);
@@ -88,6 +96,7 @@ function WorkfloDetailUpdateForm() {
               condition: selected.condition,
               type: selected.type,
               users: selected.users,
+              isConditionResult: selected.isConditionResult,
             },
           ],
           workflow_detailI_id: workflowDetail.id,

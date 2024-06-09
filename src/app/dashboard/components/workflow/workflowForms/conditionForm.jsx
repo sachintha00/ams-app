@@ -32,12 +32,14 @@ export default function ConditionForm({ node, workflowId }) {
   const [trueSelected, setTrueSetSelected] = useState({
     behaviourType: "",
     condition: true,
+    isConditionResult: true,
     type: "",
     users: [],
   });
   const [falseSelected, setFalseSetSelected] = useState({
     behaviourType: "",
     condition: false,
+    isConditionResult: true,
     type: "",
     users: [],
   });
@@ -111,7 +113,6 @@ export default function ConditionForm({ node, workflowId }) {
           await addWorkflowOrConditionNode(obj);
         }
         refetch();
-
       }}
     >
       {({ values, setFieldValue }) => (
