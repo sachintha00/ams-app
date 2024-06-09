@@ -1,5 +1,6 @@
 const isValidSimpleCondition = (condition) => {
-  const simpleConditionPattern = /^\s*\d+\s*(==|!=|<|>|<=|>=)\s*\d+\s*$/;
+  const simpleConditionPattern =
+    /^\s*('?\w+'?|\d+)\s*(==|!=|<|>|<=|>=)\s*('?\w+'?|\d+)\s*$/;
   return simpleConditionPattern.test(condition);
 };
 
