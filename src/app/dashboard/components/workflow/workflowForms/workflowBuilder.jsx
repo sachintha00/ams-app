@@ -22,6 +22,7 @@ function WorkflowBuilder({ node, workflowId }) {
   const [selected, setSetSelected] = useState({
     behaviourType: "",
     condition: false,
+    isConditionResult: false,
     type: "",
     users: [],
   });
@@ -70,9 +71,10 @@ function WorkflowBuilder({ node, workflowId }) {
             workflow_detail_data_object: [
               {
                 behaviourType: selectBehaviourType,
-                condition: true,
+                condition: false,
                 type: selected.type,
                 users: selected.users,
+                isConditionResult: false,
               },
             ],
           });
@@ -97,6 +99,7 @@ function WorkflowBuilder({ node, workflowId }) {
                 condition: false,
                 type: selected.type,
                 users: selected.users,
+                isConditionResult: false,
               },
             ],
           });
