@@ -115,6 +115,8 @@ export default function Roles() {
   const [filteredRoles, setFilteredRoles] = useState([]);
   const [searchRoleInput, setSearchRoleInput] = useState("");
 
+  const [wijart, setWijart] = useState([]);
+
   const handleSearchRoleInputChange = (event) => {
     setSearchRoleInput(event.target.value);
   };
@@ -158,6 +160,9 @@ export default function Roles() {
     if (!isLoading && !isError && RoleList) {
       const roleitem = Object.values(RoleList.Role);
 
+      const Wijart = Object.values(RoleList.wijart);
+      setWijart(Wijart);
+
       // Sort users alphabetically by user_name
       const sortedRoles = roleitem.sort((a, b) => a.name.localeCompare(b.name));
       const filteredroles = sortedRoles.filter((role) =>
@@ -177,6 +182,21 @@ export default function Roles() {
       return () => clearTimeout(timer);
     }
   }, [isLoading, isError, RoleList, searchRoleInput, refetch]);
+
+  const createComponent = (componentCode) => {
+    console.log(componentCode);
+    try {
+      // Use a scoped function to evaluate the component code
+      const Component = new Function('React', `
+        ${componentCode}
+        return HelloWorld || Greeting || Counter;
+      `)(React);
+      return Component;
+    } catch (error) {
+      console.error('Error creating component:', error);
+      return null;
+    }
+  };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -390,7 +410,7 @@ export default function Roles() {
   };
 
   return (
-    <div className="p-4 pl-8 border-gray-200 rounded-lg subcontent dark:border-gray-700">
+    <div className="p-4 pl-8 border-gray-200 rounded-lg subcontent dark:border-gray-700 mt-10">
       {/* notification Toast*/}
       {formemessage && (
         <div className="flex justify-end w-[100%] fixed">
@@ -1898,6 +1918,47 @@ export default function Roles() {
           </div>
         </div>
       )}
+
+    <div>
+      <div>test</div>
+      {wijart.map(wijart => {
+        const Component = createComponent(wijart.componant);
+        return (
+          <div key={wijart.id}>
+            <h2>{wijart.name}</h2>
+            {Component ? <Component name="User" users={filteredRoles} /> : <p>Error rendering component</p>}
+          </div>
+        );
+      })}
+    </div>
+
+    <div>
+                            <div class="w-[442px] max-w-md bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700 p-4">
+                                {/* Header Section */}
+                                <div class="flex items-center justify-between mb-4">
+                                <h5 class="text-xl font-bold leading-none text-gray-900 dark:text-white">To Do List</h5>
+                                {/* <a href="dashboard/users_requisitions_list" class="text-sm font-medium text-blue-600 hover:underline dark:text-blue-500">View all</a> */}
+                                </div>
+                                
+                                {/* List Container */}
+                                <div class="flow-root">
+                                <div id="user-list">
+                                {/* List Item 1 */}
+                                  <div class="w-full p-4 mb-5 bg-white border border-gray-200 rounded-lg shadow dark:bg-[#3c4042] dark:border-gray-600">
+                                    <div class="flex justify-between items-center">
+                                      <div class="flex flex-col min-w-0">
+                                        <h5 class="text-sm font-bold leading-none text-gray-900 dark:text-white mb-1">You have new assest request</h5>
+                                        <p class="text-sm text-gray-500 truncate dark:text-gray-400">ishan, sachintha and more request to you</p>
+                                      </div>
+                                      <div class="flex min-w-0">
+                                        <div class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">5</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                </div>
+                            </div>
+    </div>
     </div>
   );
 }

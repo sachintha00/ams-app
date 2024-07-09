@@ -62,8 +62,8 @@ export default function Home() {
       <div className="min-h-screen h-screen bg-white dark:bg-[#1e1e1e]">
         <header className="absolute inset-x-0 top-0 z-50">
           <nav className="flex items-center justify-end p-6 lg:px-8" aria-label="Global">
-                <div className='relative w-16 h-8 flex items-center bg-slate-300 dark:bg-[#121212] bg-teal-500bg-teal-500 cursor-pointer rounded-full p-1 mr-10' onClick={() => setLightMode(!lightMode)}>
-                    <BsSunFill className="text-yellow" size={18} />
+                <div className='relative w-[53px] h-[30px] flex items-center bg-slate-300 dark:bg-[#121212] bg-teal-500bg-teal-500 cursor-pointer rounded-full p-1 mr-10' onClick={() => setLightMode(!lightMode)}>
+                    <BsSunFill className="text-yellow-400" size={18} />
                     <div className='absolute bg-white dark:bg-[#3c4042] w-6 h-6 rounded-full shadow-md transform transition-transform duration-300' style={ lightMode ? { left: "2px" } : { right:"2px"}}>
                     </div>
                     <FaMoon className="ml-auto text-yellow-400" size={18}/>
@@ -99,8 +99,8 @@ export default function Home() {
                   </div>
 
                   <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                      <form class="max-w-sm mx-auto" onSubmit={submitForm}>
-                        <div class="mb-5">
+                      <form className="max-w-sm mx-auto" onSubmit={submitForm}>
+                        <div className="mb-5">
                           <label
                             htmlFor="email"
                             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -121,7 +121,7 @@ export default function Home() {
                             />
                           </div>
                         </div>
-                        <div class="mb-5">
+                        <div className="mb-5">
                           <label
                             htmlFor="password"
                             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -142,13 +142,13 @@ export default function Home() {
                             />
                           </div>
                         </div>
-                        <div class="flex items-start mb-5">
-                          <div class="flex items-center h-5">
-                            <input id="remember" type="checkbox" value="" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"/>
+                        <div className="flex items-start mb-5">
+                          <div className="flex items-center h-5">
+                            <input id="remember" type="checkbox" value="" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"/>
                           </div>
-                          <label for="remember" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Remember me</label>
+                          <label for="remember" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Remember me</label>
                         </div>
-                        <button type="submit" class="w-full text-white bg-[#213389] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center dark:bg-[#213389] dark:focus:ring-blue-800">Sign in</button>
+                        <button type="submit" className="w-full text-white bg-[#213389] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center dark:bg-[#213389] dark:focus:ring-blue-800">Sign in</button>
                       </form>
                   </div>
               </div>
