@@ -16,6 +16,15 @@
   }
 }
 
+/* For WebKit browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the scrollbar thumb */
+}
+
 body {
   color: rgb(var(--foreground-rgb));
 }
@@ -41,10 +50,6 @@ img, svg, video, canvas, audio, iframe, embed, object{
 
 .sidebarmain{
   transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.subcontent{
-  margin-top: 65px;
 }
 
 .responsivesidebar{
@@ -158,3 +163,36 @@ img, svg, video, canvas, audio, iframe, embed, object{
 [data-collapse="true"] .rolelist{
   display: block;
 }
+
+.arrow-right::after {
+  content: '➔';
+  margin-left: 0.5rem;
+  color: gray;
+}
+
+/* Dashboard.css */
+
+.row-enter {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.row-enter-active {
+  max-height: 100px; /* Adjust based on your content */
+  opacity: 1;
+}
+
+.row-exit {
+  max-height: 100px; /* Adjust based on your content */
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in, opacity 0.3s ease-in;
+}
+
+.row-exit-active {
+  max-height: 0;
+  opacity: 0;
+}
+

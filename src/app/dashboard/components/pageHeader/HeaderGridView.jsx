@@ -1,12 +1,12 @@
 import React from "react";
 import { useSelector } from "react-redux";
 
-function HeaderGridView({ component: Component, data = [], ...rest }) {
+function HeaderGridView({ component: Component, data = [], searchField, ...rest }) {
   const searchQuery =
     useSelector((state) => state.pageHeader.searchQuery) || "";
 
   const filteredData = data?.filter((item) =>
-    item.workflow_name.toLowerCase().includes(searchQuery.toLowerCase())
+    item['workflow_name'].toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

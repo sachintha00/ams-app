@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }) {
 
         <div className="maincontent bg-gray-50 dark:bg-[#121212]">
           {/* sidebar */}
-          <Sidebar collapsed={sidebarCollapsed} />
+          <Sidebar onToggleSidebar={toggleSidebar}  collapsed= {sidebarCollapsed}/>
 
           <main className="bg-gray-50 dark:bg-[#121212]">
             <div

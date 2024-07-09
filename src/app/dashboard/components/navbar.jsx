@@ -101,7 +101,7 @@ const Navbar = ({ onToggleSidebar }) => {
     }
 
     return (
-        <nav className="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-[#1e1e1e]">
+        <nav className="bg-white border-gray-200 px-4 lg:px-6 dark:bg-[#1e1e1e]">
             <div className="flex flex-wrap justify-between items-center">
             <div className="flex justify-start items-center">
                 <Link href="/dashboard" className="flex mr-4">
@@ -114,30 +114,6 @@ const Navbar = ({ onToggleSidebar }) => {
                     Optimax
                 </span> */}
                 </Link>
-                <button
-                id="toggleSidebar"
-                aria-expanded="true"
-                aria-controls="sidebar"
-                onClick={onToggleSidebar}
-                className="hidden p-2 mr-3 text-gray-600 rounded cursor-pointer lg:inline hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700"
-                >
-                <svg
-                    className="w-5 h-5"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 16 12"
-                >
-                    {" "}
-                    <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M1 1h14M1 6h14M1 11h7"
-                    />{" "}
-                </svg>
-                </button>
                 <button
                 aria-expanded="true"
                 aria-controls="sidebar"
@@ -197,11 +173,11 @@ const Navbar = ({ onToggleSidebar }) => {
                 </form>
             </div>
             <div className="flex items-center lg:order-2 w-96 justify-end">
-                <div className='relative w-16 h-8 flex items-center bg-slate-300 dark:bg-[#121212] bg-teal-500bg-teal-500 cursor-pointer rounded-full p-1 mr-10' onClick={() => setLightMode(!lightMode)}>
-                    <BsSunFill className="text-yellow" size={18} />
-                    <div className='absolute bg-white dark:bg-[#3c4042] w-6 h-6 rounded-full shadow-md transform transition-transform duration-300' style={ lightMode ? { left: "2px" } : { right:"2px"}}>
+                <div className='relative w-[48px] h-[25px] flex items-center bg-slate-300 dark:bg-[#121212] bg-teal-500bg-teal-500 cursor-pointer rounded-full p-1 mr-10' onClick={() => setLightMode(!lightMode)}>
+                    <BsSunFill className="text-yellow-400" size={16} />
+                    <div className='absolute bg-white dark:bg-[#3c4042] w-5 h-5 rounded-full shadow-md transform transition-transform duration-300' style={ lightMode ? { left: "2px" } : { right:"2px"}}>
                     </div>
-                    <FaMoon className="ml-auto text-yellow-400" size={18}/>
+                    <FaMoon className="ml-auto text-yellow-400" size={16}/>
                 </div>
                 {/* <button
                 type="button"

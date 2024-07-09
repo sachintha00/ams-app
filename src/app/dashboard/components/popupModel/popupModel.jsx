@@ -3,7 +3,7 @@ import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { handleClosePopupModel } from "@/app/_lib/redux/features/popupModel/popupModelSlice";
 
-function PopupModel({ popupModelTitle, Form }) {
+function PopupModel({ popupModelTitle, Form, modelPageSize = "w-1/2", showModelTitle = true }) {
   const { formStatus } = useSelector((state) => state.popupModel);
   const dispatch = useDispatch();
 
@@ -18,7 +18,7 @@ function PopupModel({ popupModelTitle, Form }) {
         style={{ marginLeft: 0 }}
       >
         <div className="absolute w-full h-full bg-gray-900 dark:bg-[#121212] opacity-50"></div>
-        <div className="bg-white w-1/2 p-4 rounded-lg z-50 dark:bg-[#1e1e1e]">
+        <div className={`${modelPageSize} bg-white p-4 rounded-lg z-50 dark:bg-[#1e1e1e]`}>
           <div className="flex items-center justify-between rounded-t dark:border-gray-600">
             <button
               type="button"
@@ -30,11 +30,14 @@ function PopupModel({ popupModelTitle, Form }) {
               <span className="sr-only">Close modal</span>
             </button>
           </div>
+          {/* model title */}
+          {showModelTitle && 
           <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               {popupModelTitle}
             </h3>
           </div>
+          }
 
           {Form}
         </div>

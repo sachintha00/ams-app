@@ -131,7 +131,7 @@ export default function Organization({ params }) {
                 />
               )}
               <PopupModel popupModelTitle="" Form={<div>form</div>} />
-              {workflowPopupFormType === FORM_TYPE.UPDATE &&
+              {workflowPopupFormType === FORM_TYPE.UPDATE && 
               workflowPopupFormValue === "WORKFLOW_NODE" ? (
                 <PopupModel
                   popupModelTitle="Workflow Update"

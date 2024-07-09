@@ -1,9 +1,9 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { MdManageAccounts } from "react-icons/md";
-import { MdSpaceDashboard } from "react-icons/md";
+import { MdManageAccounts, MdSpaceDashboard, MdOutlineChevronRight, MdOutlineChevronLeft } from "react-icons/md";
 import { GrDocumentConfig } from "react-icons/gr";
+import { VscServerProcess } from "react-icons/vsc";
 import { useSidebarListQuery } from '@/app/_lib/redux/features/sidebar/sidebar_api';
 
 const Sidebar = ({ collapsed, onToggleSidebar }) => {
@@ -38,6 +38,7 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
       const iconMapping = {
         MdManageAccounts: <MdManageAccounts />,
         GrDocumentConfig: <GrDocumentConfig />,
+        VscServerProcess: <VscServerProcess />,
         // Add more icons here as needed
       };
 
@@ -59,15 +60,8 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
       id: child.id,
       permission_id: child.permission_id,
       parentNode: parentId,
-      RightsCode: child.RightsCode,
-      MenuTxtCode: child.MenuTxtCode,
-      MenuName: child.MenuName,
-      Description: child.Description,
-      path: child.path,
-      MenuLink: child.MenuLink,
-      MenuOrder: child.MenuOrder,
-      Enabled: child.Enabled,
-      MenuPath: child.MenuPath,
+      menuname: child.menuname,
+      menulink: child.menulink,
       icon: child.icon,
       children: buildTree(data, child.id),
     }));
@@ -80,15 +74,8 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
       id: root.id,
       permission_id: root.permission_id,
       parentNode: null,
-      RightsCode: root.RightsCode,
-      MenuTxtCode: root.MenuTxtCode,
-      MenuName: root.MenuName,
-      Description: root.Description,
-      path: root.path,
-      MenuLink: root.MenuLink,
-      MenuOrder: root.MenuOrder,
-      Enabled: root.Enabled,
-      MenuPath: root.MenuPath,
+      menuname: root.menuname,
+      menulink: root.menulink,
       icon: iconMapping[root.icon] || null, // Use iconMapping to select the icon component
       children: buildTree(organizationData, root.id),
     }));
@@ -102,86 +89,151 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
     }
   }, [isLoading, isError, SidebarList, refetch]);
 
+  const [activeMenuItem, setActiveMenuItem] = useState(null);
+
+  const handleMenuItemClick = (menuItem) => {
+    if (activeMenuItem === menuItem) {
+      setActiveMenuItem(null); // Hide children if clicked on active menu item again
+    } else {
+      setActiveMenuItem(menuItem);
+    }
+  };
+
     return (
-      <aside 
-        id="separator-sidebar"
-        className={`sidebar ${collapsed ? 'collapsed' : ''} fixed top-0 left-0 z-40 w-[60px] h-screen transition-transform -translate-x-full sm:translate-x-0 sidebarmain mt-[77px] border-r border-[#D7DAD3] dark:border-[#3c4042]`}
-        aria-label="Sidebar"
-      >
-        <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-[#121212]">
-          <ul className="space-y-2 font-medium">
-              <div>
-                <li className="navlink">
-                  <Link
-                    href='/dashboard'
-                    onMouseEnter={() => setHoveredItem('Dashboard')}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-[#3c4042] group"                >
+        <aside
+          id="sidebar-multi-level-sidebar"
+          className={`sidebar ${collapsed ? 'collapsed' : ''} fixed top-0 left-0 z-40 w-[60px] h-screen transition-transform -translate-x-full sm:translate-x-0 sidebarmain mt-[77px] border-r border-[#D7DAD3] dark:border-[#3c4042]`}
+          aria-label="Sidebar"
+        >
+          <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-[#121212]">
+            <button
+              className={`rounded-full bg-white opacity-100 text-white p-1 absolute top-4px right-[-12px] transition-colors duration-300 hover:bg-gray-300 hover:text-white flex items-center justify-center`}
+              onClick={onToggleSidebar}
+              style={{ width: '24px', height: '24px', border: '1px solid #D7DAD3' }}
+            >
+              {collapsed ? <MdOutlineChevronLeft /> : <MdOutlineChevronRight />}
+            </button>
+            <ul className="space-y-2 font-medium">
+              <li>
+                <Link
+                  href='/dashboard'
+                  onMouseEnter={() => setHoveredItem('Dashboard')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-[#3c4042] group opacity-90"
+                >
                     <span className='navitemicon'>
                       <MdSpaceDashboard className='w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'/>
                     </span>
-                    <span className={`${collapsed ? 'block' : 'hidden'} ms-3`}>Dashboard</span>
-                    <span className={`${collapsed ? 'hidden' : ''} ${hoveredItem === 'Dashboard' ? 'block' : 'hidden'} flex absolute ml-7 p-2.5 bg-[#fff] text-gray-900 rounded-lg dark:text-white bg-gray-50 dark:bg-[#3c4042]`}>Dashboard</span>
-                  </Link>
-                </li>
-              </div>
-            {menuItems.map(sidebaritem => (
-              <div key={sidebaritem.id}>
-                <li className="navlink" onClick={() => handleMenuClick(sidebaritem.id)}>
-                  {/* <span className={`${collapsed ? '' : 'hoverspan'} ${hoveredItem === sidebaritem.MenuName ? 'block' : 'hidden'} hidden flex absolute ml-5 w-24 bg-[#fff] text-gray-900 rounded-lg dark:text-white bg-gray-50 dark:bg-[#121212]`}>{sidebaritem.MenuName}</span> */}
+                    <span className={`${collapsed ? 'block' : 'hidden'} ms-3 text-sm font-light`}>Dashboard</span>
+                    <span className={`${collapsed ? 'hidden' : ''} ${hoveredItem === 'Dashboard' ? 'block' : 'hidden'} shadow flex absolute ml-6 p-2.5 text-gray-900 rounded-lg dark:text-white bg-gray-50 dark:bg-[#3c4042] text-sm font-light w-56`}>Dashboard</span>
+                </Link>
+              </li>
+
+              {menuItems.map(sidebaritem => (
+                <li key={sidebaritem.id} onClick={() => handleMenuItemClick(sidebaritem.id)} onMouseEnter={() => setHoveredItem(sidebaritem.menuname)} onMouseLeave={() => setHoveredItem(null)} className={`${collapsed ? '' : 'flex'}`}>
                   <Link
-                    href={sidebaritem.MenuLink}
-                    onMouseEnter={() => setHoveredItem(sidebaritem.MenuName)}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-[#3c4042] group"                >
-                    <span className='navitemicon'>
-                      {React.cloneElement(sidebaritem.icon, {
-                        className: `w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white`,
-                      })}
-                    </span>
-                    <span className={`${collapsed ? 'block' : 'hidden'} ms-3`}>{sidebaritem.MenuName}</span>
-                    <span className={`${collapsed ? 'hidden' : ''} ${hoveredItem === sidebaritem.MenuName ? 'block' : 'hidden'} flex absolute ml-7 p-2.5 w-[max-content] bg-[#fff] text-gray-900 rounded-lg dark:text-white bg-gray-50 dark:bg-[#3c4042]`}
-                    >{sidebaritem.MenuName}</span>
+                    href={sidebaritem.menulink}
+                    className="flex justify-between items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-[#3c4042]"
+                    aria-controls="dropdown-example"
+                    data-collapse-toggle="dropdown-example"
+                  >
+                    <div className='flex'> 
+                      <span className='navitemicon'>
+                        {React.cloneElement(sidebaritem.icon, {
+                          className: `w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white`,
+                        })}
+                      </span>
+                      <span className={`${collapsed ? 'block' : 'hidden'} ms-3 text-sm font-light`}>{sidebaritem.menuname}</span>
+                    </div>
+                    <svg
+                      className={`
+                      ${activeMenuItem === sidebaritem.id ? 'active' : ''}
+                      ${sidebaritem.children ? 'has-children' : ''} w-3 h-3
+                      `}
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 10 6"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="m1 1 4 4 4-4"
+                      />
+                    </svg>
+                  </Link>
+                  <Link
+                    href={sidebaritem.menulink}>
+                        <span className={`${collapsed ? 'hidden' : ''} ${hoveredItem === sidebaritem.menuname ? 'block' : 'hidden'} flex shadow absolute p-2.5 text-gray-900 rounded-lg dark:text-white bg-gray-50 dark:bg-[#3c4042] justify-between items-center opacity-90 text-sm font-light w-56`}
+                          >{sidebaritem.menuname}
+                                <svg
+                                  className="w-3 h-3"
+                                  aria-hidden="true"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 10 6"
+                                >
+                                  <path
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="m1 1 4 4 4-4"
+                                  />
+                                </svg>
+                        </span>
                   </Link>
                   {sidebaritem.children && (
-                    <ul className="ml-9">
-                      {sidebaritem.children.map(submenu1 => (
-                        <div key={submenu1.id}>
-                          <li onClick={() => handleSubMenuClick(submenu1.id)}>
-                            <Link
-                              href={submenu1.MenuLink}
-                              className={`${collapsed ? '' : 'hidden'} flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group`}
-                            >
-                              <span className={`${collapsed ? '' : 'hidden'} ms-3`}>{submenu1.MenuName}</span>
-                            </Link>
-                            {submenu1.children && (
-                              <ul className="ml-16">
-                                {submenu1.children.map(subsubmenu => (
-                                  <div key={subsubmenu.id}>
-                                    <span className={`${collapsed ? '' : 'hoverspansubsub'} hidden flex absolute ml-5 w-24 bg-[#fff] text-gray-900 rounded-lg dark:text-white bg-gray-50 dark:bg-[#121212]`}>{subsubmenu.MenuName}</span>
-                                    <li className={`${collapsed ? 'subnavlink' : 'hidden'}`} onClick={() => handleSubMenuClick(subsubmenu.id)}>
-                                      <Link
-                                        href={subsubmenu.MenuLink}
-                                        className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                                      >
-                                        <span className="ms-3">{subsubmenu.MenuName}</span>
-                                      </Link>
-                                    </li>
-                                  </div>
-                                ))}
-                              </ul>
-                            )}
-                          </li>
-                        </div>
-                      ))}
+                    <ul id="dropdown-example" className={`${collapsed ? 'hidden' : 'block'} ${hoveredItem === sidebaritem.menuname ? 'block' : 'hidden'} shadow absolute p-2.5 text-gray-900 rounded-lg dark:text-white bg-gray-50 dark:bg-[#3c4042] justify-between items-center ml-12 mt-10 opacity-90 w-[210px]`}>
+                        {sidebaritem.children.map(submenu1 => (
+                            <li key={submenu1.id}>
+                              <Link
+                                href={submenu1.menulink}
+                                className="flex items-center justify-between w-full text-gray-900 transition duration-75 rounded-lg group dark:text-white text-sm mt font-light p-1"
+                              >
+                                {submenu1.menuname}
+                              </Link>
+                            </li>       
+                        ))}
                     </ul>
                   )}
+
+                  {/* collapsed */}
+                  {sidebaritem.children && activeMenuItem === sidebaritem.id && (
+                  <ul id="dropdown-example" className={`${collapsed ? 'block' : 'hidden'} py-2 space-y-2`}>
+                    {sidebaritem.children.map(submenu1 => (
+                    <li key={submenu1.id}>
+                      <Link
+                        href={submenu1.menulink}
+                        className="flex items-center justify-between w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700 text-sm font-light"
+                      >
+                        {submenu1.menuname}
+                      </Link>
+                      {submenu1.children && (
+                        <ul id="dropdown-example" className={`${collapsed ? 'block' : 'hidden'} py-2 space-y-2`}>
+                          {submenu1.children.map(subsubmenu => (
+                             <li key={subsubmenu.id}>
+                                <Link
+                                  href={subsubmenu.menulink}
+                                  className="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700 text-sm font-light"
+                                >
+                                  {subsubmenu.menuname}
+                                </Link>
+                             </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                    ))}
+                  </ul>
+                  )}
                 </li>
-              </div>
-            ))}
-          </ul>
-        </div>
-      </aside>
+              ))}
+            </ul>
+          </div>
+        </aside>
     );
 };
 
