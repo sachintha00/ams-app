@@ -6,7 +6,7 @@ function HeaderGridView({ component: Component, data = [], searchField, ...rest 
     useSelector((state) => state.pageHeader.searchQuery) || "";
 
   const filteredData = data?.filter((item) =>
-    item['workflow_name'].toLowerCase().includes(searchQuery.toLowerCase())
+    item[searchField].toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

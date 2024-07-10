@@ -29,26 +29,33 @@ body {
   color: rgb(var(--foreground-rgb));
 }
 
-img, svg, video, canvas, audio, iframe, embed, object{
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
   color: #6b7280;
 }
 
 /* login page */
-.loginart{
+.loginart {
   margin-top: 500px;
   margin-left: 724px;
 }
 
-.navitemicon{
+.navitemicon {
   font-size: 25px;
 }
 
-.antialiased{
+.antialiased {
   position: fixed;
   width: -webkit-fill-available;
 }
 
-.sidebarmain{
+.sidebarmain {
   transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
@@ -56,12 +63,12 @@ img, svg, video, canvas, audio, iframe, embed, object{
   display: none;
 }
 
-.subnavlink{
+.subnavlink {
   margin-left: 30px;
 }
 
 /* form */
-.formdiv{
+.formdiv {
   padding: 30px;
 }
 
@@ -87,11 +94,11 @@ img, svg, video, canvas, audio, iframe, embed, object{
   margin-left: 4rem;
 } */
 
-.mainnavlink:hover .hoverspan{
+.mainnavlink:hover .hoverspan {
   display: block;
 }
 
-.hoverspan:hover .hoverspansub{
+.hoverspan:hover .hoverspansub {
   display: block;
   margin-left: 200px;
 }
@@ -103,64 +110,64 @@ img, svg, video, canvas, audio, iframe, embed, object{
 
 /* notifications */
 
-.mainnotificationsdiv{
+.mainnotificationsdiv {
   margin-top: 619px;
 }
 
-[data-collapse="true"] .subnotificationsdiv{
+[data-collapse="true"] .subnotificationsdiv {
   display: block;
 }
 
 /* app menu */
-.mainappdiv{
+.mainappdiv {
   margin-top: 425px;
 }
 
-[data-collapse="true"] .appmenu{
+[data-collapse="true"] .appmenu {
   display: block;
 }
 
 /* user menu */
-.maindivusermenu{
+.maindivusermenu {
   margin-top: 352px;
   margin-left: 140px;
 }
 
-[data-collapse="true"] .usermenu{
+[data-collapse="true"] .usermenu {
   display: block;
 }
 
-@media (max-width: 640px){
-  .subcontent{
+@media (max-width: 640px) {
+  .subcontent {
     margin-top: 0;
   }
-  .sidebarmain{
+  .sidebarmain {
     display: none;
   }
-  [data-collapse="true"] .content{
+  [data-collapse="true"] .content {
     margin-left: 0;
   }
-  [data-collapse="true"] .sidebarmain{
+  [data-collapse="true"] .sidebarmain {
     display: none;
   }
   [data-collapse="true"] {
     display: contents;
   }
-  [data-collapse="true"] .responsivesidebarsub{
+  [data-collapse="true"] .responsivesidebarsub {
     width: fit-content;
   }
-  [data-collapse="true"] .ms-3{  
+  [data-collapse="true"] .ms-3 {
     display: block;
   }
 }
 
-[data-collapse="true"] .CardDropdownlist{
+[data-collapse="true"] .CardDropdownlist {
   display: contents;
 }
 
 /* form role list */
 
-[data-collapse="true"] .rolelist{
+[data-collapse="true"] .rolelist {
   display: block;
 }
 
@@ -196,3 +203,85 @@ img, svg, video, canvas, audio, iframe, embed, object{
   opacity: 0;
 }
 
+.custom-divider::after {
+  border: 0.05px solid #e5e7eb !important;
+}
+
+.dark .custom-divider {
+  @apply border-[#3c4042];
+}
+
+.custom-input {
+  @apply outline-none border border-gray-300 rounded-lg p-2;
+}
+
+.custom-input:focus {
+  @apply outline-none border-gray-300;
+}
+
+.custom-input:hover,
+.ant-input:hover {
+  @apply outline-none border-gray-300;
+}
+
+.dark .custom-input,
+.dark .ant-input {
+  @apply bg-[#3c4042] text-gray-300 border-gray-500 placeholder-gray-400;
+}
+
+.dark .custom-input:focus {
+  @apply ring-blue-300;
+}
+
+.custom-radio-button {
+  @apply border-red-700;
+}
+
+.custom-radio-button:checked {
+  @apply border-red-700 text-green-700;
+}
+
+.dark .custom-radio-button {
+  @apply border-gray-600;
+}
+
+.dark .custom-radio-button:checked {
+  @apply bg-gray-600 text-white;
+}
+
+.ant-rate-star .anticon-star svg {
+  fill: #e8e8e8;
+}
+
+.ant-rate-star:hover .anticon-star svg,
+.ant-rate-star-focus .anticon-star svg {
+  fill: #ffc107;
+}
+
+.ant-rate-star-full .anticon-star svg {
+  fill: #ffc107;
+}
+
+.custom-form-item .ant-form-item-label {
+  width: 100%;
+}
+
+.custom-form-item .ant-form-item-control {
+  width: 100%;
+}
+
+.ant-submit-btn {
+  background: #213389 !important;
+  padding: 20px 50px 20px 50px !important;
+}
+
+.dark .ant-submit-btn {
+  background: red !important;
+}
+.dark .ant-submit-btn:hover {
+  background: red !important;
+}
+
+.ant-submit-btn:hover {
+  background: #213389 !important;
+}
