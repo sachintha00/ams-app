@@ -4,7 +4,7 @@ import { FaPenToSquare } from "react-icons/fa6";
 import { FaUserLock } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 
-function HeaderListView({ component: Component, data = [] }) {
+function HeaderListView({ component: Component, data = [], searchField }) {
   return (
         <>
           <div className="flex flex-col items-center justify-center my-5 rounded bg-gray-50 dark:bg-[#1e1e1e] tablelist">

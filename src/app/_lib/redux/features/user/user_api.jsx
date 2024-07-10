@@ -91,7 +91,7 @@ export const roleApi = apiSlice.injectEndpoints({
       }),
     }),
     userRetrieveFromQuerySearch: builder.mutation({
-      query: ({ query, page }) => ({
+      query: ({ query = "", page = 1 }) => ({
         url: `users/retrieve/search?query=${query}&page=${page}`,
         method: "GET",
         credentials: "include",
