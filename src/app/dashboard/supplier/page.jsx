@@ -7,7 +7,7 @@ import { useGetworkflowsQuery } from "@/app/_lib/redux/features/workflow/workflo
 import { TbTruckLoading } from "react-icons/tb";
 import AddNewWorkflowForm from "../components/workflow/workflowForms/addNewWorkflowForm";
 import { useSelector } from "react-redux";
-import RemoveWorkflowForm from "../components/workflow/workflowForms/removeWorkflowForm";
+import RemoveSupplierForm from "./_components/forms/removeSupplierForm";
 import WorkflowHomeListComponent from "../components/workflow/workflowHomeListComponent";
 import AddNewSupplierForm from "./_components/forms/addNewSupplierForm";
 import SupplierGridComponent from "./_components/SupplierGridComponent";
@@ -28,8 +28,8 @@ export default function Roles() {
       formComponent: <AddNewWorkflowForm isUpdateForm={true} />,
     },
     deleteForm: {
-      modelTitle: "Remove Workflow",
-      formComponent: <RemoveWorkflowForm />,
+      modelTitle: "Remove Supplier",
+      formComponent: <RemoveSupplierForm />,
     },
   };
 

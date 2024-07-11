@@ -9,6 +9,8 @@ function HeaderGridView({ component: Component, data = [], searchField, ...rest 
     item[searchField].toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  console.log(filteredData)
+
   return (
     <div className="flex flex-col mt-2">
       <div className="grid gap-2 2xl:grid-cols-5 min-[1200px]:grid-cols-4 min-[768px]:grid-cols-3 min-[640px]:grid-cols-2 mb-1 rounded bg-gray-50 dark:bg-[#121212]">

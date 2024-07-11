@@ -8,6 +8,7 @@ export const supplierApi = apiSlice.injectEndpoints({
                 method: "GET",
                 credentials: "include",
             }),
+            providesTags: ["SupplierRegister"],
         }),
         registerNewSupplier: builder.mutation({
             query: (supplier) => ({
@@ -16,6 +17,7 @@ export const supplierApi = apiSlice.injectEndpoints({
                 body: supplier,
                 credentials: "include",
             }),
+            invalidatesTags: ["SupplierRegister", "SupplierList"],
         }),
         getAllSupplier: builder.query({
             query: () => ({
@@ -23,6 +25,7 @@ export const supplierApi = apiSlice.injectEndpoints({
                 method: "GET",
                 credentials: "include",
             }),
+            providesTags: ["SupplierList"],
         }),
         getSupplierFromSearch: builder.mutation({
             query: ({ query, page }) => ({
@@ -30,6 +33,30 @@ export const supplierApi = apiSlice.injectEndpoints({
                 method: "GET",
                 credentials: "include",
             }),
+            providesTags: ["SupplierList"],
+        }),
+        updateSupplier: builder.mutation({
+            query: (supplier) => ({
+                url: "supplier/update",
+                method: "PUT",
+                body: supplier,
+                credentials: "include",
+            }),
+            invalidatesTags: (result, error, { id }) => [
+                { type: 'Supplier', id },
+                "SupplierList",
+            ],
+        }),
+        removeSupplier: builder.mutation({
+            query: (supplierId) => ({
+                url: `supplier/remove/${supplierId}`,
+                method: "DELETE",
+                credentials: "include",
+            }),
+            invalidatesTags: (result, error, supplierId) => [
+                { type: 'Supplier', id: supplierId },
+                "SupplierList",
+            ],
         }),
     }),
 });
@@ -38,5 +65,7 @@ export const {
     useGetSupplierRegisterIdQuery,
     useRegisterNewSupplierMutation,
     useGetAllSupplierQuery,
-    useGetSupplierFromSearchMutation
+    useGetSupplierFromSearchMutation,
+    useUpdateSupplierMutation,
+    useRemoveSupplierMutation
 } = supplierApi;
