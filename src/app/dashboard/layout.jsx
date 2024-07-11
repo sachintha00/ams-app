@@ -77,11 +77,11 @@ export default function DashboardLayout({ children }) {
           </svg>
         </button>
 
-        <div className="maincontent bg-gray-50 dark:bg-[#121212]">
+        <div className="maincontent bg-white dark:bg-[#121212]">
           {/* sidebar */}
           <Sidebar onToggleSidebar={toggleSidebar}  collapsed= {sidebarCollapsed}/>
 
-          <main className="bg-gray-50 dark:bg-[#121212]">
+          <main className="bg-white dark:bg-[#121212]">
             <div
               className={`child-div ${
                 sidebarCollapsed ? "sm:ml-44" : "sm:ml-8"

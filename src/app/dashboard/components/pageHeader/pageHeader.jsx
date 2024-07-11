@@ -11,8 +11,8 @@ import { handleOpenPopupModel } from "@/app/_lib/redux/features/popupModel/popup
 import PopupModel from "../popupModel/popupModel";
 import { FORM_TYPE } from "@/app/_lib/constants/formType";
 import { CSSTransition } from 'react-transition-group';
-import { FiPlus } from "react-icons/fi";
-import { HiOutlineMinusSm } from "react-icons/hi";
+import { IoIosArrowDown } from "react-icons/io";
+import { IoIosArrowUp } from "react-icons/io";
 
 function PageHeader({
   HeaderIcon,
@@ -25,7 +25,6 @@ function PageHeader({
   showSearchBar = true, 
   showAddButton = true,
   showGridListButton = true,
-  showModelTitle,
   headerButtonText,
   form,
   Searchplaceholder = "search",
@@ -48,9 +47,9 @@ function PageHeader({
   };
 
   return (
-    <div className="flex items-center justify-center rounded bg-gray-50 dark:bg-[#121212]">
+    <div className="flex items-center justify-center rounded bg-white dark:bg-[#121212]">
       <div className="w-full">
-        <div className="overflow-hidden bg-gray-50 sm:rounded-lg dark:bg-[#121212]">
+        <div className="overflow-hidden bg-white sm:rounded-lg dark:bg-[#121212]">
           {/* header line a */}
           {showHeaderLineA && 
             <div className="flex-row items-center justify-between py-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
@@ -133,8 +132,8 @@ function PageHeader({
                   </button>
                 }
                 <div className="flex flex-col items-center justify-center cursor-pointer">
-                    <button onClick={toggleVisibility} className="flex justify-center items-center w-[35px] h-[35px] bg-white border border-gray-200 rounded-full shadow dark:bg-[#1e1e1e] dark:border-gray-600 row-enter-done mt-2">
-                        {isVisible ? <HiOutlineMinusSm className='text-[20px]'/> : <FiPlus className='text-[20px]'/>}
+                    <button onClick={toggleVisibility} className="flex justify-center items-center w-[24px] h-[24px] bg-white border border-gray-200 rounded-full shadow dark:bg-[#1e1e1e] dark:border-gray-600 row-enter-done mt-2">
+                        {isVisible ? <IoIosArrowUp/> : <IoIosArrowDown/>}
                     </button>
                 </div>
               </div>
@@ -144,19 +143,28 @@ function PageHeader({
                   popupModelTitle={form.addForm.modelTitle}
                   Form={form.addForm.formComponent}
                   modelPageSize={form.addForm.modelPageSize}
-                  showModelTitle = {showModelTitle}
+                  showModelTitle = {form.addForm.showModelTitle}
                 />
               ) : formType === FORM_TYPE.UPDATE ? (
                 <PopupModel
                   popupModelTitle={form.updateForm.modelTitle}
                   Form={form.updateForm.formComponent}
-                  modelPageSize={form.addForm.modelPageSize}
+                  modelPageSize={form.updateForm.modelPageSize}
+                  showModelTitle = {form.updateForm.showModelTitle}
+                />
+              ) : formType === FORM_TYPE.VIEW ? (
+                <PopupModel
+                  popupModelTitle={form.viewForm.modelTitle}
+                  Form={form.viewForm.formComponent}
+                  modelPageSize={form.viewForm.modelPageSize}
+                  showModelTitle = {form.viewForm.showModelTitle}
                 />
               ) : (
                 formType === FORM_TYPE.DELETE && (
                   <PopupModel
                     popupModelTitle={form.deleteForm.modelTitle}
                     Form={form.deleteForm.formComponent}
+                    showModelTitle = {form.deleteForm.showModelTitle}
                   />
                 )
               )}
@@ -184,7 +192,7 @@ function PageHeader({
                             onChange={handleSearch}
                             type="text"
                             id="simple-search"
-                            className="block w-full p-2 pl-5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                            className="block w-full p-2 pl-5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-primary-500 focus:border-primary-500 dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                             placeholder={Searchplaceholder} 
                           />
                         </div>

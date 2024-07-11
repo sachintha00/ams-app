@@ -86,7 +86,7 @@ function ViewOrUpdateAssetRequisitions({  }) {
                             </span>
                         </div>
                     </div>
-                    <div className="flex flex-col items-center justify-center my-5 rounded bg-gray-50 dark:bg-[#1e1e1e] tablelist">
+                    <div className="flex flex-col items-center justify-center my-5 rounded bg-white dark:bg-[#1e1e1e] tablelist">
                         <div className="overflow-x-auto border border-gray-200 sm:rounded-lg w-[-webkit-fill-available]">
                             <table className="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
                             <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-[#606368] dark:text-gray-400">
@@ -319,7 +319,7 @@ function ViewOrUpdateAssetRequisitions({  }) {
                             </span>
                         </div>
                     </div>
-                    <div className="flex flex-col items-center justify-center my-5 rounded bg-gray-50 dark:bg-[#1e1e1e] tablelist">
+                    <div className="flex flex-col items-center justify-center my-5 rounded bg-white dark:bg-[#1e1e1e] tablelist">
                         <div className="overflow-x-auto border border-gray-200 sm:rounded-lg w-[-webkit-fill-available]">
                             <table className="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
                             <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-[#606368] dark:text-gray-400">
@@ -544,7 +544,7 @@ function ViewOrUpdateAssetRequisitions({  }) {
                             </span>
                         </div>
                     </div>
-                    <div className="flex flex-col items-center justify-center my-5 rounded bg-gray-50 dark:bg-[#1e1e1e] tablelist">
+                    <div className="flex flex-col items-center justify-center my-5 rounded bg-white dark:bg-[#1e1e1e] tablelist">
                         <div className="overflow-x-auto border border-gray-200 sm:rounded-lg w-[-webkit-fill-available]">
                             <table className="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
                             <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-[#606368] dark:text-gray-400">

@@ -69,7 +69,7 @@ const Responsivesidbar = () => {
         id="separator-sidebar"
         className="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 responsivesidebar"
         aria-label="Sidebar" style={{ marginTop: "56px" }} >
-        <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-[#121212] responsivesidebarsub">
+        <div className="h-full px-3 py-4 overflow-y-auto bg-white dark:bg-[#121212] responsivesidebarsub">
           <ul className="space-y-2 font-medium">
           {sidebarItems.map(({ name, href, icon: Icon }) => (
               <li className='navlink' key={name}>

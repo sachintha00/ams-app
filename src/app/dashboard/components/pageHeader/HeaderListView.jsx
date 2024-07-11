@@ -7,7 +7,7 @@ import { IoClose } from "react-icons/io5";
 function HeaderListView({ component: Component, data = [], searchField }) {
   return (
         <>
-          <div className="flex flex-col items-center justify-center my-5 rounded bg-gray-50 dark:bg-[#1e1e1e] tablelist">
+          <div className="flex flex-col items-center justify-center my-5 rounded bg-white dark:bg-[#1e1e1e] tablelist">
               <Component data={data} />
           </div>
           {/* Pagination */}

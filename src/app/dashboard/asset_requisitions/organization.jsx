@@ -121,7 +121,7 @@ export default function Organization() {
 
   return (
     <div className="border-gray-200 rounded-md dark:border-gray-700">
-      <div className="flex items-center justify-center bg-gray-50 dark:bg-[#1e1e1e] tablelist">
+      <div className="flex items-center justify-center bg-white dark:bg-[#1e1e1e] tablelist">
         <div className="w-[-webkit-fill-available]">
           <div className="p-8">
             {organizationTreeStructureData ? (

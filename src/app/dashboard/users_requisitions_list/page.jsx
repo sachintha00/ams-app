@@ -13,14 +13,6 @@ import PageGridView from "../components/pageContent/PageGridView";
 import { useSearchParams } from 'next/navigation';
 
 export default function Page() {
-
-  // const searchParams = useSearchParams();
-  // const [workflowRequestType, setWorkflowRequestType] = useState(null);
-
-  // useEffect(() => {
-  //   const workflowRequestTypeParam = searchParams.get('workflow_request_type');
-  //   setWorkflowRequestType(workflowRequestTypeParam);
-  // }, [searchParams]);
   const { value } = useSelector((state) => state.requestType);
 
   const [showHeaderLineA, setShowHeaderLineA] = useState(false);
@@ -34,8 +26,17 @@ export default function Page() {
   const view = useSelector((state) => state.pageHeader.view);
   const { data: approvelAlertData } = useApprovelAlertQuery();
 
-  const filtered = approvelAlertData.data.filter(item => item.workflow_request_type === value);
-  console.log(filtered);
+  const filteredApprovelAlertData = approvelAlertData.data.filter(item => item.workflow_request_type === value);
+  console.log(filteredApprovelAlertData);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(3);
+  const searchQuery = useSelector((state) => state.pageHeader.searchQuery) || "";
+
+  const reversedData = [...filteredApprovelAlertData].reverse();
+  const filteredData = reversedData.filter((procurement) =>
+                          procurement.requested_user.name.toLowerCase().includes(searchQuery.toLowerCase())
+                        );
 
   const form = {
     addForm: {
@@ -45,6 +46,10 @@ export default function Page() {
     updateForm: {
       modelTitle: "Update Existing Workflow",
       formComponent: <AddNewWorkflowForm isUpdateForm={true} />,
+    },
+    viewForm: {
+      modelTitle: "",
+      formComponent:"",
     },
     deleteForm: {
       modelTitle: "Remove Workflow",
@@ -80,13 +85,19 @@ export default function Page() {
         {view === "list" ? (
           <PageListView 
             component={UsersRequisitionsListTable}
-            data={filtered}
+            data={filteredData}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            setCurrentPage={setCurrentPage}
           />
         ) : (
           <PageGridView
             component={UsersRequisitionsGridComponent}
             gridcolume={gridviewColume}
-            data={filtered}
+            data={filteredData}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            setCurrentPage={setCurrentPage}
             icon={
               <VscGitPullRequestGoToChanges className="mr-3 font-semibold text-gray-700 dark:text-white text-[40px]" />
             }

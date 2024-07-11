@@ -34,7 +34,7 @@ function UpdateConditionBox({ nodeId }) {
             <span className="flex-grow px-2 text-center">{value}</span>
             <button
               onClick={() => handleRemove(index)}
-              className="absolute px-1 text-white bg-gray-500 rounded-full -right-1 -top-1"
+              className="absolute px-1 text-white bg-white0 rounded-full -right-1 -top-1"
             >
               ✕
             </button>

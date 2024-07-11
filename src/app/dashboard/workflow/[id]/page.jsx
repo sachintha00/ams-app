@@ -117,7 +117,7 @@ export default function Organization({ params }) {
 
   return (
     <div className="p-4 pl-8 border-gray-200 rounded-md subcontent dark:border-gray-700">
-      <div className="flex items-center justify-center rounded bg-gray-50 dark:bg-[#121212]">
+      <div className="flex items-center justify-center rounded bg-white dark:bg-[#121212]">
         <div className="w-[-webkit-fill-available]">
           <div className="overflow-hidden bg-white sm:rounded-md dark:bg-[#121212]">
             <div className="flex-row items-center justify-between py-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
@@ -151,7 +151,7 @@ export default function Organization({ params }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-center my-5 bg-gray-50 dark:bg-[#1e1e1e] tablelist">
+      <div className="flex items-center justify-center my-5 bg-white dark:bg-[#1e1e1e] tablelist">
         <div className="overflow-x-auto h-[70vh] w-full">
           <div className="p-8">
             {workflowTreeStructureData ? (

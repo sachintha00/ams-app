@@ -20,15 +20,6 @@ function UsersRequisitionsGridComponent({
   data,
   icon
 }) {
-
-    // search bar
-    const searchQuery =
-    useSelector((state) => state.pageHeader.searchQuery) || "";
-
-    const filteredData = data?.filter((item) =>
-        item.requested_user.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
     const [expandedRow, setExpandedRow] = useState(null);
     const [selectedUser, setSelectedUser] = useState('');
     const [reasonComment, setReasonComment] = useState('');
@@ -54,8 +45,10 @@ function UsersRequisitionsGridComponent({
             const pending_workflow_node_id = item.pending_workflow_node_id;
             const workflow_id = item.workflow_id;
             const RequisitionId = item.requested_data_obj["Requisition Id"];
+            const request_type_id = item.workflow_request_type_id;
+            const status = item.next_approver_details === null ? "APPROVED" : "";
 
-            const requestApproveData = { request_id: requested_id, workflow_node_id: pending_workflow_node_id, workflow_id: workflow_id, requisition_id: RequisitionId, approver_comment: reasonComment, designaion_user_id: selectedUser};
+            const requestApproveData = { request_id: requested_id, workflow_node_id: pending_workflow_node_id, workflow_id: workflow_id, requisition_id: RequisitionId, approver_comment: reasonComment, designaion_user_id: selectedUser, request_type_id: request_type_id, status: status};
             console.log(requestApproveData);
             requestApprove(requestApproveData)
                 .unwrap()
@@ -80,8 +73,10 @@ function UsersRequisitionsGridComponent({
             const pending_workflow_node_id = item.pending_workflow_node_id;
             const workflow_id = item.workflow_id;
             const RequisitionId = item.requested_data_obj["Requisition Id"];
+            const request_type_id = item.workflow_request_type_id;
+            const status = "REJECT";
 
-            const requestRejectData = { request_id: requested_id, workflow_node_id: pending_workflow_node_id, workflow_id: workflow_id, requisition_id: RequisitionId, approver_comment: reasonComment, designaion_user_id: selectedUser};
+            const requestRejectData = { request_id: requested_id, workflow_node_id: pending_workflow_node_id, workflow_id: workflow_id, requisition_id: RequisitionId, approver_comment: reasonComment, designaion_user_id: selectedUser, request_type_id: request_type_id, status: status};
             console.log(requestRejectData);
             requestReject(requestRejectData)
                 .unwrap()
@@ -124,16 +119,18 @@ function UsersRequisitionsGridComponent({
   
 
   return (
-    <div className={`grid ${gridcolume} mb-1 rounded bg-gray-50 dark:bg-[#121212]`}>
-      {filteredData.length > 0 && (
+    <div className={`grid ${gridcolume} mb-1 rounded bg-white dark:bg-[#121212]`}>
+      {data.length > 0 && (
         <>
-          {filteredData.map((item) => {
+          {data.map((item) => {
             // Extract and format next_approver_details for Select component
-            const options = item.next_approver_details.map(approver => ({
-              value: approver.id,
-              label: approver.name,
-              image: approver.profile_image || '/avater.png' // Provide a default image URL if profile_image is null
-            }));
+            const options = item.next_approver_details 
+            ? item.next_approver_details.map(approver => ({
+                value: approver.id,
+                label: approver.name,
+                image: approver.profile_image || '/avater.png' // Provide a default image URL if profile_image is null
+              }))
+            : null;
                                   
             return (
                 <div key={item.id} className={`${expandedRow === item.id ? '' : 'h-[460px]'} w-full p-5 mt-2 bg-white border border-gray-300 rounded-md dark:bg-[#1e1e1e] dark:border-gray-700 cursor-default`}>
@@ -219,121 +216,131 @@ function UsersRequisitionsGridComponent({
                         )}
                         </>
                     </CSSTransition>
-                                                            <div className="w-[100%] mt-3">
-                                                                {item.next_approver_behaviour_type === 'DESIGNATION' && item.next_approver_type === 'SINGLE' && (
-                                                                    <div className='mb-6'>
-                                                                        <Select
-                                                                            options={options}
-                                                                            getOptionLabel={(option) => option.label}
-                                                                            getOptionValue={(option) => option.value}
-                                                                            components={{ Option: CustomOption }}
-                                                                            // styles={customSelectStyles(isDarkMode)}
-                                                                            onChange={handleSelectUser}
-                                                                            placeholder={"select next approver"}
-                                                                        />
-                                                                    </div>
-                                                                )}
-                                                                {item.next_approver_behaviour_type === 'DESIGNATION' && item.next_approver_type === 'POOL' && (
-                                                                    <div className='mb-6'>
-                                                                        <label
-                                                                            htmlFor="user_name"
-                                                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                                        >
-                                                                            Next Approver
-                                                                        </label>
-                                                                        <div className="max-w-sm mx-auto bg-white dark:bg-[#3c4042] border border-gray-300 rounded-xl overflow-hidden md:max-w-2xl">
-                                                                            <div className="md:flex">
-                                                                                <div className="flex items-center justify-center m-3">
-                                                                                    <div className="flex justify-center items-center w-12 h-12 rounded-full shadow-lg dark:bg-[#606368]">
-                                                                                        <FaUserTie className='text-[20px] dark:text-white'/>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div className="flex item-center p-3">
-                                                                                    <div className="flex items-center tracking-wide text-sm text-black dark:text-white font-semibold">
-                                                                                            Designation Pool
-                                                                                    </div>
-                                                                                    {/* <p className="mt-2 text-gray-500">
-                                                                                        This is a brief description or any additional information about the user. You can customize this text as needed.
-                                                                                    </p> */}
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                                {item.next_approver_behaviour_type === 'EMPLOYEE' && item.next_approver_type === 'SINGLE' && (
-                                                                    <>
-                                                                    <label
-                                                                        htmlFor="user_name"
-                                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                                    >
-                                                                        Next Approver
-                                                                    </label>
-                                                                    {item.next_approver_details.map(Users => (
-                                                                            <div className='mb-6'>
-                                                                                <div className="max-w-sm mx-auto bg-white dark:bg-[#3c4042] border border-gray-300 rounded-xl overflow-hidden md:max-w-2xl">
-                                                                                    <div className="md:flex">
-                                                                                        <div className="flex items-center justify-center m-3">
-                                                                                            <img
-                                                                                                className="w-12 h-12 rounded-full shadow-lg"
-                                                                                                src="/avater.png"
-                                                                                                alt="Bonnie image"
-                                                                                            />
-                                                                                        </div>
-                                                                                        <div className="flex item-center p-3">
-                                                                                            <div className="flex flex-col items-start tracking-wide text-sm text-black dark:text-white font-semibold">
-                                                                                                <h5 className="text-[20px] font-medium text-gray-900 dark:text-white">
-                                                                                                {Users.name}
-                                                                                                </h5>
-                                                                                                <span className="text-[12px] text-gray-500 dark:text-gray-400">
-                                                                                                {Users.email}
-                                                                                                </span>
-                                                                                                <h6 className="mb-1 text-[14px] font-medium text-gray-500 dark:text-gray-400">
-                                                                                                {Users.designation}
-                                                                                                </h6>
-                                                                                            </div>
-                                                                                            {/* <p className="mt-2 text-gray-500">
-                                                                                                This is a brief description or any additional information about the user. You can customize this text as needed.
-                                                                                            </p> */}
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                    ))}
-                                                                    </>
-                                                                )}
-                                                                {item.next_approver_behaviour_type === 'EMPLOYEE' && item.next_approver_type === 'POOL' && (
-                                                                    <>
-                                                                        <label
-                                                                            htmlFor="user_name"
-                                                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                                        >
-                                                                            Next Approver
-                                                                        </label>
-                                                                        <div className='mb-6'>
-                                                                            <div className="max-w-sm mx-auto bg-white dark:bg-[#3c4042] border border-gray-300 rounded-xl overflow-hidden md:max-w-2xl">
-                                                                                <div className="md:flex">
-                                                                                    <div className="flex items-center justify-center m-3">
-                                                                                        <div className="flex justify-center items-center w-12 h-12 rounded-full shadow-lg dark:bg-[#606368]">
-                                                                                            <FaUsers className='text-[20px] dark:text-white'/>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div className="flex item-center p-3">
-                                                                                        <div className="flex items-center tracking-wide text-sm text-black dark:text-white font-semibold">
-                                                                                            Employee Pool
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </>
-                                                                )}
-                                                            </div>
+                    <div className="w-[100%] mt-3">
+                    {item.next_approver_behaviour_type === "DESIGNATION" &&
+                        item.next_approver_type === "SINGLE" && (
+                        <div className="mb-[76px]">
+                            <label
+                            htmlFor="user_name"
+                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            >
+                             Select Next Approver
+                            </label>
+                            <Select
+                            options={options}
+                            getOptionLabel={(option) => option.label}
+                            getOptionValue={(option) => option.value}
+                            components={{ Option: CustomOption }}
+                            // styles={customSelectStyles(isDarkMode)}
+                            onChange={handleSelectUser}
+                            placeholder={"select next approver"}
+                            />
+                        </div>
+                        )}
+                    {item.next_approver_behaviour_type === "DESIGNATION" &&
+                        item.next_approver_type === "POOL" && (
+                        <div className="mb-6">
+                            <label
+                            htmlFor="user_name"
+                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            >
+                            Next Approver
+                            </label>
+                            <div className="max-w-sm mx-auto bg-white dark:bg-[#3c4042] border border-gray-300 rounded-xl overflow-hidden md:max-w-2xl">
+                            <div className="md:flex">
+                                <div className="flex items-center justify-center m-3">
+                                <div className="flex justify-center items-center w-12 h-12 rounded-full shadow-lg dark:bg-[#606368]">
+                                    <FaUserTie className="text-[20px] dark:text-white" />
+                                </div>
+                                </div>
+                                <div className="flex item-center p-3">
+                                <div className="flex items-center tracking-wide text-sm text-black dark:text-white font-semibold">
+                                    Designation Pool
+                                </div>
+                                {/* <p className="mt-2 text-gray-500">
+                                                                                                            This is a brief description or any additional information about the user. You can customize this text as needed.
+                                                                                                        </p> */}
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        )}
+                    {item.next_approver_behaviour_type === "EMPLOYEE" &&
+                        item.next_approver_type === "SINGLE" && (
+                        <>
+                            <label
+                            htmlFor="user_name"
+                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            >
+                            Next Approver
+                            </label>
+                            {item.next_approver_details.map((Users) => (
+                            <div className="mb-6">
+                                <div className="max-w-sm mx-auto bg-white dark:bg-[#3c4042] border border-gray-300 rounded-xl overflow-hidden md:max-w-2xl">
+                                <div className="md:flex">
+                                    <div className="flex items-center justify-center m-3">
+                                    <img
+                                        className="w-12 h-12 rounded-full shadow-lg"
+                                        src="/avater.png"
+                                        alt="Bonnie image"
+                                    />
+                                    </div>
+                                    <div className="flex item-center p-3">
+                                    <div className="flex flex-col items-start tracking-wide text-sm text-black dark:text-white font-semibold">
+                                        <h5 className="text-[20px] font-medium text-gray-900 dark:text-white">
+                                        {Users.name}
+                                        </h5>
+                                        <span className="text-[12px] text-gray-500 dark:text-gray-400">
+                                        {Users.email}
+                                        </span>
+                                        <h6 className="mb-1 text-[14px] font-medium text-gray-500 dark:text-gray-400">
+                                        {Users.designation}
+                                        </h6>
+                                    </div>
+                                    {/* <p className="mt-2 text-gray-500">
+                                                                                                                    This is a brief description or any additional information about the user. You can customize this text as needed.
+                                                                                                                </p> */}
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                            ))}
+                        </>
+                        )}
+                    {item.next_approver_behaviour_type === "EMPLOYEE" &&
+                        item.next_approver_type === "POOL" && (
+                        <>
+                            <label
+                            htmlFor="user_name"
+                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            >
+                            Next Approver
+                            </label>
+                            <div className="mb-6">
+                            <div className="max-w-sm mx-auto bg-white dark:bg-[#3c4042] border border-gray-300 rounded-xl overflow-hidden md:max-w-2xl">
+                                <div className="md:flex">
+                                <div className="flex items-center justify-center m-3">
+                                    <div className="flex justify-center items-center w-12 h-12 rounded-full shadow-lg dark:bg-[#606368]">
+                                    <FaUsers className="text-[20px] dark:text-white" />
+                                    </div>
+                                </div>
+                                <div className="flex item-center p-3">
+                                    <div className="flex items-center tracking-wide text-sm text-black dark:text-white font-semibold">
+                                    Employee Pool
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+                        </>
+                        )}
+                    </div>;
                 </div> 
                 <div className="flex cursor-pointer justify-start">
                   <textarea
                       id="comment"
                       rows={3}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                      className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                       placeholder="Write a reasson for approve or reject"
                       required=""
                       defaultValue={""}
@@ -356,16 +363,6 @@ function UsersRequisitionsGridComponent({
                   </button>
                 </div>
                 </div>
-                {/* <div className="flex items-center justify-end mt-4 md:mt-6">
-                  <div className="flex w-[20%] justify-between">
-                    <a className="cursor-pointer" onClick={handleUpdate}>
-                      <FaPenToSquare className="text-[#DBAE58] text-2xl" />
-                    </a>
-                    <a className="cursor-pointer" onClick={handleDelete}>
-                      <MdDelete className="text-[#D32D41] text-2xl" />
-                    </a>
-                  </div>
-                </div> */}
               </div>
             );
           })}

@@ -115,7 +115,7 @@ function AddNewWorkflowForm({ isUpdateForm = false }) {
                 type="text"
                 name="workflowName"
                 id="workflowName"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-[15px] rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                className="bg-white border border-gray-300 text-gray-900 text-[15px] rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Type Workflow Name"
               />
               <ErrorMessage
@@ -136,7 +136,7 @@ function AddNewWorkflowForm({ isUpdateForm = false }) {
                 id="workflowDescription"
                 rows="4"
                 name="workflowDescription"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-[15px] rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                className="bg-white border border-gray-300 text-gray-900 text-[15px] rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Type Workflow Description"
               />
               <ErrorMessage
