@@ -11,7 +11,7 @@ function AssetRequisitionsListTable({ data }) {
     const handleUpdate = async (id, request) => {
         console.log(id);
         dispatch(
-          handleOpenPopupModel({
+          handleOpenPopupModel({ 
             id,
             value: request,
             formType: FORM_TYPE.UPDATE,

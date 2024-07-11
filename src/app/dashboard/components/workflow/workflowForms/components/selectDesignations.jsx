@@ -49,7 +49,7 @@ function SelectDesignations({
         type="text"
         name={inputTagName}
         id={inputTagName}
-        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600  block w-full p-2.5 outline-none focus:outline-none"
+        className="bg-white border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600  block w-full p-2.5 outline-none focus:outline-none"
         placeholder="Search"
         autoComplete="off"
         onChange={(e) => {

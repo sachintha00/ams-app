@@ -158,7 +158,7 @@ export default function Organization() {
 
   return (
     <div className="p-4 pl-8 border-gray-200 rounded-md subcontent dark:border-gray-700">
-      <div className="flex items-center justify-center rounded bg-gray-50 dark:bg-[#121212]">
+      <div className="flex items-center justify-center rounded bg-white dark:bg-[#121212]">
         <div className="w-[-webkit-fill-available]">
           <div className="overflow-hidden bg-white sm:rounded-md dark:bg-[#121212]">
             <div className="flex-row items-center justify-between py-2 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
@@ -284,7 +284,7 @@ export default function Organization() {
                                 name="organizationLevel"
                                 disabled
                                 id="name"
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md  block w-full p-2.5 "
+                                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-md  block w-full p-2.5 "
                                 value={newNodeData.level + 1 || 1}
                               />
                             </div>
@@ -299,7 +299,7 @@ export default function Organization() {
                                 type="text"
                                 name="organizationName"
                                 id="name"
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 placeholder="Organization Name"
                               />
                             </div>
@@ -314,7 +314,7 @@ export default function Organization() {
                                 id="description"
                                 rows={4}
                                 name="organizationDescription"
-                                className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                className="block p-2.5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Organization Description"
                               />
                             </div>
@@ -329,7 +329,7 @@ export default function Organization() {
                                 type="number"
                                 name="telephoneNumber"
                                 id="price"
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 placeholder="Telephone Number"
                               />
                             </div>
@@ -344,7 +344,7 @@ export default function Organization() {
                                 type="text"
                                 name="address"
                                 id="price"
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 placeholder="Address"
                               />
                             </div>
@@ -359,7 +359,7 @@ export default function Organization() {
                                 type="text"
                                 name="email"
                                 id="price"
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 placeholder="Email"
                               />
                             </div>
@@ -374,7 +374,7 @@ export default function Organization() {
                                 type="text"
                                 name="website"
                                 id="price"
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 placeholder="Website"
                               />
                             </div>
@@ -397,7 +397,7 @@ export default function Organization() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center my-5 bg-gray-50 dark:bg-[#1e1e1e] tablelist">
+      <div className="flex items-center justify-center my-5 bg-white dark:bg-[#1e1e1e] tablelist">
         <div className="overflow-x-auto w-[-webkit-fill-available]">
           <div className="p-8">
             {organizationTreeStructureData ? (

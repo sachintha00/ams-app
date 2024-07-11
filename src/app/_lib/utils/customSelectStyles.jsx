@@ -1,7 +1,7 @@
 export const customSelectStyles = (theme) => ({
   control: (provided) => ({
     ...provided,
-    backgroundColor: theme === 'dark' ? '#3c4042' : 'bg-gray-50',
+    backgroundColor: theme === 'dark' ? '#3c4042' : 'bg-white',
     borderColor: theme === 'dark' ? 'gray-500' : 'gray-300',
     color: theme === 'dark' ? 'white' : 'gray-900',
     borderRadius: '0.375rem', // rounded-lg
@@ -36,15 +36,15 @@ export const customSelectStyles = (theme) => ({
     ...provided,
     borderRadius: '0.375rem', // rounded-lg
     boxShadow: theme === 'dark' ? '0 2px 10px rgba(0, 0, 0, 0.6)' : '0 2px 10px rgba(0, 0, 0, 0.1)',
-    backgroundColor: theme === 'dark' ? '#3c4042' : 'bg-gray-50',
+    backgroundColor: theme === 'dark' ? '#3c4042' : 'bg-white',
   }),
   option: (provided, state) => ({
     ...provided,
     backgroundColor: state.isSelected
       ? theme === 'dark' ? '#3c4042' : 'bg-gray-100'
       : state.isFocused
-      ? theme === 'dark' ? '#3c4042' : 'bg-gray-50'
-      : theme === 'dark' ? '#3c4042' : 'bg-gray-50',
+      ? theme === 'dark' ? '#3c4042' : 'bg-white'
+      : theme === 'dark' ? '#3c4042' : 'bg-white',
     color: theme === 'dark' ? 'white' : 'gray-900',
     padding: '0.625rem 1rem', // p-2.5
     '&:hover': {

@@ -1,7 +1,7 @@
 FROM node:18-alpine as dependencies
 WORKDIR /my-project
 COPY ../src/package*.json ./
-RUN npm install
+RUN npm install --legacy-peer
 
 
 FROM dependencies as builder

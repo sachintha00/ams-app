@@ -15,7 +15,7 @@ function SelectField({ label, name, options, value, onChange }) {
         name={name}
         id={name}
         value={value}
-        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md  block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white outline-none focus:outline-none"
+        className="bg-white border border-gray-300 text-gray-900 text-sm rounded-md  block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white outline-none focus:outline-none"
         onChange={onChange}
       >
         <option value="">Select an option</option>

@@ -22,14 +22,6 @@ import { formatDate } from "@/app/_lib/utils/dateFormatter";
 
 function UsersRequisitionsListTable({ data }) {
 
-    // search bar
-    const searchQuery =
-    useSelector((state) => state.pageHeader.searchQuery) || "";
-
-    const filteredData = data?.filter((item) =>
-        item.requested_user.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
     const [expandedRow, setExpandedRow] = useState(null);
     const [selectedUser, setSelectedUser] = useState('');
     const [reasonComment, setReasonComment] = useState('');
@@ -100,9 +92,9 @@ function UsersRequisitionsListTable({ data }) {
   
   return (
     <>
-         {filteredData.length > 0 && (
+         {data.length > 0 && (
                 <div className="w-[100%] dark:bg-[#121212]">
-                    {filteredData.map((item) => {
+                    {data.map((item) => {
                         // Extract and format next_approver_details for Select component
                         const options = item.next_approver_details.map(approver => ({
                             value: approver.id,
@@ -231,7 +223,7 @@ function UsersRequisitionsListTable({ data }) {
                                             <textarea
                                                 id="comment"
                                                 rows={3}
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                                 placeholder="Write a reasson for approve or reject"
                                                 required=""
                                                 defaultValue={""}
@@ -433,7 +425,7 @@ function UsersRequisitionsListTable({ data }) {
                                                                         <textarea
                                                                         id="comment"
                                                                         rows={6}
-                                                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                        className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                                                         placeholder="Write a comment..."
                                                                         required=""
                                                                         defaultValue={""}

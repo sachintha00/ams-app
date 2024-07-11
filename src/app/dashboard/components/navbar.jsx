@@ -166,7 +166,7 @@ const Navbar = ({ onToggleSidebar }) => {
                     type="text"
                     name="search"
                     id="topbar-search"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-9 p-2.5 dark:bg-[#121212] dark:border-[#3c4042] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    className="bg-white border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-9 p-2.5 dark:bg-[#121212] dark:border-[#3c4042] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                     placeholder="Search"
                     />
                 </div>
@@ -248,7 +248,7 @@ const Navbar = ({ onToggleSidebar }) => {
                     className="hidden overflow-hidden z-50 my-4 max-w-sm text-base list-none bg-white rounded divide-y divide-gray-100 shadow-lg dark:divide-gray-600 dark:bg-[#3c4042] subnotificationsdiv"
                     id="notification-dropdown"
                     >
-                    <div className="block py-2 px-4 text-base font-medium text-center text-gray-700 bg-gray-50 dark:bg-[#3c4042] dark:text-gray-400">
+                    <div className="block py-2 px-4 text-base font-medium text-center text-gray-700 bg-white dark:bg-[#3c4042] dark:text-gray-400">
                         Notifications
                     </div>
                     <div>
@@ -441,7 +441,7 @@ const Navbar = ({ onToggleSidebar }) => {
                     </div>
                     <a
                         href="#"
-                        className="block py-2 text-base font-medium text-center text-gray-900 bg-gray-50 hover:bg-gray-100 dark:bg-[#3c4042] dark:text-white dark:hover:underline"
+                        className="block py-2 text-base font-medium text-center text-gray-900 bg-white hover:bg-gray-100 dark:bg-[#3c4042] dark:text-white dark:hover:underline"
                     >
                         <div className="inline-flex items-center ">
                         <svg
@@ -488,7 +488,7 @@ const Navbar = ({ onToggleSidebar }) => {
                     className="hidden overflow-hidden z-50 my-4 max-w-sm text-base list-none bg-white rounded divide-y divide-gray-100 shadow-lg dark:bg-[#3c4042] dark:divide-gray-600 appmenu"
                     id="apps-dropdown"
                     >
-                    <div className="block py-2 px-4 text-base font-medium text-center text-gray-700 bg-gray-50 dark:bg-[#3c4042] dark:text-gray-400">
+                    <div className="block py-2 px-4 text-base font-medium text-center text-gray-700 bg-white dark:bg-[#3c4042] dark:text-gray-400">
                         Apps
                     </div>
                     <div className="grid grid-cols-3 gap-4 p-4">
