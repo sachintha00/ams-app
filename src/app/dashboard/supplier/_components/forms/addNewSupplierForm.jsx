@@ -4,7 +4,7 @@ import { PlusOutlined, MinusCircleOutlined, UploadOutlined } from '@ant-design/i
 import MapPicker from "react-google-map-picker";
 import Requisitionsapproval from '@/app/dashboard/components/requisitionsapproval/requisitionsapproval';
 import { useAssetListQuery } from '@/app/_lib/redux/features/asset/asset_api';
-import { useGetSupplierRegisterIdQuery, useRegisterNewSupplierMutation } from '@/app/_lib/redux/features/supplier/supplier_api';
+import { useGetAllSupplierQuery, useGetSupplierRegisterIdQuery, useRegisterNewSupplierMutation } from '@/app/_lib/redux/features/supplier/supplier_api';
 
 const DefaultLocation = { lat: 10, lng: 106 };
 const DefaultZoom = 10;
@@ -13,6 +13,7 @@ function AddNewSupplierForm() {
     const { data: assetData, isSuccess } = useAssetListQuery()
     const { data: supplierId, isSuccess: supplierIdIsSuccess } = useGetSupplierRegisterIdQuery()
     const [registerNewSupplier] = useRegisterNewSupplierMutation()
+    const { refetch } = useGetAllSupplierQuery()
 
     const [supplierType, setSupplierType] = useState('Company');
 
@@ -122,6 +123,8 @@ function AddNewSupplierForm() {
             p_supplier_location_longitude: location.lng || null,
             p_contact_no: values.contact_no
         })
+
+        refetch()
 
         console.log('Received values of form:', values);
         setFormSubmitData(values)
