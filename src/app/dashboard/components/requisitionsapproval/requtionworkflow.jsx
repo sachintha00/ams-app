@@ -17,7 +17,7 @@ export const Requtionworkflow = ({ node }) => {
       case 'APPROVED':
         return '';
       default:
-        return 'bg-gray-500'; // Default color if status is unknown
+        return 'bg-white0'; // Default color if status is unknown
     }
   };
 

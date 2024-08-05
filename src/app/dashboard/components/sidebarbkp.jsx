@@ -105,7 +105,7 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
           className={`sidebar ${collapsed ? 'collapsed' : ''} fixed top-0 left-0 z-40 w-[60px] h-screen transition-transform -translate-x-full sm:translate-x-0 sidebarmain mt-[77px] border-r border-[#D7DAD3] dark:border-[#3c4042]`}
           aria-label="Sidebar"
         >
-          <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-[#121212]">
+          <div className="h-full px-3 py-4 overflow-y-auto bg-white dark:bg-[#121212]">
             <button
               className={`rounded-full bg-white opacity-100 text-white p-1 absolute top-4px right-[-12px] transition-colors duration-300 hover:bg-gray-300 hover:text-white flex items-center justify-center`}
               onClick={onToggleSidebar}
@@ -125,7 +125,7 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
                       <MdSpaceDashboard className='w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'/>
                     </span>
                     <span className={`${collapsed ? 'block' : 'hidden'} ms-3 text-sm font-light`}>Dashboard</span>
-                    <span className={`${collapsed ? 'hidden' : ''} ${hoveredItem === 'Dashboard' ? 'block' : 'hidden'} shadow flex absolute ml-6 p-2.5 text-gray-900 rounded-lg dark:text-white bg-gray-50 dark:bg-[#3c4042] text-sm font-light w-56`}>Dashboard</span>
+                    <span className={`${collapsed ? 'hidden' : ''} ${hoveredItem === 'Dashboard' ? 'block' : 'hidden'} shadow flex absolute ml-6 p-2.5 text-gray-900 rounded-lg dark:text-white bg-white dark:bg-[#3c4042] text-sm font-light w-56`}>Dashboard</span>
                 </Link>
               </li>
 
@@ -166,7 +166,7 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
                   </Link>
                   <Link
                     href={sidebaritem.menulink}>
-                        <span className={`${collapsed ? 'hidden' : ''} ${hoveredItem === sidebaritem.menuname ? 'block' : 'hidden'} flex shadow absolute p-2.5 text-gray-900 rounded-lg dark:text-white bg-gray-50 dark:bg-[#3c4042] justify-between items-center opacity-90 text-sm font-light w-56`}
+                        <span className={`${collapsed ? 'hidden' : ''} ${hoveredItem === sidebaritem.menuname ? 'block' : 'hidden'} flex shadow absolute p-2.5 text-gray-900 rounded-lg dark:text-white bg-white dark:bg-[#3c4042] justify-between items-center opacity-90 text-sm font-light w-56`}
                           >{sidebaritem.menuname}
                                 <svg
                                   className="w-3 h-3"
@@ -186,7 +186,7 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
                         </span>
                   </Link>
                   {sidebaritem.children && (
-                    <ul id="dropdown-example" className={`${collapsed ? 'hidden' : 'block'} ${hoveredItem === sidebaritem.menuname ? 'block' : 'hidden'} shadow absolute p-2.5 text-gray-900 rounded-lg dark:text-white bg-gray-50 dark:bg-[#3c4042] justify-between items-center ml-12 mt-10 opacity-90 w-[210px]`}>
+                    <ul id="dropdown-example" className={`${collapsed ? 'hidden' : 'block'} ${hoveredItem === sidebaritem.menuname ? 'block' : 'hidden'} shadow absolute p-2.5 text-gray-900 rounded-lg dark:text-white bg-white dark:bg-[#3c4042] justify-between items-center ml-12 mt-10 opacity-90 w-[210px]`}>
                         {sidebaritem.children.map(submenu1 => (
                             <li key={submenu1.id}>
                               <Link

@@ -13,8 +13,20 @@ import AssetRequisitionsListTable from "./components/assetRequisitionsListTable"
 import { useAssestrequisitionListQuery } from "@/app/_lib/redux/features/assestrequisition/assest_requisition_api";
 import AssestRequisitionsGridComponent from "./components/assestRequisitionsGridComponent";
 import ViewOrUpdateAssetRequisitions from "./components/viewOrUpdateAssetRequisition";
+import { useAuthpermissionsQuery } from "@/app/_lib/redux/features/authpermission/auth_permission_api";
 
 export default function Page() {
+
+  //auth permissions
+  const [thisuserpermissionArray, setthisuserpermissionArray] = useState([]);
+  const { data: permissionList } = useAuthpermissionsQuery(); 
+
+  useEffect(() => {
+    if (permissionList) {
+      const permissions = Object.values(permissionList.thisuserpermission);
+      setthisuserpermissionArray(permissions);
+    }
+  }, [permissionList]);
 
   const router = useRouter();
   const [workflowRequestType, setWorkflowRequestType] = useState('');
@@ -48,10 +60,13 @@ export default function Page() {
   } = useAssestrequisitionListQuery();
 
   // search bar
-  const searchQuery =
-  useSelector((state) => state.pageHeader.searchQuery) || "";
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6);
+  const searchQuery = useSelector((state) => state.pageHeader.searchQuery) || "";
 
-  const filteredData = Assestrequisition?.allUserAssetRequisition?.filter((item) =>
+  const AssestrequisitionData = Assestrequisition?.allUserAssetRequisition || [];
+  const reversedData = [...AssestrequisitionData].reverse();
+  const filteredData = reversedData.filter((item) =>
       item.requisition_id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -61,12 +76,17 @@ export default function Page() {
     addForm: {
       modelTitle: "Add New Asset Requisition",
       formComponent: <AddNewAssetRequisitionForm />,
-      modelPageSize: "w-4/5",
+      modelPageSize: "w-4/5", 
+      showModelTitle:{showModelTitle},
     },
     updateForm: {
       modelTitle: "Update Existing Workflow",
       formComponent: <ViewOrUpdateAssetRequisitions/>,
       modelPageSize: "w-4/5",
+    },
+    viewForm: {
+      modelTitle: "",
+      formComponent:"",
     },
     deleteForm: {
       modelTitle: "Remove Workflow",
@@ -105,12 +125,20 @@ export default function Page() {
           <PageListView 
             component={AssetRequisitionsListTable}
             data={filteredData}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            setCurrentPage={setCurrentPage}
+            thisuserpermissionArray={thisuserpermissionArray}
           />
         ) : (
           <PageGridView
             component={AssestRequisitionsGridComponent}
             gridcolume={gridviewColume}
             data={filteredData}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            setCurrentPage={setCurrentPage}
+            thisuserpermissionArray={thisuserpermissionArray}
             icon={
               <VscServerProcess className="font-semibold text-white dark:text-white text-[42px]" />
             }

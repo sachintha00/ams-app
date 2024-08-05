@@ -166,7 +166,7 @@ export default function Requisitionsapproval  ({ formData, modelData, requestTyp
 
         try {
         const budget = 160;
-        const requisitionApprovelData = { designation_user_id: designationUser, workflow_request_type_id: requestType, workflow_id: workflowId, asset_requisition_id:RequisitionId, budget_value:budget, requisition_data_object: formData };
+        const requisitionApprovelData = { designation_user_id: designationUser, workflow_request_type_id: requestType, workflow_id: workflowId, requisition_id:RequisitionId, budget_value:budget, requisition_data_object: formData };
         console.log(requisitionApprovelData);
         submitRequisitionApprovel(requisitionApprovelData)
             .unwrap()
@@ -187,7 +187,7 @@ export default function Requisitionsapproval  ({ formData, modelData, requestTyp
         <div>
             <div className="flex items-center mt-[-17px] px-2 pb-2 justify-between border-b rounded-t dark:border-gray-600">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Assing workflow for your {modelData.modelTopic}
+                  Assing workflow for your {modelData}
                 </h3>
             </div>
             <div className="px-2 pt-2 overflow-y-scroll h-[500px]" style={{ scrollbarWidth: '2px', scrollbarColor:'#888'}}>
