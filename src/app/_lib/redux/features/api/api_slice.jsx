@@ -6,12 +6,12 @@ const baseQuery = fetchBaseQuery({
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth.accessToken;
-    const email = getState().auth.user.email;
+    // const email = getState().auth.user.email;
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
     // headers.set('Content-Type', 'application/json');
-    headers.set('Email', email);
+    // headers.set('Email', email);
     return headers;
   },
 });
