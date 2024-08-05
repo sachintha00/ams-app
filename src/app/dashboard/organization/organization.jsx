@@ -159,7 +159,7 @@ export default function Organization() {
   return (
     <div className="p-4 pl-8 border-gray-200 rounded-md subcontent dark:border-gray-700">
       <div className="flex items-center justify-center rounded bg-white dark:bg-[#121212]">
-        <div className="w-[-webkit-fill-available]">
+        <div className="w-[100%]">
           <div className="overflow-hidden bg-white sm:rounded-md dark:bg-[#121212]">
             <div className="flex-row items-center justify-between py-2 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
               <nav className="flex" aria-label="Breadcrumb">

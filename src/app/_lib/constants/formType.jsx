@@ -3,4 +3,5 @@ export const FORM_TYPE = {
   UPDATE: "UPDATE",
   VIEW: "VIEW",
   DELETE: "DELETE",
+  OTHER: "OTHER",
 };
