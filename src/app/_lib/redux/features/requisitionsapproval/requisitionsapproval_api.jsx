@@ -34,10 +34,10 @@ export const roleApi = apiSlice.injectEndpoints({
       }),
     }),
     submitRequisitionApprovel: builder.mutation({
-      query: ({ designation_user_id, workflow_request_type_id, workflow_id, asset_requisition_id, budget_value, requisition_data_object }) => ({
+      query: ({ designation_user_id, workflow_request_type_id, workflow_id, requisition_id, budget_value, requisition_data_object }) => ({
         url: "workflow/request-process/submit-data",
         method: "POST",
-        body: { designation_user_id, workflow_request_type_id, workflow_id, asset_requisition_id, budget_value, requisition_data_object },
+        body: { designation_user_id, workflow_request_type_id, workflow_id, requisition_id, budget_value, requisition_data_object },
         credentials: "include", 
       }),
       invalidatesTags: [TAGS.ASSESTREQUISITION],

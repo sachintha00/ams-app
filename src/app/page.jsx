@@ -42,34 +42,25 @@ export default function Home() {
         }
     }
 
-    // Initialize state with value from localStorage, default to light mode
-    const [lightMode, setLightMode] = useState(() => {
-        const theme = localStorage.getItem("theme");
-        return theme === "dark" ? false : true; // Default to light mode
-    });
+    const [lightMode, setLightMode] = useState(true);
 
-    // Set the initial theme based on localStorage value
     useEffect(() => {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark") {
-        document.documentElement.classList.add('dark');
-        } else {
-        document.documentElement.classList.remove('dark');
-        }
-    }, []);
+      const theme = localStorage.getItem("theme")
+      if (theme === "light") setLightMode(true)
+    }, [])
 
-    // Update theme and localStorage whenever lightMode changes
-    useEffect(() => {
-        if (lightMode) {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem("theme", "light");
-        } else {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem("theme", "dark");
-        }
-    }, [lightMode]);
+    useEffect(() =>{
+      if (lightMode) {
+        document.documentElement.classList.remove('dark')
+        localStorage.setItem("theme", "light")
+      } else {
+        document.documentElement.classList.add('dark')
+        localStorage.setItem("theme", "dark")
+      }
+    }, [lightMode])
+
   return (
-      <div className="min-h-screen h-screen bg-white dark:bg-[#1e1e1e]">
+      <div className="h-dvh bg-white dark:bg-[#1e1e1e]">
         <header className="absolute inset-x-0 top-0 z-50">
           <nav className="flex items-center justify-end p-6 lg:px-8" aria-label="Global">
                 <div className='relative w-[53px] h-[30px] flex items-center bg-slate-300 dark:bg-[#121212] bg-teal-500bg-teal-500 cursor-pointer rounded-full p-1 mr-10' onClick={() => setLightMode(!lightMode)}>
@@ -126,7 +117,7 @@ export default function Home() {
                               id="email"
                               value={email}
                               onChange={e => setEmail(e.target.value)}
-                              className="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5  dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                              className="rounded-none rounded-e-lg bg-white border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5  dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                               placeholder="jhon@gmail.com"
                             />
                           </div>
@@ -147,24 +138,24 @@ export default function Home() {
                               id="password"
                               value={password}
                               onChange={e => setPassword(e.target.value)}
-                              className="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                              className="rounded-none rounded-e-lg bg-white border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-[#3c4042] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                               placeholder="Bonnie Green"
                             />
                           </div>
                         </div>
                         <div className="flex items-start mb-5">
                           <div className="flex items-center h-5">
-                            <input id="remember" type="checkbox" value="" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"/>
+                            <input id="remember" type="checkbox" value="" className="w-4 h-4 border border-gray-300 rounded bg-white focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"/>
                           </div>
                           <label for="remember" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Remember me</label>
                         </div>
-                        <button type="submit" className="w-full text-white bg-[#213389] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center dark:bg-[#213389] dark:focus:ring-blue-800">Sign in</button>
+                        <button type="submit" className="w-full text-white bg-[#213389] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-[#213389] dark:focus:ring-blue-800">Sign in</button>
                       </form>
                   </div>
               </div>
             </div>
           </div>
-          <div
+          {/* <div
             className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
             aria-hidden="true"
           >
@@ -175,7 +166,7 @@ export default function Home() {
                   'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
               }}
             />
-          </div>
+          </div> */}
         </div>
       </div>
   );

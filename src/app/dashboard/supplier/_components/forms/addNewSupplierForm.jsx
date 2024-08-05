@@ -418,7 +418,7 @@ function AddNewSupplierForm() {
                     </Form.Item>
                 </Form>)
                     :
-                    <Requisitionsapproval RequisitionId={supplierRegNo} formData={formSubmitData} modelData={"Supplier Registration"} requestType={1} />
+                    <Requisitionsapproval RequisitionId={supplierRegNo} formData={formSubmitData} modelData={"Supplier Registration"} requestType={2} />
             }
         </div>
     );

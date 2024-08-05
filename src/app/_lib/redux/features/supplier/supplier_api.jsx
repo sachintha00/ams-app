@@ -58,6 +58,14 @@ export const supplierApi = apiSlice.injectEndpoints({
                 "SupplierList",
             ],
         }),
+        getSupplierlist: builder.query({
+            query: () => ({
+                url: `supplier/search?query=`,
+                method: "GET",
+                credentials: "include",
+            }),
+            providesTags: ["SupplierRegister"],
+        }),
     }),
 });
 
@@ -67,5 +75,6 @@ export const {
     useGetAllSupplierQuery,
     useGetSupplierFromSearchMutation,
     useUpdateSupplierMutation,
-    useRemoveSupplierMutation
+    useRemoveSupplierMutation,
+    useGetSupplierlistQuery,
 } = supplierApi;

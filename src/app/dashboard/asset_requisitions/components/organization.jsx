@@ -59,7 +59,6 @@ export default function Organization() {
   };
 
   const nodeStyle = {
-    width: "90px",
     borderRadius: "5px",
     display: "inline-block",
   };
@@ -95,7 +94,7 @@ export default function Organization() {
             </div>
             <div className="absolute left-0 right-0 -bottom-[35px] z-10">
               {node.children && Object.keys(node.children).length !== 0 && (
-                <button onClick={() => toggleNode(node.id)} className="z-50">
+                <a onClick={() => toggleNode(node.id)} className="z-50">
                   {isExpanded ? (
                     <div className="z-50 bg-white rounded-3xl">
                       <MdOutlineArrowDropDownCircle className="text-4xl rotate-180" />
@@ -105,7 +104,7 @@ export default function Organization() {
                       <MdOutlineArrowDropDownCircle className="text-4xl" />
                     </div>
                   )}
-                </button>
+                </a>
               )}
             </div>
           </div>
@@ -120,7 +119,7 @@ export default function Organization() {
 
   return (
     <div className="border-gray-200 rounded-md dark:border-gray-700">
-      <div className="flex items-center justify-center bg-gray-50 dark:bg-[#1e1e1e] tablelist">
+      <div className="flex items-center justify-center bg-white dark:bg-[#1e1e1e] tablelist">
         <div className="w-[-webkit-fill-available]">
           <div className="p-8">
             {organizationTreeStructureData ? (

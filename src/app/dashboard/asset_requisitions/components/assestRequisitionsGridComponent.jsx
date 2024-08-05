@@ -5,6 +5,7 @@ import { FaSave } from "react-icons/fa";
 import { MdPendingActions } from "react-icons/md";
 import { useDispatch } from "react-redux";
 import { MdOutlineSmsFailed } from "react-icons/md";
+import { FcApprove } from "react-icons/fc";
 
 function AssestRequisitionsGridComponent({
     gridcolume = "gap-2 2xl:grid-cols-5 min-[1200px]:grid-cols-4 min-[768px]:grid-cols-3 min-[640px]:grid-cols-2",
@@ -24,7 +25,7 @@ function AssestRequisitionsGridComponent({
         );
       };
     return (
-        <div className={`grid ${gridcolume} mb-1 rounded bg-gray-50 dark:bg-[#121212]`}>
+        <div className={`grid ${gridcolume} mb-1 rounded bg-white dark:bg-[#121212]`}>
             {/* {data.map((item) => (
                 <div className="w-full p-5 my-5 bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
                     {icon}
@@ -104,7 +105,11 @@ function AssestRequisitionsGridComponent({
                             : 
                             request.requisition_status === 'REJECTED' ? (
                                 <p className="flex items-center text-red-500 mb-4"><MdOutlineSmsFailed className="text-red-500 text-[20px] mr-1"/>  Approvel Rejected</p>
-                            ) : null}
+                            ) 
+                            :
+                            request.requisition_status === 'APPROVED' ? (
+                                <p className="flex items-center text-green-500 mb-4"><FcApprove className="text-green-500 text-[20px] mr-1"/>  Approved</p>
+                            ) :null}
                             <div className="flex justify-end">
                                 <a
                                 className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-[#213389] hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800"
@@ -113,7 +118,7 @@ function AssestRequisitionsGridComponent({
                                 }
                                 >
                                 More details
-                                </a>
+                                </a> 
                             </div>
                         </div>
                     </div>

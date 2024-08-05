@@ -1,17 +1,22 @@
-import React from 'react'
-import { FaPenToSquare } from 'react-icons/fa6';
-import { MdDelete } from 'react-icons/md';
+import React, { useEffect } from "react";
+import { MdDelete } from "react-icons/md";
+import { FaPenToSquare } from "react-icons/fa6";
+import { useDispatch } from "react-redux";
+import { handleOpenPopupModel } from "@/app/_lib/redux/features/popupModel/popupModelSlice";
+import { FORM_TYPE } from "@/app/_lib/constants/formType";
 
-function SupplierGridComponent(
+function SupplierGridComponent({
     id,
     icon,
     name,
     description,
-) {
+}) {
+    const dispatch = useDispatch();
+
     const handleDelete = async () => {
         dispatch(
             handleOpenPopupModel({
-                id,
+                id: id,
                 value: name,
                 formType: FORM_TYPE.DELETE,
             })
@@ -21,22 +26,23 @@ function SupplierGridComponent(
     const handleUpdate = async () => {
         dispatch(
             handleOpenPopupModel({
-                id,
+                id: id,
                 value: name,
                 formType: FORM_TYPE.UPDATE,
             })
         );
     };
+
     return (
         <div className="w-full p-5  mt-2 max-w-sm bg-white border border-gray-300 rounded-md  dark:bg-[#1e1e1e] dark:border-gray-700 cursor-default">
-            <div className="flex cursor-pointer">
-                {/* {icon} */}
+            <div className="flex cursor-pointer" >
+                {icon}
                 <div>
                     <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">
-                        test
+                        {name}
                     </h5>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                        test
+                        {description}
                     </span>
                 </div>
             </div>
@@ -51,7 +57,7 @@ function SupplierGridComponent(
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
-export default SupplierGridComponent
+export default SupplierGridComponent;
