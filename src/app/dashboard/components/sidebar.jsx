@@ -149,7 +149,7 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
                     </div>
                     {activeMenuItem === sidebaritem.id ? <IoIosArrowUp className='text-sm'/> : <IoIosArrowDown className='text-sm'/>}
                   </Link>
-                  <Link
+                  {/* <Link
                     href={sidebaritem.menulink}>
                         <span className={`${collapsed ? 'hidden' : ''} ${hoveredItem === sidebaritem.menuname ? 'block' : 'hidden'} flex shadow absolute p-2.5 text-gray-900 rounded-lg dark:text-white bg-white dark:bg-[#3c4042] justify-between items-center opacity-90 text-sm font-light w-56`}
                           >{sidebaritem.menuname}
@@ -169,14 +169,14 @@ const Sidebar = ({ collapsed, onToggleSidebar }) => {
                                   />
                                 </svg>
                         </span>
-                  </Link>
+                  </Link> */}
                   {sidebaritem.children && (
-                    <ul id="dropdown-example" className={`${collapsed ? 'hidden' : 'block'} ${hoveredItem === sidebaritem.menuname ? 'block' : 'hidden'} shadow absolute p-2.5 text-gray-900 rounded-lg dark:text-white bg-white dark:bg-[#3c4042] justify-between items-center ml-12 mt-10 opacity-90 w-[210px]`}>
+                    <ul id="dropdown-example" className={`${collapsed ? 'hidden' : 'block'} ${hoveredItem === sidebaritem.menuname ? 'block' : 'hidden'} shadow absolute text-gray-900 hover:rounded-lg rounded-lg dark:text-white bg-white dark:bg-[#3c4042] border dark:border-gray-700 justify-between items-center opacity-95 w-[210px] ml-[35px]`}>
                         {sidebaritem.children.map(submenu1 => (
-                            <li key={submenu1.id}>
+                            <li key={submenu1.id} className='hover:bg-gray-100 dark:hover:bg-[#1e1e1e] p-[5px]'>
                               <Link
                                 href={submenu1.menulink}
-                                className="flex items-center justify-between w-full text-gray-900 transition duration-75 rounded-lg group dark:text-white text-sm mt font-light p-1"
+                                className="flex items-center justify-between w-full text-gray-900 transition duration-75 rounded-lg group dark:text-white text-xs mt font-light"
                               >
                                 {submenu1.menuname}
                               </Link>

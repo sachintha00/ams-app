@@ -104,6 +104,7 @@ export default function Requisitionsapproval  ({ formData, modelData, requestTyp
             }
             setWorkflowId(value);
             const workflowData = { workflow_id: value, variable_values: variable };
+            console.log(workflowData);
             getFirstApruvel(workflowData)
               .unwrap()
               .then((response) => {

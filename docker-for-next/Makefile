@@ -7,13 +7,13 @@ export GID
 include .env
 
 up-f:
-	docker compose -f docker-compose-dev.yml up --build --remove-orphans
+	docker compose -f docker-compose-dev.yml up --build
 
 up:
-	docker compose -f docker-compose-dev.yml up -d --build --remove-orphans 
+	docker compose -f docker-compose-dev.yml up -d --build
 
 down:
-	docker compose -f docker-compose-dev.yml down --remove-orphans
+	docker compose -f docker-compose-dev.yml down
 
 shell-app:
 	docker exec -it $(APP_NAME) /bin/sh

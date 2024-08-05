@@ -2,13 +2,10 @@ import { FORM_TYPE } from "@/app/_lib/constants/formType";
 import { handleOpenPopupModel } from "@/app/_lib/redux/features/popupModel/popupModelSlice";
 import { useDispatch } from "react-redux";
 import { BiEdit } from "react-icons/bi";
-import { FaUserLock } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import { FaPenToSquare } from "react-icons/fa6";
-import { FaUserAlt } from "react-icons/fa";
-import { IoClose } from "react-icons/io5";
-import { RiLockPasswordLine } from "react-icons/ri";
 import { useStatuschangeUserMutation } from "@/app/_lib/redux/features/user/user_api";
+import ProfileImage from "../../components/imagedisplay/ProfileImage";
+import { MdLockReset } from "react-icons/md";
 
 function usersGridComponent({
     gridcolume = "gap-2 2xl:grid-cols-5 min-[1200px]:grid-cols-4 min-[768px]:grid-cols-3 min-[640px]:grid-cols-2",
@@ -25,6 +22,16 @@ function usersGridComponent({
             id,
             value: modelvalue,
             formType: FORM_TYPE.VIEW,
+          })
+        );
+      };
+    const handleToggleResetpasswordModel = async (id, modelvalue) => {
+        console.log(id);
+        dispatch(
+          handleOpenPopupModel({
+            id,
+            value: modelvalue,
+            formType: FORM_TYPE.OTHER,
           })
         );
       };
@@ -55,7 +62,7 @@ function usersGridComponent({
     const handleToggleStatus = (userId, newStatus) => {
         console.log(userId);
         try {
-            const user = { ID: userId, status: newStatus }
+            const user = { ID: userId, is_user_blocked: newStatus }
             statuschangeUser(user)
                 .unwrap()
                 .then((response) => {
@@ -81,22 +88,9 @@ function usersGridComponent({
         <div className={`grid ${gridcolume} mb-1 rounded bg-white dark:bg-[#121212]`}>
                 {data.map((Users) => {
                     return(
-                      <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 pt-3">
+                      <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700 pt-3">
                         <div className="flex flex-col items-center pb-10">
-                        {Users.profie_image ? (
-                          <img
-                            className="w-24 h-24 mb-3 rounded-full shadow-lg"
-                            src={`${process.env.NEXT_PUBLIC_API_URL}${Users.profie_image}`}
-                            alt={`${Users.name} profile`}/>
-                        ) 
-                        : 
-                        (
-                          <img
-                            className="w-24 h-24 mb-3 rounded-full shadow-lg"
-                            src="/avater.png"
-                            alt="Bonnie image"
-                          />
-                        )}
+                          <ProfileImage image={Users.profie_image} name={Users.name} size="w-24 h-24 mb-3"/>
                           <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white mx-2">
                             {Users.name}
                           </h5>
@@ -139,7 +133,7 @@ function usersGridComponent({
                                   </div> */}
                                   {thisuserpermissionArray.includes('user status change') && (
                                           <label className="inline-flex items-center cursor-pointer mx-1">
-                                              <input type="checkbox" checked={Users.status} className="sr-only peer" onChange={() => handleToggle(Users.id, Users.status)} />
+                                              <input type="checkbox" checked={Users.is_user_blocked} className="sr-only peer" onChange={() => handleToggle(Users.id, Users.is_user_blocked)} />
                                               <div className="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600" />
                                           </label>
                                   )}
@@ -147,9 +141,9 @@ function usersGridComponent({
                                   {thisuserpermissionArray.includes('user password reset') && (
                                       <a
                                           className="mx-1"
-                                          // onClick={() => handleToggleResetpasswordModel(Users.id)}
+                                          onClick={() => handleToggleResetpasswordModel(Users.id, Users)}
                                       >
-                                          <RiLockPasswordLine className='text-3xl text-gray-700 dark:text-white' />
+                                          <MdLockReset className='text-3xl text-gray-700 dark:text-white' />
                                       </a>
                                   )}
 
@@ -169,7 +163,9 @@ function usersGridComponent({
                                   {thisuserpermissionArray.includes('delete user') && (
                                       <a
                                           className="mx-1"
-                                          // onClick={() => handleToggleDeleteRoleModel(Users.id)}
+                                          onClick={() =>
+                                            handleDelete(Users.id, Users)
+                                          }
                                       >
                                           <MdDelete className="text-red-400 hover:text-red-500 text-3xl" />
                                       </a>

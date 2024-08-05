@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { handleOpenPopupModel } from "@/app/_lib/redux/features/popupModel/popupModelSlice";
 import { FORM_TYPE } from "@/app/_lib/constants/formType";
+import { BiEdit } from "react-icons/bi";
 
 function WorkflowHomeGridComponent({
   id,
@@ -53,12 +54,12 @@ function WorkflowHomeGridComponent({
         </div>
       </div>
       <div className="flex items-center justify-end mt-4 md:mt-6">
-        <div className="flex w-[20%] justify-between">
+        <div className="flex w-[35%] justify-between">
           <a className="cursor-pointer" onClick={handleUpdate}>
-            <FaPenToSquare className="text-[#DBAE58] text-2xl" />
+            <BiEdit className="text-yellow-400 hover:text-yellow-500 text-3xl" />
           </a>
           <a className="cursor-pointer" onClick={handleDelete}>
-            <MdDelete className="text-[#D32D41] text-2xl" />
+            <MdDelete className="text-red-400 hover:text-red-500 text-3xl" />
           </a>
         </div>
       </div>

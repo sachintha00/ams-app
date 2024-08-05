@@ -17,6 +17,9 @@ import { useUsersListQuery } from "@/app/_lib/redux/features/user/user_api";
 import usersGridComponent from "./components/usersGridComponent";
 import AddNewUsersForm from "./components/addNewUsersForm";
 import UsersListTable from "./components/usersListTable";
+import DeleteUserForm from "./components/deleteUserForm";
+import ResetUserPasswordForm from "./components/resetUserPasswordForm";
+import UpdateUserForm from "./components/updateUserForm";
 
 export default function Page() {
 
@@ -82,9 +85,9 @@ export default function Page() {
       modelPageSize: "w-4/5",
     },
     updateForm: {
-      modelTitle: "Update Supplier Quotation",
-      formComponent: <UpdateRolesForm/>,
-      modelPageSize: "w-1/2",
+      modelTitle: "Update User Details",
+      formComponent: <UpdateUserForm/>,
+      modelPageSize: "w-4/5",
     },
     viewForm: {
       modelTitle: "Managing Parmison",
@@ -92,8 +95,13 @@ export default function Page() {
       modelPageSize: "w-[95%]",
     },
     deleteForm: {
-      modelTitle: "Remove Supplier Quotation",
-      formComponent: <DeleteRolesForm/>,
+      modelTitle: "",
+      formComponent: <DeleteUserForm/>,
+      showModelTitle:{showModelTitle},
+    },
+    otherForm: {
+      modelTitle: "",
+      formComponent: <ResetUserPasswordForm/>,
       showModelTitle:{showModelTitle},
     },
   };

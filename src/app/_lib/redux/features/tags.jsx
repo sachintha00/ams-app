@@ -5,4 +5,5 @@ export const TAGS = {
     PROCUREMENT: 'Procurement',
     ROLES: 'Roles',
     USERS: 'Users',
+    ASSETSMANAGEMENT: 'AssestManagement',
 };

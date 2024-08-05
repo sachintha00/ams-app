@@ -5,13 +5,14 @@ const baseQuery = fetchBaseQuery({
   baseUrl: `${process.env.NEXT_PUBLIC_API_URL}api/v1`,
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
+    const tenantToken = getState().auth.tenantToken;
     const token = getState().auth.accessToken;
-    const email = getState().auth.user.email;
+    if (tenantToken) {
+      headers.set('TenantToken', tenantToken);
+    }
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
-    // headers.set('Content-Type', 'application/json');
-    headers.set('Email', email);
     return headers;
   },
 });
@@ -38,6 +39,6 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 
 export const apiSlice = createApi({
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Workflows", "WorkflowDetails", "ApprovalAlert", "AssestRequisition", "Roles", "Users"],
+  tagTypes: ["Workflows", "WorkflowDetails", "ApprovalAlert", "AssestRequisition", "Roles", "Users", "AssestManagement"],
   endpoints: (builder) => ({}),
 });
