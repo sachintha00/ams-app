@@ -16,6 +16,7 @@ import ViewQuotationDetails from "../supplier_quotation/components/viewQuotation
 import DeleteSupplierQuotationForm from "../supplier_quotation/components/deleteSupplierQuotationForm";
 import SupplierQuotationListTable from "../supplier_quotation/components/supplierQuotationListTable";
 import SupplierQuotationGridComponent from "../supplier_quotation/components/supplierQuotationGridComponent";
+import AddNewAssetsForm from "./components/addNewAssetsForm";
 
 export default function Page() {
 
@@ -49,8 +50,8 @@ export default function Page() {
 
   const form = {
     addForm: {
-      modelTitle: "Supplier Quotation Form",
-      formComponent: <AddNewSupplierQuotationForm />,
+      modelTitle: "Assets Record & Register",
+      formComponent: <AddNewAssetsForm />,
       modelPageSize: "w-4/5",
     },
     updateForm: {
