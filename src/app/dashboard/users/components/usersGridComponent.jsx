@@ -81,7 +81,7 @@ function usersGridComponent({
         <div className={`grid ${gridcolume} mb-1 rounded bg-white dark:bg-[#121212]`}>
                 {data.map((Users) => {
                     return(
-                      <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 pt-3">
+                      <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700 pt-3">
                         <div className="flex flex-col items-center pb-10">
                         {Users.profie_image ? (
                           <img
