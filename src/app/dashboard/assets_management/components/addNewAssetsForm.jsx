@@ -28,20 +28,20 @@ function AddNewAssetsForm({ }) {
                     >
                         <div className="grid gap-6 md:grid-cols-2">
                             <div>
-                            <label
-                                htmlFor="last_name"
-                                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                            >
-                                Asset Type
-                            </label>
-                            <SelectInput
-                                placeholder="Search and Select supplier"
-                                data={assetsTypeArray}
-                                onSelect={setSelectedAssetsType}
-                                selected={selectedAssetsType}
-                                searchInput={searchInput}
-                                setSearchInput={setSearchInput}
-                            />
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Asset Type
+                                </label>
+                                <SelectInput
+                                    placeholder="Search and Select Assets Type"
+                                    data={assetsTypeArray}
+                                    onSelect={setSelectedAssetsType}
+                                    selected={selectedAssetsType}
+                                    searchInput={searchInput}
+                                    setSearchInput={setSearchInput}
+                                />
                             </div>
                         </div>
                     </form>
