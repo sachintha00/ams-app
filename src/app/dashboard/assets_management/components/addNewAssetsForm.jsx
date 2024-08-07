@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import { useAssestListQuery } from '@/app/_lib/redux/features/assetsmanagement/assets_management_api';
 import SelectInput from '../../components/inputs/SelectInput';
+import renderAssetTypeItem from './menulist/renderAssetTypeItem';
 
 function AddNewAssetsForm({ }) {
 
@@ -41,6 +42,7 @@ function AddNewAssetsForm({ }) {
                                     selected={selectedAssetsType}
                                     searchInput={searchInput}
                                     setSearchInput={setSearchInput}
+                                    renderItem={renderAssetTypeItem}
                                 />
                             </div>
                         </div>

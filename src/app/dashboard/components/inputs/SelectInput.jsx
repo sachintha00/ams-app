@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const SelectInput = ({ placeholder, data, onSelect, selected, searchInput, setSearchInput }) => {
+const SelectInput = ({ placeholder, data, onSelect, selected, searchInput, setSearchInput, renderItem }) => {
     const [isOpen, setIsOpen] = useState(false);
     const refList = useRef(null);
 
@@ -47,7 +47,7 @@ const SelectInput = ({ placeholder, data, onSelect, selected, searchInput, setSe
                     <ul className="h-auto max-h-48 px-3 py-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200">
                         {data.map((item) => (
                             <li onClick={() => handleSelect(item)} key={item.assest_type_id}>
-                                <div className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                                {/* <div className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
                                     <label className="w-full text-sm font-medium text-gray-900 dark:text-gray-300">
                                         {item.name}
                                     </label>
@@ -61,7 +61,10 @@ const SelectInput = ({ placeholder, data, onSelect, selected, searchInput, setSe
                                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
                                         </svg>
                                     )}
-                                </div>
+                                </div> */}
+                                {renderItem ? renderItem(item, selected) : (
+                                    <div>Empty list</div>
+                                )}
                             </li>
                         ))}
                     </ul>
