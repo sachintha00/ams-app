@@ -16,9 +16,10 @@ import renderResponsiblePerson from './menulist/renderResponsiblePerson';
 import { BiEdit } from "react-icons/bi";
 import Organization from './menulist/organization';
 import { useDispatch, useSelector } from 'react-redux';
+import { getorganizationid } from '@/app/_lib/redux/features/assestrequisition/organization_slice';
 
 function AddNewAssetsForm({ }) {
-
+        const usedispatch = useDispatch();
         const { data: assestList } = useAssestListQuery();
 
         // assests type
@@ -203,6 +204,7 @@ function AddNewAssetsForm({ }) {
         const [receivedCondition, setReceivedCondition] = useState('');
         const [assestDetails, setAssestDetails] = useState([]);
         const [itemName, setItemName] = useState('');
+        const [modelNumber, setModelNumber] = useState('');
         const [serialNumber, setSerialNumber] = useState('');
         const [storedLocation, setStoredLocation] = useState('');
         const [editIndex, setEditIndex] = useState(null); // Track index of item being edited
@@ -213,9 +215,11 @@ function AddNewAssetsForm({ }) {
             const savedFormData = JSON.parse(localStorage.getItem('assetRegister'));
             if (savedFormData) {
                 setItemName(savedFormData.itemName || '');
+                setModelNumber(savedFormData.modelNumber || '');
                 setSerialNumber(savedFormData.serialNumber || '');
                 setSelectedUser(savedFormData.selectedUser || '');
                 setStoredLocation(savedFormData.storedLocation || '');
+                setOrganization(savedFormData.organization || '');
             }
         }, []);
 
@@ -233,9 +237,11 @@ function AddNewAssetsForm({ }) {
             setter(newValue);
             updateFormData({
                 itemName: setter === setItemName ? newValue : itemName,
+                modelNumber: setter === setModelNumber ? newValue : modelNumber,
                 serialNumber: setter === setSerialNumber ? newValue : serialNumber,
                 selectedUser,
                 storedLocation: setter === setStoredLocation ? newValue : storedLocation,
+                organization: setter === setOrganization ? newValue : organization,
             });
         };
 
@@ -249,20 +255,22 @@ function AddNewAssetsForm({ }) {
             if (editIndex !== null) {
                 // If editIndex is set, update the item at that index
                 const updatedAssest = [...assestDetails];
-                updatedAssest[editIndex] = { itemName, serialNumber, selectedUser, storedLocation };
+                updatedAssest[editIndex] = { itemName, modelNumber, serialNumber, selectedUser, storedLocation, organization };
                 setAssestDetails(updatedAssest);
                 // Reset editIndex
                 setEditIndex(null);
             } else {
                 // Add new item to the list
-                const newAssest = { itemName, serialNumber, selectedUser, storedLocation };
+                const newAssest = { itemName, modelNumber, serialNumber, selectedUser, storedLocation, organization };
                 setAssestDetails([...assestDetails, newAssest]);
             }
           // Reset form fields
           setItemName('');
+          setModelNumber('');
           setSerialNumber('');
           setSelectedUser('');
           setStoredLocation('');
+          usedispatch(getorganizationid(null));
           localStorage.removeItem('assetRegister');
         };
 
@@ -270,9 +278,11 @@ function AddNewAssetsForm({ }) {
           // Populate form fields with data from the item being edited
           const itemToEdit = assestDetails[index];
           setItemName(itemToEdit.itemName);
+          setModelNumber(itemToEdit.modelNumber);
           setSerialNumber(itemToEdit.serialNumber);
           setSelectedUser(itemToEdit.selectedUser);
           setStoredLocation(itemToEdit.storedLocation);
+          usedispatch(getorganizationid(organization));
           // Set editIndex to track the item being edited
           setEditIndex(index);
         };
@@ -815,7 +825,7 @@ function AddNewAssetsForm({ }) {
                                             className="odd:bg-white odd:dark:bg-[#1e1e1e] even:bg-gray-50 even:dark:bg-[#3c4042] border-b dark:border-gray-700"
                                             >
                                             <td className="px-6 py-4">{item.serialNumber}</td>
-                                            {/* <td className="px-6 py-4">{item.selectedUser.name}</td> */}
+                                            <td className="px-6 py-4">{item.selectedUser.name}</td>
                                             <td className="px-6 py-4">{item.storedLocation}</td>
                                             <td className="px-6 py-4">
                                                 <div className="flex justify-evenly">
@@ -855,6 +865,8 @@ function AddNewAssetsForm({ }) {
                                         </label>
                                         <input 
                                             type="text" 
+                                            value={modelNumber}
+                                            onChange={handleChange(setModelNumber)}
                                             placeholder="Enter Model Number" 
                                             className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                         />
