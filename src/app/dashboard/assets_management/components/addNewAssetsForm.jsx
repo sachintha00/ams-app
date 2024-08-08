@@ -14,19 +14,8 @@ import { FaFilePdf } from "react-icons/fa6";
 import { useUsersListQuery } from '@/app/_lib/redux/features/user/user_api';
 import renderResponsiblePerson from './menulist/renderResponsiblePerson';
 import { BiEdit } from "react-icons/bi";
-import Modal from 'react-modal';
-
-// Modal Styles
-const customStyles = {
-    content: {
-      top: '50%',
-      left: '50%',
-      right: 'auto',
-      bottom: 'auto',
-      marginRight: '-50%',
-      transform: 'translate(-50%, -50%)',
-    },
-};
+import Organization from './menulist/organization';
+import { useDispatch, useSelector } from 'react-redux';
 
 function AddNewAssetsForm({ }) {
 
@@ -122,7 +111,8 @@ function AddNewAssetsForm({ }) {
         //file uploading
 
         const [purchasingFiles, setPurchasingFiles] = useState([]);
-        const [selectedFile, setSelectedFile] = useState(null);
+        const [assestsDocument, setAssestsDocument] = useState([]);
+        const [insuranceDocument, setInsuranceDocument] = useState([]);
 
         const handleFileUpload = (e, setFileState) => {
             console.log(setFileState);
@@ -157,38 +147,36 @@ function AddNewAssetsForm({ }) {
             }
           };
 
-        const renderFileContent = (file) => {
-        const fileType = file.type.split('/')[1];
-        switch (fileType) {
-        case 'jpeg':
-        case 'jpg':
-        case 'png':
-        case 'gif':
-            return <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />;
-        case 'csv':
-            return (
-            <div>
-                <h2>{file.name}</h2>
-                <textarea
-                readOnly
-                value={file.textContent}
-                rows={10}
-                className="w-full p-2 border"
-                />
-            </div>
-            );
-        default:
-            return <p>Unsupported file type</p>;
-        }
-    };
+        //organization
+        const [isOpenOrganizationStructure, setIsOpenOrganizationStructure] = useState(false);
 
-    const handleFileClick = async (file) => {
-        if (file.type === 'text/csv') {
-        const text = await file.text();
-        file.textContent = text;
-        }
-        setSelectedFile(file);
-    };
+        const refOrganizationStructure = useRef(null);
+
+        useEffect(() => {
+            const handleClickOutside = (event) => {
+              if (refOrganizationStructure.current && !refOrganizationStructure.current.contains(event.target)) {
+                setIsOpenOrganizationStructure(false);
+              }
+            };
+        
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => {
+              document.removeEventListener('mousedown', handleClickOutside);
+            };
+          }, []);
+    
+        const toggleOrganizationStructureHandler = () =>{
+            setIsOpenOrganizationStructure((prev) => !prev);
+        };
+
+        // get organization id
+        const [organization, setOrganization] = useState('');
+        //get organization id
+        const organizationid = useSelector((state) => state.organization);
+        // Update local state whenever organizationid changes
+        useEffect(() => {
+            setOrganization(organizationid);
+        }, [organizationid]);
 
         //add assest details
         const [receivedCondition, setReceivedCondition] = useState('');
@@ -277,7 +265,7 @@ function AddNewAssetsForm({ }) {
             <>
                 {/* Modal header */}
                     <form
-                        className="px-2 pt-2 overflow-y-scroll h-auto max-h-[600px] min-h-[450px]"
+                        className="px-2 pt-6 overflow-y-scroll h-auto max-h-[600px] min-h-[450px]"
                         style={{ scrollbarWidth: "2px", scrollbarColor: "#888" }}
                         encType="multipart/form-data"
                     >
@@ -318,33 +306,27 @@ function AddNewAssetsForm({ }) {
                                     name={'name'}
                                 />
                             </div>
-                            <CSSTransition
-                                    in={selectedAssetCategories}
-                                    timeout={200}
-                                    unmountOnExit
-                                >
-                                <div>
-                                    <label
-                                        htmlFor="last_name"
-                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                    >
-                                        Asset Sub Category
-                                    </label>
-                                    <SelectInput
-                                        placeholder="Search and Select Asset Sub Category"
-                                        data={subCategories}
-                                        onSelect={setSelectedAssetSubCategories}
-                                        selected={selectedSubAssetCategories}
-                                        searchInput={assetSubCategoriesSearchInput}
-                                        setSearchInput={setAssetSubCategoriesSearchInput}
-                                        renderItem={renderAssetSubCategories}
-                                        name={'assc_name'}
-                                    />
-                                </div>
-                            </CSSTransition>
-                        </div>
-                        <div className="grid gap-6 mb-6 md:grid-cols-3">
                             <div>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Asset Sub Category
+                                </label>
+                                <SelectInput
+                                    placeholder="Search and Select Asset Sub Category"
+                                    data={subCategories}
+                                    onSelect={setSelectedAssetSubCategories}
+                                    selected={selectedSubAssetCategories}
+                                    searchInput={assetSubCategoriesSearchInput}
+                                    setSearchInput={setAssetSubCategoriesSearchInput}
+                                    renderItem={renderAssetSubCategories}
+                                    name={"assc_name"}
+                                />
+                            </div>
+                        </div>
+                        <div className="grid gap-6 mb-6 md:grid-flow-col mb-grid-rows-3">
+                            <div className='col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -357,22 +339,7 @@ function AddNewAssetsForm({ }) {
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 />
                             </div>
-                            <div>
-                                <label
-                                    htmlFor="last_name"
-                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                >
-                                    Assest Model Number
-                                </label>
-                                <input 
-                                    type="text" 
-                                    placeholder="Enter Model Number" 
-                                    className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                />
-                            </div>
-                        </div>
-                        <div className="grid gap-6 mb-6 md:grid-cols-3">
-                            <div>
+                            <div className='col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -390,7 +357,7 @@ function AddNewAssetsForm({ }) {
                                     name={'name'}
                                 />
                             </div>
-                            <div>
+                            <div className='col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -403,6 +370,72 @@ function AddNewAssetsForm({ }) {
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 />
                             </div>
+                            <div className='row-span-3'>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Attach Assests related Documents
+                                </label>
+                                <label
+                                htmlFor="rpf-dropzone-file"
+                                className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                onDrop={(e) => handleDrop(e, setAssestsDocument)}
+                                >
+                                    <div className="flex flex-col items-center justify-center py-2">
+                                        <svg
+                                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                                        aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 20 16"
+                                        >
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                        />
+                                        </svg>
+                                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
+                                        </p>
+                                    </div>
+                                    {assestsDocument.length > 0 &&
+                                        <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
+                                            {assestsDocument.map((file, index) => (
+                                                <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
+                                                    <div className='flex justify-start w-[75%] items-center'>
+                                                        <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
+                                                            {getFileIcon(file)}
+                                                        </div>
+                                                        <p className="text-xs text-center mt-1 text-gray-500 dark:text-gray-400">{file.name}</p>
+                                                    </div>
+                                                    <a
+                                                        className="top-0 right-0 text-gray-400 bg-red-400 hover:bg-red-500 hover:text-white rounded-lg text-sm w-6 h-6 ml-0 inline-flex justify-center items-center dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white"
+                                                        onClick={() => removeFile(index, setAssestsDocument, assestsDocument)}
+                                                    >
+                                                        <IoClose className="text-xl text-white" />
+                                                    </a>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    }
+                                    <input
+                                        id="rpf-dropzone-file"
+                                        type="file"
+                                        className="hidden"
+                                        multiple
+                                        onChange={(e) => handleFileUpload(e, setAssestsDocument)}
+                                    />
+                                </label>
+                            </div>
+                        </div>
+                        <div className="grid gap-6 mb-6 md:grid-cols-3">
                             <div>
                                 <label
                                     htmlFor="last_name"
@@ -416,8 +449,6 @@ function AddNewAssetsForm({ }) {
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 />
                             </div>
-                        </div>
-                        <div className="grid gap-6 mb-6 md:grid-cols-3">
                             <div>
                                 <label
                                     htmlFor="last_name"
@@ -484,7 +515,9 @@ function AddNewAssetsForm({ }) {
                                     </li>
                                 </ul>
                             </div>
-                            <div>
+                        </div>
+                        <div className="grid gap-6 mb-6 md:grid-flow-col mb-grid-rows-3">
+                            <div className='col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -497,9 +530,7 @@ function AddNewAssetsForm({ }) {
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 />
                             </div>
-                        </div>
-                        <div className="grid gap-6 mb-6 md:grid-cols-2">
-                            <div>
+                            <div className='row-span-2 col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -508,25 +539,25 @@ function AddNewAssetsForm({ }) {
                                 </label>
                                 <textarea
                                     id="user_description"
-                                    rows="4"
+                                    rows="7"
                                     name="user_description"
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                     placeholder="Enter Other Purchase Details"
                                 ></textarea>
                             </div>
-                            <div>
+                            <div className='row-span-3'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                 >
-                                    Attachment Purchase Document
+                                    Attach Purchase Document
                                 </label>
                                 <label
                                 htmlFor="rpf-dropzone-file"
-                                className="flex flex-col items-center justify-center w-full h-auto border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
                                 onDrop={(e) => handleDrop(e, setPurchasingFiles)}
                                 >
-                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <div className="flex flex-col items-center justify-center py-2">
                                         <svg
                                         className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
                                         aria-hidden="true"
@@ -550,10 +581,10 @@ function AddNewAssetsForm({ }) {
                                         </p>
                                     </div>
                                     {purchasingFiles.length > 0 &&
-                                        <div className="mt-2 flex flex-col w-[100%]">
+                                        <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
                                             {purchasingFiles.map((file, index) => (
                                                 <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
-                                                    <div className='flex justify-start w-[75%] items-center' onClick={() => handleFileClick(file)}>
+                                                    <div className='flex justify-start w-[75%] items-center'>
                                                         <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
                                                             {getFileIcon(file)}
                                                         </div>
@@ -576,22 +607,24 @@ function AddNewAssetsForm({ }) {
                                         multiple
                                         onChange={(e) => handleFileUpload(e, setPurchasingFiles)}
                                     />
-                                        {selectedFile && (
-                                            <Modal
-                                            isOpen={!!selectedFile}
-                                            onRequestClose={() => setSelectedFile(null)}
-                                            style={customStyles}
-                                            contentLabel="File Modal"
-                                            >
-                                            <button onClick={() => setSelectedFile(null)}>Close</button>
-                                            {renderFileContent(selectedFile)}
-                                            </Modal>
-                                        )}
                                 </label>
                             </div>
                         </div>
-                        <div className="grid gap-6 mb-6 md:grid-cols-3">
-                            <div>
+                        <div className="grid gap-6 mb-6 md:grid-flow-col mb-grid-rows-3">
+                            <div className='col-span-2'>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Insurance Number
+                                </label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter Insurance Number" 
+                                    className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                />
+                            </div>
+                            <div className='col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -604,7 +637,7 @@ function AddNewAssetsForm({ }) {
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 />
                             </div>
-                            <div>
+                            <div className='col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -619,6 +652,70 @@ function AddNewAssetsForm({ }) {
                                     placeholder="Enter Estimated Depreciation Value ex:50%" 
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 />
+                            </div>
+                            <div className='row-span-3'>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Attach Insurance related Documents
+                                </label>
+                                <label
+                                htmlFor="rpf-dropzone-file"
+                                className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                onDrop={(e) => handleDrop(e, setInsuranceDocument)}
+                                >
+                                    <div className="flex flex-col items-center justify-center py-2">
+                                        <svg
+                                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                                        aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 20 16"
+                                        >
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                        />
+                                        </svg>
+                                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
+                                        </p>
+                                    </div>
+                                    {insuranceDocument.length > 0 &&
+                                        <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
+                                            {insuranceDocument.map((file, index) => (
+                                                <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
+                                                    <div className='flex justify-start w-[75%] items-center'>
+                                                        <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
+                                                            {getFileIcon(file)}
+                                                        </div>
+                                                        <p className="text-xs text-center mt-1 text-gray-500 dark:text-gray-400">{file.name}</p>
+                                                    </div>
+                                                    <a
+                                                        className="top-0 right-0 text-gray-400 bg-red-400 hover:bg-red-500 hover:text-white rounded-lg text-sm w-6 h-6 ml-0 inline-flex justify-center items-center dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white"
+                                                        onClick={() => removeFile(index, setInsuranceDocument, insuranceDocument)}
+                                                    >
+                                                        <IoClose className="text-xl text-white" />
+                                                    </a>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    }
+                                    <input
+                                        id="rpf-dropzone-file"
+                                        type="file"
+                                        className="hidden"
+                                        multiple
+                                        onChange={(e) => handleFileUpload(e, setInsuranceDocument)}
+                                    />
+                                </label>
                             </div>
                         </div>
                         <div className="grid gap-6 mb-6">
@@ -688,6 +785,19 @@ function AddNewAssetsForm({ }) {
                                             htmlFor="last_name"
                                             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                         >
+                                            Assest Model Number
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Enter Model Number" 
+                                            className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label
+                                            htmlFor="last_name"
+                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                        >
                                             Serial Number
                                         </label>
                                         <input 
@@ -716,6 +826,8 @@ function AddNewAssetsForm({ }) {
                                             name={'name'}
                                         />
                                     </div>
+                                </div>
+                                <div className="grid gap-6 mb-6 md:grid-cols-3">
                                     <div>
                                         <label
                                             htmlFor="last_name"
@@ -730,6 +842,42 @@ function AddNewAssetsForm({ }) {
                                             placeholder="Enter Stored Location" 
                                             className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                         />
+                                    </div>
+                                    <div className='col-span-2'>
+                                        <label
+                                            htmlFor="user_name"
+                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                        >
+                                            Department
+                                        </label>
+                                        <a
+                                            id="dropdownSearchButton"
+                                            data-dropdown-toggle="dropdownSearch"
+                                            className="flex justify-between items-center bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                            type="button"
+                                            onClick={toggleOrganizationStructureHandler}
+                                        >
+                                            Select Organization structure
+                                            <IoAddOutline className=" dark:text-white" />
+                                        </a>
+                                        {/* Dropdown menu */}
+                                        <div
+                                            data-collapse={isOpenOrganizationStructure}
+                                            ref={refOrganizationStructure}
+                                            className="relative"
+                                        >
+                                            <div
+                                            id="dropdownSearch"
+                                            className="z-10 hidden absolute bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] rolelist w-[100%] mr-2"
+                                            >
+                                            <div
+                                                className="container mx-auto p-4 relative overflow-y-scroll h-[335px] overflow-x-scroll w-[99%]"
+                                                style={{ scrollbarWidth: "thin" }}
+                                            >
+                                                <Organization />
+                                            </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="grid gap-6 mb-6 md:grid-cols-2 w-[40%]">
