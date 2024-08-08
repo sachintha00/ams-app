@@ -130,6 +130,18 @@ function AddNewAssetsForm({ }) {
             setFileState(fileState.filter((_, i) => i !== index));
         };
 
+        // thumbnail image uploading
+        const [thumbnailImage, setThumbnailImage] = useState(null);
+        const [previewUrl, setPreviewUrl] = useState(null);
+
+        const handleFileChange = (event) => {
+            const selectedFile = event.target.files[0];
+            if (selectedFile) {
+                setThumbnailImage(selectedFile);
+                setPreviewUrl(URL.createObjectURL(selectedFile));
+            }
+        };
+
         const getFileIcon = (file) => {
             const fileType = file.type.split('/')[1];
             switch (fileType) {
@@ -146,6 +158,15 @@ function AddNewAssetsForm({ }) {
                 return <FaFileAlt className='text-gray-500 text-[25px]'/>;
             }
           };
+
+        const handleRemoveImage = () => {
+            setThumbnailImage(null);
+            setPreviewUrl(null);
+            // Reset the file input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        };
 
         //organization
         const [isOpenOrganizationStructure, setIsOpenOrganizationStructure] = useState(false);
@@ -435,8 +456,53 @@ function AddNewAssetsForm({ }) {
                                 </label>
                             </div>
                         </div>
-                        <div className="grid gap-6 mb-6 md:grid-cols-3">
-                            <div>
+                        <div className="grid gap-6 mb-6 md:grid-flow-col mb-grid-rows-3">
+                            <div className='row-span-3'>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Attach Assests Thumbnail Image
+                                </label>
+                                <label
+                                htmlFor="rpf-dropzone-file"
+                                className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                >
+                                    <div className="flex flex-col items-center justify-center py-2">
+                                        <svg
+                                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                                        aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 20 16"
+                                        >
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                        />
+                                        </svg>
+                                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
+                                        </p>
+                                    </div>
+                                    {previewUrl && (
+                                        <div style={{ marginTop: '10px' }}>
+                                        <img src={previewUrl} alt="Profile Preview" style={{ width: '150px', height: '150px', display: 'block' }} />
+                                        <button type="button" onClick={handleRemoveImage} style={{ marginTop: '10px' }}>
+                                            Remove Image
+                                        </button>
+                                        </div>
+                                    )}
+                                    <input id="dropzone-file" type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                                </label>
+                            </div>
+                            <div className='col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -449,7 +515,7 @@ function AddNewAssetsForm({ }) {
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 />
                             </div>
-                            <div>
+                            <div className='col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -467,7 +533,7 @@ function AddNewAssetsForm({ }) {
                                     name={'name'}
                                 />
                             </div>
-                            <div>
+                            <div className='col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -749,7 +815,7 @@ function AddNewAssetsForm({ }) {
                                             className="odd:bg-white odd:dark:bg-[#1e1e1e] even:bg-gray-50 even:dark:bg-[#3c4042] border-b dark:border-gray-700"
                                             >
                                             <td className="px-6 py-4">{item.serialNumber}</td>
-                                            <td className="px-6 py-4">{item.selectedUser.name}</td>
+                                            {/* <td className="px-6 py-4">{item.selectedUser.name}</td> */}
                                             <td className="px-6 py-4">{item.storedLocation}</td>
                                             <td className="px-6 py-4">
                                                 <div className="flex justify-evenly">
