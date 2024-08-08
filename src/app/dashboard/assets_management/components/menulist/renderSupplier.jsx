@@ -1,9 +1,9 @@
-const renderAssetTypeItem = (assetType, selected) => (
+const renderSupplier = (Supplier, selected) => (
     <div className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
         <label className="w-full text-sm font-medium text-gray-900 dark:text-gray-300">
-            {assetType.name}
+            {Supplier.name}
         </label>
-        {selected && selected.assest_type_id === assetType.assest_type_id && (
+        {selected && selected.id === Supplier.id && (
             <svg
                 className="w-3.5 h-3.5 text-green-500 dark:text-green-400 flex-shrink-0"
                 xmlns="http://www.w3.org/2000/svg"
@@ -16,4 +16,4 @@ const renderAssetTypeItem = (assetType, selected) => (
     </div>
 );
 
-export default renderAssetTypeItem;
+export default renderSupplier;
