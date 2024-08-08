@@ -14,6 +14,19 @@ import { FaFilePdf } from "react-icons/fa6";
 import { useUsersListQuery } from '@/app/_lib/redux/features/user/user_api';
 import renderResponsiblePerson from './menulist/renderResponsiblePerson';
 import { BiEdit } from "react-icons/bi";
+import Modal from 'react-modal';
+
+// Modal Styles
+const customStyles = {
+    content: {
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+    },
+};
 
 function AddNewAssetsForm({ }) {
 
@@ -109,6 +122,7 @@ function AddNewAssetsForm({ }) {
         //file uploading
 
         const [purchasingFiles, setPurchasingFiles] = useState([]);
+        const [selectedFile, setSelectedFile] = useState(null);
 
         const handleFileUpload = (e, setFileState) => {
             console.log(setFileState);
@@ -142,6 +156,39 @@ function AddNewAssetsForm({ }) {
                 return <FaFileAlt className='text-gray-500 text-[25px]'/>;
             }
           };
+
+        const renderFileContent = (file) => {
+        const fileType = file.type.split('/')[1];
+        switch (fileType) {
+        case 'jpeg':
+        case 'jpg':
+        case 'png':
+        case 'gif':
+            return <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />;
+        case 'csv':
+            return (
+            <div>
+                <h2>{file.name}</h2>
+                <textarea
+                readOnly
+                value={file.textContent}
+                rows={10}
+                className="w-full p-2 border"
+                />
+            </div>
+            );
+        default:
+            return <p>Unsupported file type</p>;
+        }
+    };
+
+    const handleFileClick = async (file) => {
+        if (file.type === 'text/csv') {
+        const text = await file.text();
+        file.textContent = text;
+        }
+        setSelectedFile(file);
+    };
 
         //add assest details
         const [receivedCondition, setReceivedCondition] = useState('');
@@ -506,7 +553,7 @@ function AddNewAssetsForm({ }) {
                                         <div className="mt-2 flex flex-col w-[100%]">
                                             {purchasingFiles.map((file, index) => (
                                                 <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
-                                                    <div className='flex justify-start w-[75%] items-center'>
+                                                    <div className='flex justify-start w-[75%] items-center' onClick={() => handleFileClick(file)}>
                                                         <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
                                                             {getFileIcon(file)}
                                                         </div>
@@ -529,6 +576,17 @@ function AddNewAssetsForm({ }) {
                                         multiple
                                         onChange={(e) => handleFileUpload(e, setPurchasingFiles)}
                                     />
+                                        {selectedFile && (
+                                            <Modal
+                                            isOpen={!!selectedFile}
+                                            onRequestClose={() => setSelectedFile(null)}
+                                            style={customStyles}
+                                            contentLabel="File Modal"
+                                            >
+                                            <button onClick={() => setSelectedFile(null)}>Close</button>
+                                            {renderFileContent(selectedFile)}
+                                            </Modal>
+                                        )}
                                 </label>
                             </div>
                         </div>
