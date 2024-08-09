@@ -20,10 +20,11 @@ import { useAddNewAssestRequisitionMutation, useAssestrequisitionListQuery } fro
 import { getorganizationid } from '@/app/_lib/redux/features/assestrequisition/organization_slice';
 import Requisitionsapproval from '../../components/requisitionsapproval/requisitionsapproval';
 import { formatKeys } from '@/app/_lib/utils/formatKeys';
+import Organization from './organization';
 
-const OrganizationComponent = dynamic(() => import("./organization"), {
-    ssr: false,
-  });
+// const OrganizationComponent = dynamic(() => import("./organization"), {
+//     ssr: false,
+//   });
 
 function AddNewAssetRequisitionForm({ }) {
 
@@ -1009,7 +1010,7 @@ function AddNewAssetRequisitionForm({ }) {
                                                                     className="z-10 hidden absolute bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] rolelist w-[100%] mr-2"
                                                                 >
                                                                     <div className="container mx-auto p-4 relative overflow-y-scroll h-[335px] overflow-x-scroll w-[99%]" style={{ scrollbarWidth: 'thin'}}>
-                                                                        <OrganizationComponent />
+                                                                        <Organization/>
                                                                     </div>
                                                                 </div>
                                                             </div>
