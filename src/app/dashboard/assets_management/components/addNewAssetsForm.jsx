@@ -4,21 +4,23 @@ import { useAssestListQuery } from '@/app/_lib/redux/features/assetsmanagement/a
 import SelectInput from '../../components/inputs/SelectInput';
 import renderAssetTypeItem from './menulist/renderAssetTypeItem';
 import renderAssetSubCategories from './menulist/renderAssetSubCategories';
-import { CSSTransition } from 'react-transition-group';
 import { useGetSupplierlistQuery } from '@/app/_lib/redux/features/supplier/supplier_api';
 import renderSupplier from './menulist/renderSupplier';
-import { FaPenToSquare } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
 import { IoAddOutline } from "react-icons/io5";
 import { FaFilePdf } from "react-icons/fa6";
 import { useUsersListQuery } from '@/app/_lib/redux/features/user/user_api';
 import renderResponsiblePerson from './menulist/renderResponsiblePerson';
 import { BiEdit } from "react-icons/bi";
-import Organization from './menulist/organization';
+import dynamic from "next/dynamic";
 import { useDispatch, useSelector } from 'react-redux';
 import { getorganizationid } from '@/app/_lib/redux/features/assestrequisition/organization_slice';
 import { FaFileCsv } from "react-icons/fa6";
 import { FaFileAlt } from "react-icons/fa";
+
+const OrganizationComponent = dynamic(() => import("./menulist/organization"), {
+    ssr: false,
+  });
 
 function AddNewAssetsForm({ }) {
         const usedispatch = useDispatch();
@@ -1243,7 +1245,7 @@ function AddNewAssetsForm({ }) {
                                                 className="container mx-auto p-4 relative overflow-y-scroll h-[335px] overflow-x-scroll w-[99%]"
                                                 style={{ scrollbarWidth: "thin" }}
                                             >
-                                                <Organization />
+                                                <OrganizationComponent />
                                             </div>
                                             </div>
                                         </div>
