@@ -5,16 +5,14 @@ const baseQuery = fetchBaseQuery({
   baseUrl: `${process.env.NEXT_PUBLIC_API_URL}api/v1`,
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
-    const token = getState().auth.accessToken;
     const email = getState().auth.user.email;
+    const token = getState().auth.accessToken;
     if (email) {
       headers.set('Email', email);
     }
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
-    // headers.set('Content-Type', 'application/json');
-    // headers.set('Email', email);
     return headers;
   },
 });
