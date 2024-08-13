@@ -17,6 +17,7 @@ import DeleteSupplierQuotationForm from "../supplier_quotation/components/delete
 import SupplierQuotationListTable from "../supplier_quotation/components/supplierQuotationListTable";
 import SupplierQuotationGridComponent from "../supplier_quotation/components/supplierQuotationGridComponent";
 import AddNewAssetsForm from "./components/addNewAssetsForm";
+import AssetsGridComponent from "./components/assetsGridComponent";
 
 export default function Page() {
 
@@ -29,7 +30,7 @@ export default function Page() {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [showGridListButton, setShowGridListButton] = useState(false);
   const [showModelTitle, setshowModelTitle] = useState(false);
-  const gridviewColume = "gap-4 2xl:grid-cols-3 min-[1200px]:grid-cols-2 min-[768px]:grid-cols-2 min-[640px]:grid-cols-1";
+  const gridviewColume = "gap-2 2xl:grid-cols-4 min-[1200px]:grid-cols-3 min-[768px]:grid-cols-2 min-[640px]:grid-cols-1";
 
   const view = useSelector((state) => state.pageHeader.view);
 
@@ -108,7 +109,7 @@ export default function Page() {
           />
         ) : (
           <PageGridView
-            component={SupplierQuotationGridComponent}
+            component={AssetsGridComponent}
             gridcolume={gridviewColume}
             data={filteredData}
             currentPage={currentPage}

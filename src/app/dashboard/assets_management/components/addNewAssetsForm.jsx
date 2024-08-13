@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getorganizationid } from '@/app/_lib/redux/features/assestrequisition/organization_slice';
 import { FaFileCsv } from "react-icons/fa6";
 import { FaFileAlt } from "react-icons/fa";
+import { useDropzone } from 'react-dropzone';
 
 const OrganizationComponent = dynamic(() => import("./menulist/organization"), {
     ssr: false,
@@ -25,6 +26,12 @@ const OrganizationComponent = dynamic(() => import("./menulist/organization"), {
 function AddNewAssetsForm({ }) {
         const usedispatch = useDispatch();
         const { data: assestList } = useAssestListQuery();
+
+        const [files, setFiles] = React.useState([]);
+
+        const onDrop = (acceptedFiles) => {
+          setFiles(acceptedFiles);
+        };
 
         // assests type
         const [assetsTypeArray, setAssetsTypeArray] = useState([]);
@@ -116,17 +123,17 @@ function AddNewAssetsForm({ }) {
 
         //file uploading
 
-        const [files, setFiles] = useState([]);
-        const handleFileChange = (event) => {
-            const fileList = event.target.files;
-            const newFiles = Array.from(fileList);
-            setFiles([...files, ...newFiles]);
-        };
+        // const [files, setFiles] = useState([]);
+        // const handleFileChange = (event) => {
+        //     const fileList = event.target.files;
+        //     const newFiles = Array.from(fileList);
+        //     setFiles([...files, ...newFiles]);
+        // };
         
-        const handleRemoveFile = (index) => {
-            const updatedFiles = files.filter((_, i) => i !== index);
-            setFiles(updatedFiles);
-        };
+        // const handleRemoveFile = (index) => {
+        //     const updatedFiles = files.filter((_, i) => i !== index);
+        //     setFiles(updatedFiles);
+        // };
 
         const renderFile = (file, index) => {
             const fileType = file.type.split("/")[0]; // Get the file type (e.g., 'image', 'application')
@@ -399,6 +406,19 @@ function AddNewAssetsForm({ }) {
                         style={{ scrollbarWidth: "2px", scrollbarColor: "#888" }}
                         encType="multipart/form-data"
                     >
+                        <div className="grid gap-6 mb-6 md:grid-cols-3">
+                            <div>
+                            <div {...getRootProps()} style={{ border: '1px dashed #ccc', padding: '20px' }}>
+                                <input {...getInputProps()} />
+                                <p>Drag 'n' drop some files here, or click to select files</p>
+                            </div>
+                            <ul>
+                                {files.map((file) => (
+                                <li key={file.path}>{file.path}</li>
+                                ))}
+                            </ul>
+                            </div>
+                        </div>
                         <div className="grid gap-6 mb-6 md:grid-cols-3">
                             <div>
                                 <label
