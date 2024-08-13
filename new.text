@@ -1407,3 +1407,37 @@
         }
     }
 ]
+
+{
+    "p_thumbnail_image": null,
+    "p_assets_type": 1,
+    "p_category": 1,
+    "p_sub_category": 1,
+    "p_assets_value": "2000.00",
+    "p_assets_document": [],
+    "p_supplier": 1,
+    "p_purchase_order_number": "eregegeg",
+    "p_purchase_cost": "2100.00",
+    "p_purchase_type": 1,
+    "p_received_condition": "Brand New",
+    "p_warranty": "derffef",
+    "p_other_purchase_details": "test",
+    "p_purchase_document": [
+        {}
+    ],
+    "p_insurance_number": "dwdef",
+    "p_insurance_document": [
+        {}
+    ],
+    "p_expected_life_time": "10 years",
+    "p_depreciation_value": "50",
+    "asset_details": [
+        {
+            "modelNumber": "cd1234",
+            "serialNumber": "cs345",
+            "selectedUser": 1,
+            "storedLocation": "colombo",
+            "organization": 1
+        }
+    ]
+}

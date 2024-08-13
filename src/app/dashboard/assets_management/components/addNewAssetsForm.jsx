@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState, useContext, useRef } from 'react';
-import { useAssestListQuery } from '@/app/_lib/redux/features/assetsmanagement/assets_management_api';
+import { useAssestListQuery, useSubmitAssestRegisterFormMutation } from '@/app/_lib/redux/features/assetsmanagement/assets_management_api';
 import SelectInput from '../../components/inputs/SelectInput';
 import renderAssetTypeItem from './menulist/renderAssetTypeItem';
 import renderAssetSubCategories from './menulist/renderAssetSubCategories';
@@ -103,6 +103,7 @@ function AddNewAssetsForm({ }) {
         const { data: userList } = useUsersListQuery();
         const [usersList, setUsersList] = useState([]);
         const [selectedUser, setSelectedUser] = useState(null);
+        const [selectedUserAllDetails, setSelectedUserAllDetails] = useState(null);
         const [usersListSearchInput, setUsersListSearchInput] = useState('');
 
         useEffect(() => {
@@ -279,7 +280,6 @@ function AddNewAssetsForm({ }) {
         const [estimatedDepreciationValue, setEstimatedDepreciationValue] = useState('');
         const [receivedCondition, setReceivedCondition] = useState('');
         const [assestDetails, setAssestDetails] = useState([]);
-        const [itemName, setItemName] = useState('');
         const [modelNumber, setModelNumber] = useState('');
         const [serialNumber, setSerialNumber] = useState('');
         const [storedLocation, setStoredLocation] = useState('');
@@ -290,7 +290,6 @@ function AddNewAssetsForm({ }) {
         useEffect(() => {
             const savedFormData = JSON.parse(localStorage.getItem('assetRegister'));
             if (savedFormData) {
-                setItemName(savedFormData.itemName || '');
                 setModelNumber(savedFormData.modelNumber || '');
                 setSerialNumber(savedFormData.serialNumber || '');
                 setSelectedUser(savedFormData.selectedUser || '');
@@ -312,7 +311,6 @@ function AddNewAssetsForm({ }) {
             const newValue = e.target.value;
             setter(newValue);
             updateFormData({
-                itemName: setter === setItemName ? newValue : itemName,
                 modelNumber: setter === setModelNumber ? newValue : modelNumber,
                 serialNumber: setter === setSerialNumber ? newValue : serialNumber,
                 selectedUser,
@@ -322,7 +320,8 @@ function AddNewAssetsForm({ }) {
         };
 
         const handleSelectedUser = (user) => {
-            setSelectedUser(user);
+            setSelectedUser(user.id);
+            setSelectedUserAllDetails(user)
             updateFormData({ selectedUser: user });
         };
 
@@ -331,17 +330,16 @@ function AddNewAssetsForm({ }) {
             if (editIndex !== null) {
                 // If editIndex is set, update the item at that index
                 const updatedAssest = [...assestDetails];
-                updatedAssest[editIndex] = { itemName, modelNumber, serialNumber, selectedUser, storedLocation, organization };
+                updatedAssest[editIndex] = { modelNumber, serialNumber, selectedUser, storedLocation, organization };
                 setAssestDetails(updatedAssest);
                 // Reset editIndex
                 setEditIndex(null);
             } else {
                 // Add new item to the list
-                const newAssest = { itemName, modelNumber, serialNumber, selectedUser, storedLocation, organization };
+                const newAssest = { modelNumber, serialNumber, selectedUser, storedLocation, organization };
                 setAssestDetails([...assestDetails, newAssest]);
             }
           // Reset form fields
-          setItemName('');
           setModelNumber('');
           setSerialNumber('');
           setSelectedUser('');
@@ -353,7 +351,6 @@ function AddNewAssetsForm({ }) {
         const handleEditAssest = (index) => {
           // Populate form fields with data from the item being edited
           const itemToEdit = assestDetails[index];
-          setItemName(itemToEdit.itemName);
           setModelNumber(itemToEdit.modelNumber);
           setSerialNumber(itemToEdit.serialNumber);
           setSelectedUser(itemToEdit.selectedUser);
@@ -369,7 +366,31 @@ function AddNewAssetsForm({ }) {
           setAssestDetails(updatedAssest);
         };
 
-        console.log(purchasingFiles);
+        const [submitAssestRegisterForm] = useSubmitAssestRegisterFormMutation();
+
+        // save From
+        const submitassetsdetails = async e => {
+            e.preventDefault();
+            try {
+                const assetsDetails = {p_thumbnail_image: null, p_assets_type: selectedAssetsType.assest_type_id, p_category: selectedAssetCategories.ac_id, p_sub_category: selectedSubAssetCategories.assc_id, p_assets_value: assestValue, p_assets_document: assetsDocument, p_supplier: selectedSupplier.id, p_purchase_order_number: purchaseOrderNumbe, p_purchase_cost: purchaseCost, p_purchase_type: selectedPurchaseType.availability_type_id, p_received_condition: receivedCondition, p_warranty: warranty, p_other_purchase_details: otherPurchaseDetails, p_purchase_document: purchasingFiles, p_insurance_number: insuranceNumber, p_insurance_document: insuranceDocument, p_expected_life_time: expectedLifeTime, p_depreciation_value: estimatedDepreciationValue, asset_details: assestDetails}
+
+                console.log(assetsDetails);
+                submitAssestRegisterForm(assetsDetails)
+                .unwrap()
+                .then((response) => {
+                    console.log("New node added:", response);
+                    // router.push("/dashboard/usergroups");
+                    setStatus('saved');
+                    setmessage(response.message);
+                    refetch();
+                })
+                .catch((error) => {
+                    console.error("Error adding new node:", error);
+                });
+            } catch (error) {
+                console.error("Login error:", error);
+            }
+        }
     return (
             <>
                 {/* Modal header */}
@@ -443,10 +464,12 @@ function AddNewAssetsForm({ }) {
                                     Assest Value
                                 </label>
                                 <input 
-                                    type="text" 
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
                                     onChange={(e) => setAssestValue(e.target.value)}
-                                    name="assestValue"
-                                    value={assestValue}
+                                    name="estimatedDepreciationValue"
+                                    value={assestValue} 
                                     placeholder="Enter Assest Value" 
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 />
@@ -550,7 +573,7 @@ function AddNewAssetsForm({ }) {
                                 />
                             </label>
                             </div> */}
-                            <div className='row-span-3'>
+                            {/* <div className='row-span-3'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -584,7 +607,7 @@ function AddNewAssetsForm({ }) {
                                         SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
                                         </p>
                                     </div>
-                                    {/* {assetsDocument.length > 0 &&
+                                    {assetsDocument.length > 0 &&
                                         <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
                                             {assetsDocument.map((file, index) => (
                                                 <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
@@ -603,7 +626,7 @@ function AddNewAssetsForm({ }) {
                                                 </div>
                                             ))}
                                         </div>
-                                    } */}
+                                    }
                                     <input
                                         id="rpf-dropzone-file"
                                         type="file"
@@ -612,7 +635,7 @@ function AddNewAssetsForm({ }) {
                                         // onChange={(e) => handleFileUpload(e, setAssetsDocument)}
                                     />
                                 </label>
-                            </div>
+                            </div> */}
                         </div>
                         <div className="grid gap-6 mb-6 md:grid-flow-col mb-grid-rows-3">
                             {/* <div className='row-span-3'>
@@ -668,7 +691,9 @@ function AddNewAssetsForm({ }) {
                                     Purchase Cost
                                 </label>
                                 <input 
-                                    type="text"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
                                     onChange={(e) => setPurchaseCost(e.target.value)}
                                     name="purchaseCost"
                                     value={purchaseCost} 
@@ -1190,7 +1215,7 @@ function AddNewAssetsForm({ }) {
                                             placeholder="Search and Select Responsible Person"
                                             data={usersList}
                                             onSelect={handleSelectedUser}
-                                            selected={selectedUser}
+                                            selected={selectedUserAllDetails}
                                             searchInput={usersListSearchInput}
                                             setSearchInput={setUsersListSearchInput}
                                             renderItem={renderResponsiblePerson}
@@ -1261,6 +1286,14 @@ function AddNewAssetsForm({ }) {
                                     </a>
                                 </div>
                             </div>
+                        </div>
+                        <div className="grid gap-6 mb-6 md:grid-cols-2 w-[40%]">
+                            <a
+                                onClick={submitassetsdetails}
+                                className="text-white bg-[#213389] hover:bg-[#213389] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-[#213389] dark:hover:bg-[#213389] dark:focus:ring-blue-800"
+                            >
+                                Submit
+                            </a>
                         </div>
                     </form>
             </>
