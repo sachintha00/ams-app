@@ -19,6 +19,7 @@ import SupplierQuotationGridComponent from "../supplier_quotation/components/sup
 import AddNewAssetsForm from "./components/addNewAssetsForm";
 import AssetsGridComponent from "./components/assetsGridComponent";
 import { useAssestListQuery } from "@/app/_lib/redux/features/assetsmanagement/assets_management_api";
+import AssetsListTable from "./components/assetsListTable";
 
 export default function Page() {
 
@@ -112,11 +113,11 @@ export default function Page() {
           // showSearchBar={showSearchBar} 
           // showGridListButton={showGridListButton}
           // showModelTitle={showModelTitle}
-          Searchplaceholder="search Serial No"
+          Searchplaceholder="Search Serial No"
         />
         {view === "list" ? (
           <PageListView 
-            component={SupplierQuotationListTable}
+            component={AssetsListTable}
             data={filteredData}
             currentPage={currentPage}
             itemsPerPage={itemsPerPage}

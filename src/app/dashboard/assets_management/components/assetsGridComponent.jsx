@@ -3,7 +3,6 @@ import { handleOpenPopupModel } from "@/app/_lib/redux/features/popupModel/popup
 import { useDispatch } from "react-redux";
 import { MdDelete } from "react-icons/md";
 import { BiEdit } from "react-icons/bi";
-import { FaUserLock } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 
 function AssetsGridComponent({
