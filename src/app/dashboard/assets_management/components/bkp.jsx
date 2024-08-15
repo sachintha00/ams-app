@@ -8,15 +8,16 @@ import { useGetSupplierlistQuery } from '@/app/_lib/redux/features/supplier/supp
 import renderSupplier from './menulist/renderSupplier';
 import { IoClose } from "react-icons/io5";
 import { IoAddOutline } from "react-icons/io5";
+import { FaFilePdf } from "react-icons/fa6";
 import { useUsersListQuery } from '@/app/_lib/redux/features/user/user_api';
 import renderResponsiblePerson from './menulist/renderResponsiblePerson';
 import { BiEdit } from "react-icons/bi";
 import dynamic from "next/dynamic";
 import { useDispatch, useSelector } from 'react-redux';
 import { getorganizationid } from '@/app/_lib/redux/features/assestrequisition/organization_slice';
+import { FaFileCsv } from "react-icons/fa6";
 import { FaFileAlt } from "react-icons/fa";
 import { useDropzone } from 'react-dropzone';
-import { FaFilePdf, FaFileCsv } from 'react-icons/fa';
 
 const OrganizationComponent = dynamic(() => import("./menulist/organization"), {
     ssr: false,
@@ -26,10 +27,7 @@ function AddNewAssetsForm({ }) {
         const usedispatch = useDispatch();
         const { data: assestList } = useAssestListQuery();
 
-
-        const [files1, setFiles1] = useState([]);
-        const [files2, setFiles2] = useState([]);
-        const [files3, setFiles3] = useState([]);
+        // Thumbnail image
         const [image, setImage] = useState([]);
 
         const getPreview = (file) => {
@@ -44,58 +42,6 @@ function AddNewAssetsForm({ }) {
             }
         };
 
-        // Assets Related Document
-        const { getRootProps: getRootProps1, getInputProps: getInputProps1 } = useDropzone({
-            multiple: true,
-            accept: {
-              'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff'],
-              'application/pdf': ['.pdf'],
-              'text/csv': ['.csv']
-            },
-            onDrop: (acceptedFiles) => {
-                if (files1.length + acceptedFiles.length > 5) {
-                  alert('You can only upload up to 5 files.');
-                  return;
-                }
-                setFiles1((prevFiles) => [...prevFiles, ...acceptedFiles]);
-            }
-          });
-
-        // Purchase Document
-        const { getRootProps: getRootProps2, getInputProps: getInputProps2 } = useDropzone({
-            multiple: true,
-            accept: {
-            'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff'],
-            'application/pdf': ['.pdf'],
-            'text/csv': ['.csv']
-            },
-            onDrop: (acceptedFiles) => {
-                if (files2.length + acceptedFiles.length > 5) {
-                    alert('You can only upload up to 5 files.');
-                    return;
-                }
-                setFiles2((prevFiles) => [...prevFiles, ...acceptedFiles]);
-            }
-        });
-
-        // Insurance related Documents
-        const { getRootProps: getRootProps3, getInputProps: getInputProps3 } = useDropzone({
-            multiple: true,
-            accept: {
-            'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff'],
-            'application/pdf': ['.pdf'],
-            'text/csv': ['.csv']
-            },
-            onDrop: (acceptedFiles) => {
-                if (files3.length + acceptedFiles.length > 5) {
-                    alert('You can only upload up to 5 files.');
-                    return;
-                }
-                setFiles3((prevFiles) => [...prevFiles, ...acceptedFiles]);
-            }
-        });
-
-        // Thumbnail image
         const { getRootProps: getRootPropsImage, getInputProps: getInputPropsImage } = useDropzone({
             multiple: false,
             accept: 'image/*', // Accept only images
@@ -211,54 +157,57 @@ function AddNewAssetsForm({ }) {
         //     setFiles(updatedFiles);
         // };
 
-        // const renderFile = (file, index) => {
-        //     const fileType = file.type.split("/")[0]; // Get the file type (e.g., 'image', 'application')
+        const renderFile = (file, index) => {
+            const fileType = file.type.split("/")[0]; // Get the file type (e.g., 'image', 'application')
         
-        //     if (fileType === "image") {
-        //     return (
-        //         <div key={index}>
-        //         <img
-        //             src={URL.createObjectURL(file)}
-        //             alt={`Image ${index}`}
-        //             className="w-28"
-        //         />
-        //         <span className="text-gray-700 flex w-[10px]">{file.name}</span>
-        //         <button
-        //             type="button"
-        //             onClick={() => handleRemoveFile(index)}
-        //             className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
-        //             data-modal-toggle="crud-modal"
-        //         >
-        //             <IoClose className="text-2xl hover:text-white" />
-        //             <span className="sr-only">Close modal</span>
-        //         </button>
-        //         </div>
-        //     );
-        //     } else {
-        //     // Render file name with corresponding icon for non-image files
-        //     let icon;
-        //     if (file.type.includes("pdf")) {
-        //         icon = <FaFilePdf className="text-6xl" />; // Example PDF icon
-        //     } else {
-        //         icon = <i className="fa fa-file-o" aria-hidden="true"></i>; // Default file icon
-        //     }
-        //     return (
-        //         <div key={index}>
-        //         {icon}
-        //         <span className="text-gray-700 ">{file.name}</span>
-        //         <button
-        //             type="button"
-        //             onClick={() => handleRemoveFile(index)}
-        //             className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
-        //             data-modal-toggle="crud-modal"
-        //         >
-        //             <IoClose className="text-2xl hover:text-white" />
-        //             <span className="sr-only">Close modal</span>
-        //         </button>
-        //         </div>
-        //     );
-        //     }
-        // }; 
+            if (fileType === "image") {
+            return (
+                <div key={index}>
+                <img
+                    src={URL.createObjectURL(file)}
+                    alt={`Image ${index}`}
+                    className="w-28"
+                />
+                <span className="text-gray-700 flex w-[10px]">{file.name}</span>
+                <button
+                    type="button"
+                    onClick={() => handleRemoveFile(index)}
+                    className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
+                    data-modal-toggle="crud-modal"
+                >
+                    <IoClose className="text-2xl hover:text-white" />
+                    <span className="sr-only">Close modal</span>
+                </button>
+                </div>
+            );
+            } else {
+            // Render file name with corresponding icon for non-image files
+            let icon;
+            if (file.type.includes("pdf")) {
+                icon = <FaFilePdf className="text-6xl" />; // Example PDF icon
+            } else {
+                icon = <i className="fa fa-file-o" aria-hidden="true"></i>; // Default file icon
+            }
+            return (
+                <div key={index}>
+                {icon}
+                <span className="text-gray-700 ">{file.name}</span>
+                <button
+                    type="button"
+                    onClick={() => handleRemoveFile(index)}
+                    className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
+                    data-modal-toggle="crud-modal"
+                >
+                    <IoClose className="text-2xl hover:text-white" />
+                    <span className="sr-only">Close modal</span>
+                </button>
+                </div>
+            );
+            }
+        }; 
+
+        const [rpfUploadedFiles, setRpfUploadedFiles] = useState([]);
+        const [uploadedFiles, setUploadedFiles] = useState([]);
 
         //assetsDocument uploading
         // const [assetsDocument, setAssetsDocument] = useState([]);
@@ -281,42 +230,42 @@ function AddNewAssetsForm({ }) {
         // };
 
         // purchasingFiles and insuranceDocument uploard
-        // const [assetsDocument, setAssetsDocument] = useState([]);
-        // const [purchasingFiles, setPurchasingFiles] = useState([]);
-        // const [insuranceDocument, setInsuranceDocument] = useState([]);
+        const [assetsDocument, setAssetsDocument] = useState([]);
+        const [purchasingFiles, setPurchasingFiles] = useState([]);
+        const [insuranceDocument, setInsuranceDocument] = useState([]);
 
-        // const handleFileUpload = (e, setFileState) => {
-        //     console.log(setFileState);
-        //     const files = Array.from(e.target.files);
-        //     setFileState(prevFiles => [...prevFiles, ...files]);
-        // };
+        const handleFileUpload = (e, setFileState) => {
+            console.log(setFileState);
+            const files = Array.from(e.target.files);
+            setFileState(prevFiles => [...prevFiles, ...files]);
+        };
         
-        // const handleDrop = (e, setFileState) => {
-        //     e.preventDefault();
-        //     const files = Array.from(e.dataTransfer.files);
-        //     setFileState(prevFiles => [...prevFiles, ...files]);
-        // };
+        const handleDrop = (e, setFileState) => {
+            e.preventDefault();
+            const files = Array.from(e.dataTransfer.files);
+            setFileState(prevFiles => [...prevFiles, ...files]);
+        };
         
-        // const removeFile = (index, setFileState, fileState) => {
-        //     setFileState(fileState.filter((_, i) => i !== index));
-        // };
+        const removeFile = (index, setFileState, fileState) => {
+            setFileState(fileState.filter((_, i) => i !== index));
+        };
 
-        // const getFileIcon = (file) => {
-        //     const fileType = file.type.split('/')[1];
-        //     switch (fileType) {
-        //       case 'jpeg':
-        //       case 'jpg':
-        //       case 'png':
-        //       case 'gif':
-        //         return <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />;
-        //       case 'pdf':
-        //         return <FaFilePdf className='text-red-500 text-[100px]'/>;
-        //       case 'csv':
-        //         return <FaFileCsv className='text-green-500 text-[100px]'/>;
-        //       default:
-        //         return <FaFileAlt className='text-gray-500 text-[100px]'/>;
-        //     }
-        //   };
+        const getFileIcon = (file) => {
+            const fileType = file.type.split('/')[1];
+            switch (fileType) {
+              case 'jpeg':
+              case 'jpg':
+              case 'png':
+              case 'gif':
+                return <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />;
+              case 'pdf':
+                return <FaFilePdf className='text-red-500 text-[100px]'/>;
+              case 'csv':
+                return <FaFileCsv className='text-green-500 text-[100px]'/>;
+              default:
+                return <FaFileAlt className='text-gray-500 text-[100px]'/>;
+            }
+          };
 
         //organization
         const [isOpenOrganizationStructure, setIsOpenOrganizationStructure] = useState(false);
@@ -452,7 +401,7 @@ function AddNewAssetsForm({ }) {
         const submitassetsdetails = async e => {
             e.preventDefault();
             try {
-                const assetsDetails = {p_thumbnail_image: image, p_assets_type: selectedAssetsType.assest_type_id, p_category: selectedAssetCategories.ac_id, p_sub_category: selectedSubAssetCategories.assc_id, p_assets_value: assestValue, p_assets_document: files1, p_supplier: selectedSupplier.id, p_purchase_order_number: purchaseOrderNumbe, p_purchase_cost: purchaseCost, p_purchase_type: selectedPurchaseType.availability_type_id, p_received_condition: receivedCondition, p_warranty: warranty, p_other_purchase_details: otherPurchaseDetails, p_purchase_document: files2, p_insurance_number: insuranceNumber, p_insurance_document: files3, p_expected_life_time: expectedLifeTime, p_depreciation_value: estimatedDepreciationValue, asset_details: assestDetails}
+                const assetsDetails = {p_thumbnail_image: null, p_assets_type: selectedAssetsType.assest_type_id, p_category: selectedAssetCategories.ac_id, p_sub_category: selectedSubAssetCategories.assc_id, p_assets_value: assestValue, p_assets_document: assetsDocument, p_supplier: selectedSupplier.id, p_purchase_order_number: purchaseOrderNumbe, p_purchase_cost: purchaseCost, p_purchase_type: selectedPurchaseType.availability_type_id, p_received_condition: receivedCondition, p_warranty: warranty, p_other_purchase_details: otherPurchaseDetails, p_purchase_document: purchasingFiles, p_insurance_number: insuranceNumber, p_insurance_document: insuranceDocument, p_expected_life_time: expectedLifeTime, p_depreciation_value: estimatedDepreciationValue, asset_details: assestDetails}
 
                 console.log(assetsDetails);
                 submitAssestRegisterForm(assetsDetails)
@@ -479,178 +428,181 @@ function AddNewAssetsForm({ }) {
                         style={{ scrollbarWidth: "2px", scrollbarColor: "#888" }}
                         encType="multipart/form-data"
                     >
-                        <div className="grid gap-6 md:grid-cols-4">
-                            <div className='col-span-3 grid gap-6 md:grid-cols-2'>
-                                <div>
-                                    <label
-                                        htmlFor="last_name"
-                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                    >
-                                        Asset Type
-                                    </label>
-                                    <SelectInput
-                                        placeholder="Search and Select Assets Type"
-                                        data={assetsTypeArray}
-                                        onSelect={setSelectedAssetsType}
-                                        selected={selectedAssetsType}
-                                        searchInput={assetsTypeSearchInput}
-                                        setSearchInput={setAssetsTypeSearchInput}
-                                        renderItem={renderAssetTypeItem}
-                                        name={'name'}
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        htmlFor="last_name"
-                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                    >
-                                        Assest Value
-                                    </label>
-                                    <input 
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        onChange={(e) => setAssestValue(e.target.value)}
-                                        name="estimatedDepreciationValue"
-                                        value={assestValue} 
-                                        placeholder="Enter Assest Value" 
-                                        className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        htmlFor="last_name"
-                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                    >
-                                        Asset Category
-                                    </label>
-                                    <SelectInput
-                                        placeholder="Search and Select Asset Category"
-                                        data={assetCategories}
-                                        onSelect={handleSelectCategory}
-                                        selected={selectedAssetCategories}
-                                        searchInput={assetCategoriesSearchInput}
-                                        setSearchInput={setAssetCategoriesSearchInput}
-                                        renderItem={renderAssetTypeItem}
-                                        name={'name'}
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        htmlFor="last_name"
-                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                    >
-                                        Asset Sub Category
-                                    </label>
-                                    <SelectInput
-                                        placeholder="Search and Select Asset Sub Category"
-                                        data={subCategories}
-                                        onSelect={setSelectedAssetSubCategories}
-                                        selected={selectedSubAssetCategories}
-                                        searchInput={assetSubCategoriesSearchInput}
-                                        setSearchInput={setAssetSubCategoriesSearchInput}
-                                        renderItem={renderAssetSubCategories}
-                                        name={"assc_name"}
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        htmlFor="last_name"
-                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                    >
-                                        Supplier
-                                    </label>
-                                    <SelectInput
-                                        placeholder="Search and Select Supplier"
-                                        data={supplierList}
-                                        onSelect={setSelectedSupplier}
-                                        selected={selectedSupplier}
-                                        searchInput={supplierSearchInput}
-                                        setSearchInput={setSupplierSearchInput}
-                                        renderItem={renderSupplier}
-                                        name={'name'}
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        htmlFor="last_name"
-                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                    >
-                                        Purchase Order Number
-                                    </label>
-                                    <input 
-                                        type="text" 
-                                        onChange={(e) => setPurchaseOrderNumbe(e.target.value)}
-                                        name="purchaseOrderNumbe"
-                                        value={purchaseOrderNumbe}
-                                        placeholder="Enter Purchase Order Number" 
-                                        className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                    />
-                                </div>
-                            </div>
-                            <div className='row-span-3'>
+                        <div className="grid gap-6 mb-6 md:grid-cols-3">
+                            <div>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                 >
-                                    Attach Assests Thumbnail Image
+                                    Asset Type
                                 </label>
+                                <SelectInput
+                                    placeholder="Search and Select Assets Type"
+                                    data={assetsTypeArray}
+                                    onSelect={setSelectedAssetsType}
+                                    selected={selectedAssetsType}
+                                    searchInput={assetsTypeSearchInput}
+                                    setSearchInput={setAssetsTypeSearchInput}
+                                    renderItem={renderAssetTypeItem}
+                                    name={'name'}
+                                />
+                            </div>
+                            <div>
                                 <label
-                                {...getRootPropsImage()}
-                                htmlFor="rpf-dropzone-file"
-                                className="flex flex-col items-center justify-center w-full h-[230px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                 >
-                                    <div className="flex flex-col items-center justify-center py-2">
-                                        {image.length > 0 ? (
-                                            <div>
-                                                {image.map((file, index) => (
-                                                    <div key={index} className="mt-[10px] relative flex flex-col items-end">
-                                                        <a type="button" className='absolute inline-flex items-center justify-center w-6 h-6 text-sm text-gray-400 bg-red-400 hover:bg-red-500 rounded-lg hover:text-white ms-auto dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white mt-[-7px] mr-[-7px]' onClick={() => setImage([])}>
-                                                            <IoClose className="text-sm text-white" />
-                                                        </a>
-                                                        <img className="h-[195px] w-[250px] rounded-lg shadow-xl dark:shadow-gray-800"
-                                                        src={URL.createObjectURL(file)} alt={file.name}/>
-                                                        <div className='flex justify-center w-[100%]'>
-                                                            <span className='text-gray-900 dark:text-white'>{file.name}</span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) 
-                                        : 
-                                        (
-                                            <>
-                                                <svg
-                                                className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                                                aria-hidden="true"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 20 16"
-                                                >
-                                                <path
-                                                    stroke="currentColor"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                                                />
-                                                </svg>
-                                                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                                <span className="font-semibold">Click to upload</span> or drag and drop
-                                                </p>
-                                                <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-                                                SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
-                                                </p>
-                                            </>
-                                        )
-                                        }
-                                    </div>
-                                    <input {...getInputPropsImage()} />
+                                    Asset Category
                                 </label>
+                                <SelectInput
+                                    placeholder="Search and Select Asset Category"
+                                    data={assetCategories}
+                                    onSelect={handleSelectCategory}
+                                    selected={selectedAssetCategories}
+                                    searchInput={assetCategoriesSearchInput}
+                                    setSearchInput={setAssetCategoriesSearchInput}
+                                    renderItem={renderAssetTypeItem}
+                                    name={'name'}
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Asset Sub Category
+                                </label>
+                                <SelectInput
+                                    placeholder="Search and Select Asset Sub Category"
+                                    data={subCategories}
+                                    onSelect={setSelectedAssetSubCategories}
+                                    selected={selectedSubAssetCategories}
+                                    searchInput={assetSubCategoriesSearchInput}
+                                    setSearchInput={setAssetSubCategoriesSearchInput}
+                                    renderItem={renderAssetSubCategories}
+                                    name={"assc_name"}
+                                />
                             </div>
                         </div>
                         <div className="grid gap-6 mb-6 md:grid-flow-col mb-grid-rows-3">
-                            <div className='row-span-3'>
+                            <div className='col-span-2'>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Assest Value
+                                </label>
+                                <input 
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    onChange={(e) => setAssestValue(e.target.value)}
+                                    name="estimatedDepreciationValue"
+                                    value={assestValue} 
+                                    placeholder="Enter Assest Value" 
+                                    className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                />
+                            </div>
+                            <div className='col-span-2'>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Supplier
+                                </label>
+                                <SelectInput
+                                    placeholder="Search and Select Supplier"
+                                    data={supplierList}
+                                    onSelect={setSelectedSupplier}
+                                    selected={selectedSupplier}
+                                    searchInput={supplierSearchInput}
+                                    setSearchInput={setSupplierSearchInput}
+                                    renderItem={renderSupplier}
+                                    name={'name'}
+                                />
+                            </div>
+                            <div className='col-span-2'>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Purchase Order Number
+                                </label>
+                                <input 
+                                    type="text" 
+                                    onChange={(e) => setPurchaseOrderNumbe(e.target.value)}
+                                    name="purchaseOrderNumbe"
+                                    value={purchaseOrderNumbe}
+                                    placeholder="Enter Purchase Order Number" 
+                                    className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                />
+                            </div>
+                            {/* <div className="p-4">
+                            <label
+                                htmlFor="rpf-dropzone-file"
+                                className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                onDrop={handleFileDrop}
+                                onDragOver={(e) => e.preventDefault()}
+                            >
+                                <div className="flex flex-col items-center justify-center py-2">
+                                <svg
+                                    className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                                    aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 20 16"
+                                >
+                                    <path
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                    />
+                                </svg>
+                                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                    <span className="font-semibold">Click to upload</span> or drag and
+                                    drop
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
+                                </p>
+                                </div>
+                                {assetsDocument.length > 0 && (
+                                <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
+                                    {assetsDocument.map((file, index) => (
+                                    <div
+                                        key={index}
+                                        className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700"
+                                    >
+                                        <div className="flex justify-start w-[75%] items-center">
+                                        <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
+                                            {getFileIcon(file)}
+                                        </div>
+                                        <p className="text-xs text-center mt-1 text-gray-500 dark:text-gray-400">
+                                            {file.name}
+                                        </p>
+                                        </div>
+                                        <a
+                                        className="top-0 right-0 text-gray-400 bg-red-400 hover:bg-red-500 hover:text-white rounded-lg text-sm w-6 h-6 ml-0 inline-flex justify-center items-center dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white"
+                                        onClick={() => removeAssetFile(index)}
+                                        >
+                                        <IoClose className="text-xl text-white" />
+                                        </a>
+                                    </div>
+                                    ))}
+                                </div>
+                                )}
+                                <input
+                                id="rpf-dropzone-file"
+                                type="file"
+                                className="hidden"
+                                multiple
+                                onChange={handleAssetFileUpload}
+                                />
+                            </label>
+                            </div> */}
+                            {/* <div className='row-span-3'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -659,7 +611,6 @@ function AddNewAssetsForm({ }) {
                                 </label>
                                 <label
                                 htmlFor="rpf-dropzone-file"
-                                {...getRootProps1()}
                                 className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
                                 >
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -685,19 +636,19 @@ function AddNewAssetsForm({ }) {
                                         SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
                                         </p>
                                     </div>
-                                    {files1.length > 0 &&
+                                    {assetsDocument.length > 0 &&
                                         <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
-                                            {files1.map((file, index) => (
+                                            {assetsDocument.map((file, index) => (
                                                 <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
                                                     <div className='flex justify-start w-[75%] items-center'>
                                                         <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
-                                                            {getPreview(file)}
+                                                            {getFileIcon(file)}
                                                         </div>
                                                         <p className="text-xs text-center mt-1 text-gray-500 dark:text-gray-400">{file.name}</p>
                                                     </div>
                                                     <a
                                                         className="top-0 right-0 text-gray-400 bg-red-400 hover:bg-red-500 hover:text-white rounded-lg text-sm w-6 h-6 ml-0 inline-flex justify-center items-center dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white"
-                                                        onClick={() => removeFile(index, setFiles1)}
+                                                        onClick={() => removeFile(index, setAssetsDocument, assetsDocument)}
                                                     >
                                                         <IoClose className="text-xl text-white" />
                                                     </a>
@@ -705,7 +656,60 @@ function AddNewAssetsForm({ }) {
                                             ))}
                                         </div>
                                     }
-                                    <input {...getInputProps1()}/>
+                                    <input
+                                        id="rpf-dropzone-file"
+                                        type="file"
+                                        className="hidden"
+                                        multiple
+                                        // onChange={(e) => handleFileUpload(e, setAssetsDocument)}
+                                    />
+                                </label>
+                            </div> */}
+                        </div>
+                        <div className="grid gap-6 mb-6 md:grid-flow-col mb-grid-rows-3">
+                            <div className='row-span-3'>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Attach Assests Thumbnail Image
+                                </label>
+                                <label
+                                {...getRootPropsImage()}
+                                htmlFor="rpf-dropzone-file"
+                                className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                >
+                                    <div className="flex flex-col items-center justify-center py-2">
+                                        <svg
+                                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                                        aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 20 16"
+                                        >
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                        />
+                                        </svg>
+                                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
+                                        </p>
+                                    </div>
+                                    {image.map((file, index) => (
+                                        <div key={index} className="mt-[10px]">
+                                            {getPreview(file)}
+                                            <span style={{ marginLeft: '10px' }}>{file.name}</span>
+                                            <button type="button" onClick={() => setImage([])}>Remove</button>
+                                        </div>
+                                    ))}
+                                    <input {...getInputPropsImage()} />
                                 </label>
                             </div>
                             <div className='col-span-2'>
@@ -810,7 +814,7 @@ function AddNewAssetsForm({ }) {
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 />
                             </div>
-                            <div className='col-span-2'>
+                            <div className='row-span-2 col-span-2'>
                                 <label
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -827,6 +831,70 @@ function AddNewAssetsForm({ }) {
                                     placeholder="Enter Other Purchase Details"
                                 ></textarea>
                             </div>
+                            {/* <div className='row-span-3'>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Attach Purchase Document
+                                </label>
+                                <label
+                                htmlFor="rpf-dropzone-file"
+                                className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                onDrop={(e) => handleDrop(e, setPurchasingFiles)}
+                                >
+                                    <div className="flex flex-col items-center justify-center py-2">
+                                        <svg
+                                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                                        aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 20 16"
+                                        >
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                        />
+                                        </svg>
+                                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
+                                        </p>
+                                    </div>
+                                    {purchasingFiles.length > 0 &&
+                                        <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
+                                            {purchasingFiles.map((file, index) => (
+                                                <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
+                                                    <div className='flex justify-start w-[75%] items-center'>
+                                                        <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
+                                                            {getFileIcon(file)}
+                                                        </div>
+                                                        <p className="text-xs text-center mt-1 text-gray-500 dark:text-gray-400">{file.name}</p>
+                                                    </div>
+                                                    <a
+                                                        className="top-0 right-0 text-gray-400 bg-red-400 hover:bg-red-500 hover:text-white rounded-lg text-sm w-6 h-6 ml-0 inline-flex justify-center items-center dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white"
+                                                        onClick={() => removeFile(index, setPurchasingFiles, purchasingFiles)}
+                                                    >
+                                                        <IoClose className="text-xl text-white" />
+                                                    </a>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    }
+                                    <input
+                                        id="rpf-dropzone-file"
+                                        type="file"
+                                        className="hidden"
+                                        multiple
+                                        onChange={(e) => handleFileUpload(e, setPurchasingFiles)}
+                                    />
+                                </label>
+                            </div> */}
                             <div className='row-span-3'>
                                 <label
                                     htmlFor="last_name"
@@ -837,7 +905,7 @@ function AddNewAssetsForm({ }) {
                                 <label
                                 htmlFor="rpf-dropzone-file"
                                 className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
-                                {...getRootProps2()}
+                                onDrop={(e) => handleDrop(e, setPurchasingFiles)}
                                 >
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                         <svg
@@ -862,19 +930,19 @@ function AddNewAssetsForm({ }) {
                                         SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
                                         </p>
                                     </div>
-                                    {files2.length > 0 &&
+                                    {purchasingFiles.length > 0 &&
                                         <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
-                                            {files2.map((file, index) => (
+                                            {purchasingFiles.map((file, index) => (
                                                 <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
                                                     <div className='flex justify-start w-[75%] items-center'>
                                                         <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
-                                                            {getPreview(file)}
+                                                            {getFileIcon(file)}
                                                         </div>
                                                         <p className="text-xs text-center mt-1 text-gray-500 dark:text-gray-400">{file.name}</p>
                                                     </div>
                                                     <a
                                                         className="top-0 right-0 text-gray-400 bg-red-400 hover:bg-red-500 hover:text-white rounded-lg text-sm w-6 h-6 ml-0 inline-flex justify-center items-center dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white"
-                                                        onClick={() => removeFile(index, setFiles2)}
+                                                        onClick={() => removeFile(index, setPurchasingFiles, purchasingFiles)}
                                                     >
                                                         <IoClose className="text-xl text-white" />
                                                     </a>
@@ -882,7 +950,13 @@ function AddNewAssetsForm({ }) {
                                             ))}
                                         </div>
                                     }
-                                    <input {...getInputProps2()}/>
+                                    <input
+                                        id="rpf-dropzone-file"
+                                        type="file"
+                                        className="hidden"
+                                        multiple
+                                        onChange={(e) => handleFileUpload(e, setPurchasingFiles)}
+                                    />
                                 </label>
                             </div>
                         </div>
@@ -938,6 +1012,70 @@ function AddNewAssetsForm({ }) {
                                     className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 />
                             </div>
+                            {/* <div className='row-span-3'>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Attach Insurance related Documents
+                                </label>
+                                <label
+                                htmlFor="rpf-dropzone-file"
+                                className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                onDrop={(e) => handleDrop(e, setInsuranceDocument)}
+                                >
+                                    <div className="flex flex-col items-center justify-center py-2">
+                                        <svg
+                                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                                        aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 20 16"
+                                        >
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                        />
+                                        </svg>
+                                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
+                                        </p>
+                                    </div>
+                                    {insuranceDocument.length > 0 &&
+                                        <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
+                                            {insuranceDocument.map((file, index) => (
+                                                <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
+                                                    <div className='flex justify-start w-[75%] items-center'>
+                                                        <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
+                                                            {getFileIcon(file)}
+                                                        </div>
+                                                        <p className="text-xs text-center mt-1 text-gray-500 dark:text-gray-400">{file.name}</p>
+                                                    </div>
+                                                    <a
+                                                        className="top-0 right-0 text-gray-400 bg-red-400 hover:bg-red-500 hover:text-white rounded-lg text-sm w-6 h-6 ml-0 inline-flex justify-center items-center dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white"
+                                                        onClick={() => removeFile(index, setInsuranceDocument, insuranceDocument)}
+                                                    >
+                                                        <IoClose className="text-xl text-white" />
+                                                    </a>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    }
+                                    <input
+                                        id="rpf-dropzone-file"
+                                        type="file"
+                                        className="hidden"
+                                        multiple
+                                        onChange={(e) => handleFileUpload(e, setInsuranceDocument)}
+                                    />
+                                </label>
+                            </div> */}
                             <div className='row-span-3'>
                                 <label
                                     htmlFor="last_name"
@@ -947,8 +1085,8 @@ function AddNewAssetsForm({ }) {
                                 </label>
                                 <label
                                 htmlFor="dropzone-file"
-                                className="flex flex-col items-center justify-center w-full h-[230px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
-                                {...getRootProps3()}
+                                className="flex flex-col items-center justify-center w-full h-[255px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                onDrop={(e) => handleDrop(e, setInsuranceDocument)}
                                 >
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                         <svg
@@ -973,19 +1111,19 @@ function AddNewAssetsForm({ }) {
                                         SVG, PNG, JPG, GIF, PDF, DOC, DOCX, or CSV (MAX. 800x400px)
                                         </p>
                                     </div>
-                                    {files3.length > 0 &&
+                                    {insuranceDocument.length > 0 &&
                                         <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
-                                            {files3.map((file, index) => (
+                                            {insuranceDocument.map((file, index) => (
                                                 <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
                                                     <div className='flex justify-start w-[75%] items-center'>
                                                         <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
-                                                            {getPreview(file)}
+                                                            {getFileIcon(file)}
                                                         </div>
                                                         <p className="text-xs text-center mt-1 text-gray-500 dark:text-gray-400">{file.name}</p>
                                                     </div>
                                                     <a
                                                         className="top-0 right-0 text-gray-400 bg-red-400 hover:bg-red-500 hover:text-white rounded-lg text-sm w-6 h-6 ml-0 inline-flex justify-center items-center dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white"
-                                                        onClick={() => removeFile(index, setFiles3)}
+                                                        onClick={() => removeFile(index, setInsuranceDocument, insuranceDocument)}
                                                     >
                                                         <IoClose className="text-xl text-white" />
                                                     </a>
@@ -993,7 +1131,13 @@ function AddNewAssetsForm({ }) {
                                             ))}
                                         </div>
                                     }
-                                    <input {...getInputProps3()}/>
+                                    <input
+                                        id="dropzone-file"
+                                        type="file"
+                                        className="hidden"
+                                        multiple
+                                        onChange={(e) => handleFileUpload(e, setInsuranceDocument)}
+                                    />
                                 </label>
                             </div>
                         </div>

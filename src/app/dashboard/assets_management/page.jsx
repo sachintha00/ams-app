@@ -18,6 +18,7 @@ import SupplierQuotationListTable from "../supplier_quotation/components/supplie
 import SupplierQuotationGridComponent from "../supplier_quotation/components/supplierQuotationGridComponent";
 import AddNewAssetsForm from "./components/addNewAssetsForm";
 import AssetsGridComponent from "./components/assetsGridComponent";
+import { useAssestListQuery } from "@/app/_lib/redux/features/assetsmanagement/assets_management_api";
 
 export default function Page() {
 
@@ -30,22 +31,36 @@ export default function Page() {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [showGridListButton, setShowGridListButton] = useState(false);
   const [showModelTitle, setshowModelTitle] = useState(false);
-  const gridviewColume = "gap-2 2xl:grid-cols-4 min-[1200px]:grid-cols-3 min-[768px]:grid-cols-2 min-[640px]:grid-cols-1";
+  const gridviewColume = "gap-2 2xl:grid-cols-5 min-[1200px]:grid-cols-3 min-[768px]:grid-cols-2 min-[640px]:grid-cols-1";
 
   const view = useSelector((state) => state.pageHeader.view);
 
-  const { data: allProcurementDetailsList } = useAllProcurementDetailsListQuery();
-
+  const {
+    data: assestList,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useAssestListQuery();
+ 
   // search bar
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(3);
+  const [itemsPerPage] = useState(10);
   const searchQuery = useSelector((state) => state.pageHeader.searchQuery) || "";
+  const [filteredData, setFilteredData] = useState([]);
 
-  const procurementData = allProcurementDetailsList?.data || [];
-  const reversedData = [...procurementData].reverse();
-  const filteredData = reversedData.filter((procurement) =>
-                          procurement.request_id.toLowerCase().includes(searchQuery.toLowerCase())
-                        );
+  useEffect(() => {
+    if (!isLoading && !isError && assestList) {
+      const Allassestslist = Object.values(assestList.Allassests);
+
+      // Sort users alphabetically by user_name
+      const sortedAssets = Allassestslist.sort((a, b) => a.serial_number.localeCompare(b.serial_number));
+      const filteredAssets = sortedAssets.filter((assets) =>
+        assets.serial_number.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredData(filteredAssets);
+    }
+  }, [isLoading, isError, assestList, searchQuery, refetch]);
 
   // console.log(filteredData);
 
@@ -97,7 +112,7 @@ export default function Page() {
           // showSearchBar={showSearchBar} 
           // showGridListButton={showGridListButton}
           // showModelTitle={showModelTitle}
-          Searchplaceholder="search procurement id"
+          Searchplaceholder="search Serial No"
         />
         {view === "list" ? (
           <PageListView 
