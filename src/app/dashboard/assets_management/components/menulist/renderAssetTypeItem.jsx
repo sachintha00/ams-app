@@ -1,5 +1,5 @@
 const renderAssetTypeItem = (assetType, selected) => (
-    <div className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+    <div className="flex items-center p-2 rounded hover:bg-gray-100 dark:bg-[#3c4042]">
         <label className="w-full text-sm font-medium text-gray-900 dark:text-gray-300">
             {assetType.name}
         </label>

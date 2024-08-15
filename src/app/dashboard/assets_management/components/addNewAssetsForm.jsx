@@ -17,6 +17,7 @@ import { getorganizationid } from '@/app/_lib/redux/features/assestrequisition/o
 import { FaFileAlt } from "react-icons/fa";
 import { useDropzone } from 'react-dropzone';
 import { FaFilePdf, FaFileCsv } from 'react-icons/fa';
+import { handleClosePopupModel } from '@/app/_lib/redux/features/popupModel/popupModelSlice';
 
 const OrganizationComponent = dynamic(() => import("./menulist/organization"), {
     ssr: false,
@@ -460,9 +461,7 @@ function AddNewAssetsForm({ }) {
                 .then((response) => {
                     console.log("New node added:", response);
                     // router.push("/dashboard/usergroups");
-                    setStatus('saved');
-                    setmessage(response.message);
-                    refetch();
+                    usedispatch(handleClosePopupModel());
                 })
                 .catch((error) => {
                     console.error("Error adding new node:", error);

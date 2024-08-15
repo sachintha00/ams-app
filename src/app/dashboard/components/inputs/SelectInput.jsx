@@ -43,7 +43,7 @@ const SelectInput = ({ placeholder, data, onSelect, selected, searchInput, setSe
                 placeholder={placeholder}
             />
             {isOpen && (
-                <div ref={refList} className="absolute z-10 bg-white rounded-lg shadow w-full dark:bg-gray-700">
+                <div ref={refList} className="absolute z-10 bg-white rounded-b-lg shadow-2xl w-full dark:bg-[#3c4042]">
                     <ul className="h-auto max-h-48 px-3 py-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200">
                         {data.map((item) => (
                             <li onClick={() => handleSelect(item)} key={item.assest_type_id}>
