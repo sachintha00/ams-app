@@ -13,6 +13,16 @@ function AssetsGridComponent({
   }) {
     const dispatch = useDispatch();
     console.log(data);
+    const handleQuotationView = async (id, modelvalue) => {
+      console.log(id);
+      dispatch(
+        handleOpenPopupModel({
+          id,
+          value: modelvalue,
+          formType: FORM_TYPE.VIEW,
+        })
+      );
+    };
     const handleToggleAddPermisionModel = async (id, modelvalue) => {
         console.log(id);
         dispatch(
@@ -44,12 +54,18 @@ function AssetsGridComponent({
         );
       };
 
+    const defaultAvatar = '/laptopavater.png';
+
     return (
         <div className={`grid ${gridcolume} mb-1 rounded bg-white dark:bg-[#121212]`}>
           {data.map((Assets) => {
             return(
               <div className="p-[10px] w-full my-5 bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
-                <img className="rounded" src="/laptopavater.png" alt="" />
+                <img
+                  className="rounded"
+                  src={`${process.env.NEXT_PUBLIC_API_URL}${Assets.thumbnail_image[0] || defaultAvatar}`}
+                  alt={`${Assets.model_number}`}
+                />
                 <div>
                   <div className="flex justify-between mt-1 mb-2">
                     <p className="text-base tracking-tight text-gray-900 dark:text-white">
@@ -78,6 +94,9 @@ function AssetsGridComponent({
                               "give permissions to role"
                             ) && ( */}
                               <a
+                                onClick={() =>
+                                handleQuotationView(Assets.id, Assets)
+                              }
                               >
                                 <FaEye className="text-2xl text-gray-700 dark:text-white" />
                               </a>
@@ -94,6 +113,9 @@ function AssetsGridComponent({
                             {/* delete role */}
                             {/* {thisuserpermissionArray.includes("delete role") && ( */}
                               <a
+                                onClick={() =>
+                                  handleDelete(Assets.id, Assets)
+                                }
                               >
                                 <MdDelete className="text-red-400 hover:text-red-500 text-2xl" />
                               </a>

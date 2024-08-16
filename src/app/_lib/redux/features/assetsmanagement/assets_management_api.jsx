@@ -9,7 +9,7 @@ export const roleApi = apiSlice.injectEndpoints({
         method: "GET",
         credentials: "include",
       }),
-      providesTags: [TAGS.ROLES],
+      providesTags: [TAGS.ASSETSMANAGEMENT],
     }),
     submitAssestRegisterForm: builder.mutation({
       query: (formData) => {
@@ -60,7 +60,15 @@ export const roleApi = apiSlice.injectEndpoints({
           credentials: 'include',
         };
       },
-      invalidatesTags: [TAGS.ROLES],
+      invalidatesTags: [TAGS.ASSETSMANAGEMENT],
+    }),
+    deleteAssets: builder.mutation({
+        query: ({ ID }) => ({
+          url: `delete-asset/${ID}`,
+          method: "DELETE",
+          credentials: "include",
+        }),
+        invalidatesTags: [TAGS.ASSETSMANAGEMENT],
     }),
   }),
 });
@@ -68,4 +76,5 @@ export const roleApi = apiSlice.injectEndpoints({
 export const {
   useAssestListQuery,
   useSubmitAssestRegisterFormMutation,
+  useDeleteAssetsMutation,
 } = roleApi;

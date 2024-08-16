@@ -98,10 +98,12 @@ function AddNewAssetsForm({ }) {
 
         // Thumbnail image
         const { getRootProps: getRootPropsImage, getInputProps: getInputPropsImage } = useDropzone({
-            multiple: false,
-            accept: 'image/*', // Accept only images
+            multiple: true,
+            accept: {
+            'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff']
+            },
             onDrop: (acceptedFiles) => {
-            setImage(acceptedFiles);
+                setImage((prevFiles) => [...prevFiles, ...acceptedFiles]);
             }
         });
 
@@ -592,9 +594,9 @@ function AddNewAssetsForm({ }) {
                                     htmlFor="last_name"
                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                 >
-                                    Attach Assests Thumbnail Image
+                                    Attach Assests Images
                                 </label>
-                                <label
+                                {/* <label
                                 {...getRootPropsImage()}
                                 htmlFor="rpf-dropzone-file"
                                 className="flex flex-col items-center justify-center w-full h-[230px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
@@ -645,6 +647,56 @@ function AddNewAssetsForm({ }) {
                                         }
                                     </div>
                                     <input {...getInputPropsImage()} />
+                                </label> */}
+                                <label
+                                htmlFor="dropzone-file"
+                                className="flex flex-col items-center justify-center w-full h-[230px] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-[#3c4042] dark:bg-[#3c4042] hover:bg-gray-100 dark:border-gray-600 dark:hover:border-grays-500 p-2"
+                                {...getRootPropsImage()}
+                                >
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <svg
+                                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                                        aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 20 16"
+                                        >
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                        />
+                                        </svg>
+                                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        SVG, PNG, JPEG, JPG, GIF
+                                        </p>
+                                    </div>
+                                    {image.length > 0 &&
+                                        <div className="mt-2 flex flex-col w-[100%] overflow-y-scroll h-auto">
+                                            {image.map((file, index) => (
+                                                <div key={index} className="p-1 flex justify-between items-center border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700">
+                                                    <div className='flex justify-start w-[75%] items-center'>
+                                                        <div className="w-10 h-10 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center mr-1">
+                                                            {getPreview(file)}
+                                                        </div>
+                                                        <p className="text-xs text-center mt-1 text-gray-500 dark:text-gray-400">{file.name}</p>
+                                                    </div>
+                                                    <a
+                                                        className="top-0 right-0 text-gray-400 bg-red-400 hover:bg-red-500 hover:text-white rounded-lg text-sm w-6 h-6 ml-0 inline-flex justify-center items-center dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white"
+                                                        onClick={() => removeFile(index, setFiles3)}
+                                                    >
+                                                        <IoClose className="text-xl text-white" />
+                                                    </a>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    }
+                                    <input {...getInputPropsImage()}/>
                                 </label>
                             </div>
                         </div>

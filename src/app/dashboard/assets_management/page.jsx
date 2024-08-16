@@ -2,24 +2,17 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
 import PageHeader from "../components/pageHeader/pageHeader";
 import { useSelector } from "react-redux";
-import RemoveWorkflowForm from "../components/workflow/workflowForms/removeWorkflowForm";
 import { redirect, useRouter } from 'next/navigation';
 import PageListView from "../components/pageContent/PageListView";
 import PageGridView from "../components/pageContent/PageGridView";
-import { FaClipboardList } from "react-icons/fa";
-import { useAllProcurementDetailsListQuery } from "@/app/_lib/redux/features/procurement/procurement_api";
-import { VscServerProcess } from "react-icons/vsc";
 import { FaDollyFlatbed } from "react-icons/fa";
-import AddNewSupplierQuotationForm from "../supplier_quotation/components/addNewSupplierQuotationForm";
 import UpdateSupplierQuotationForm from "../supplier_quotation/components/updateNewSupplierQuotationForm";
-import ViewQuotationDetails from "../supplier_quotation/components/viewQuotationDetails";
-import DeleteSupplierQuotationForm from "../supplier_quotation/components/deleteSupplierQuotationForm";
-import SupplierQuotationListTable from "../supplier_quotation/components/supplierQuotationListTable";
-import SupplierQuotationGridComponent from "../supplier_quotation/components/supplierQuotationGridComponent";
 import AddNewAssetsForm from "./components/addNewAssetsForm";
 import AssetsGridComponent from "./components/assetsGridComponent";
 import { useAssestListQuery } from "@/app/_lib/redux/features/assetsmanagement/assets_management_api";
 import AssetsListTable from "./components/assetsListTable";
+import ViewAssetsDetails from "./components/viewAssetsDetails";
+import DeleteAssetsForm from "./components/deleteAssetsForm";
 
 export default function Page() {
 
@@ -77,13 +70,13 @@ export default function Page() {
       modelPageSize: "w-4/5",
     },
     viewForm: {
-      modelTitle: "Supplier Quotation Details",
-      formComponent: <ViewQuotationDetails/>,
+      modelTitle: "Assets Details",
+      formComponent: <ViewAssetsDetails/>,
       modelPageSize: "w-4/5",
     },
     deleteForm: {
       modelTitle: "Remove Supplier Quotation",
-      formComponent: <DeleteSupplierQuotationForm />,
+      formComponent: <DeleteAssetsForm />,
       showModelTitle:{showModelTitle},
     },
   };

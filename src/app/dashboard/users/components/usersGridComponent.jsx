@@ -87,7 +87,8 @@ function usersGridComponent({
                           <img
                             className="w-24 h-24 mb-3 rounded-full shadow-lg"
                             src={`${process.env.NEXT_PUBLIC_API_URL}${Users.profie_image}`}
-                            alt={`${Users.name} profile`}/>
+                            alt={`${Users.name} profile`}
+                          />
                         ) 
                         : 
                         (
