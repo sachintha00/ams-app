@@ -30,6 +30,33 @@ function ViewAssetsDetails({  }) {
           setIsTransitioning(false);
         }, 300); // Match this time to your transition duration
       };
+
+    const [timeSinceRegister, setTimeSinceRegister] = useState('');
+
+    useEffect(() => {
+        const calculateTimeDifference = () => {
+
+            const registerDate = new Date(Assets.register_date);
+            const now = new Date();
+
+            const timeDifference = now - registerDate; // Difference in milliseconds
+
+            // Convert time difference to readable format (years, months, days)
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
+            const seconds = Math.floor((timeDifference / 1000) % 60);
+
+            setTimeSinceRegister(`${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds ago`);
+        };
+
+        calculateTimeDifference();
+
+        // Optionally update the time every second
+        const interval = setInterval(calculateTimeDifference, 1000);
+
+        return () => clearInterval(interval); // Cleanup on component unmount
+    }, []);
       
     return (
         <>
@@ -48,17 +75,19 @@ function ViewAssetsDetails({  }) {
                             src={`${process.env.NEXT_PUBLIC_API_URL}${selectedImage}`}  />
                         </div>
                         {/* Thumbnail images */}
-                        <div className='flex mt-3 gap-3'>
-                            {Assets.thumbnail_image.map((image, index) => (
-                            <img 
-                                key={index} 
-                                src={`${process.env.NEXT_PUBLIC_API_URL}${image}`} 
-                                alt={`Thumbnail ${index + 1}`} 
-                                onClick={() => handleImageClick(image)}
-                                className={`w-24 h-auto cursor-pointer rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 
-                                ${selectedImage === image ? 'ring-4 ring-blue-400' : 'ring-1 ring-gray-300'}`}
-                            />
-                            ))}
+                        <div className='max-w-[550px] overflow-x-scroll w-auto p-[5px]'>
+                            <div className='flex mt-3 gap-3'>
+                                {Assets.thumbnail_image.map((image, index) => (
+                                    <img 
+                                        key={index} 
+                                        src={`${process.env.NEXT_PUBLIC_API_URL}${image}`} 
+                                        alt={`Thumbnail ${index + 1}`} 
+                                        onClick={() => handleImageClick(image)}
+                                        className={`w-24 h-auto cursor-pointer rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 
+                                        ${selectedImage === image ? 'ring-4 ring-blue-400' : 'ring-1 ring-gray-300'}`}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
                     <div className="data w-full lg:pr-8 pr-0 xl:justify-start justify-center flex flex-col max-lg:pb-10 xl:my-2 lg:my-5 my-0">
@@ -73,20 +102,27 @@ function ViewAssetsDetails({  }) {
                                 <p className="font-normal text-xs text-gray-700 dark:text-gray-400">
                                     Model No:{Assets.model_number}
                                 </p>
-                                <div className="flex flex-col sm:flex-row sm:items-center mb-3">
-                                    <h6 className="text-2xl leading-9 text-gray-900 pr-5 sm:border-r border-gray-200 mr-5 dark:text-gray-400">
-                                    Rs.{Assets.assets_value}
-                                    </h6>
-                                    <div className="flex items-center gap-2 pr-5 sm:border-r border-gray-200 mr-5">
-                                        <span className="pl-2 font-normal leading-7 text-gray-500 text-sm ">
-                                            Assets Type : {Assets.assets_type_name}
-                                        </span>
-                                    </div>
-                                </div>
                             </div>
                             <div>
                                 <img className="rounded" src="/sampleqr.jpg" alt="" />
                             </div>
+                        </div>
+                        <div className="flex items-center gap-2 pr-5 mr-5">
+                            <div className="flex flex-col sm:flex-row sm:items-center">
+                                <h6 className="text-2xl leading-9 text-gray-900 pr-5 sm:border-r border-gray-200 mr-5 dark:text-gray-400">
+                                    Rs.{Assets.assets_value}
+                                </h6>
+                                <div className="flex items-center gap-2 pr-5 sm:border-r border-gray-200 mr-5">
+                                    <span className="pl-2 font-normal leading-7 text-gray-500 text-sm ">
+                                        Assets Type : {Assets.assets_type_name}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 pr-5 mr-5">
+                            <span className="font-normal leading-7 text-gray-500 text-sm ">
+                             Time Since Registered: {timeSinceRegister}
+                            </span>
                         </div>
                         <div className='w-full mb-5 p-2 bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] dark:border-gray-700'>
                             <h4 className='mr-3 font-semibold text-gray-700 dark:text-white text-base'>Purchase Details</h4>
