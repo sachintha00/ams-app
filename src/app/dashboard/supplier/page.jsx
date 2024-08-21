@@ -12,6 +12,7 @@ import WorkflowHomeListComponent from "../components/workflow/workflowHomeListCo
 import AddNewSupplierForm from "./_components/forms/addNewSupplierForm";
 import SupplierGridComponent from "./_components/SupplierGridComponent";
 import { useGetAllSupplierQuery } from "@/app/_lib/redux/features/supplier/supplier_api";
+import UpdateSupplierForm from "./_components/forms/updateSupplierForm";
 
 export default function Roles() {
   const view = useSelector((state) => state.pageHeader.view);
@@ -25,7 +26,7 @@ export default function Roles() {
     },
     updateForm: {
       modelTitle: "Update Existing Workflow",
-      formComponent: <AddNewWorkflowForm isUpdateForm={true} />,
+      formComponent: <UpdateSupplierForm />,
     },
     deleteForm: {
       modelTitle: "Remove Supplier",

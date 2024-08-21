@@ -78,6 +78,10 @@ export default function Organization() {
     }
   };
 
+  const onRemoveNodeHandler = (node) => {
+    console.log("remove node")
+  }
+
   const nodeStyle = {
     width: "350px",
     borderRadius: "5px",
@@ -116,7 +120,7 @@ export default function Organization() {
                 <GrUpdate />
               </button>
               {Object.keys(node.children).length === 0 && (
-                <button onClick={() => openAddFormModal(node)} className="ml-3">
+                <button onClick={() => onRemoveNodeHandler(node)} className="ml-3">
                   <RiDeleteBin6Line />
                 </button>
               )}
