@@ -13,6 +13,7 @@ import { useAssestListQuery } from "@/app/_lib/redux/features/assetsmanagement/a
 import AssetsListTable from "./components/assetsListTable";
 import ViewAssetsDetails from "./components/viewAssetsDetails";
 import DeleteAssetsForm from "./components/deleteAssetsForm";
+import UpdateAssetsForm from "./components/updateAssetsForm";
 
 export default function Page() {
 
@@ -65,8 +66,8 @@ export default function Page() {
       modelPageSize: "w-4/5",
     },
     updateForm: {
-      modelTitle: "Update Supplier Quotation",
-      formComponent: <UpdateSupplierQuotationForm/>,
+      modelTitle: "Update Assets Details",
+      formComponent: <UpdateAssetsForm/>,
       modelPageSize: "w-4/5",
     },
     viewForm: {

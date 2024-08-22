@@ -105,6 +105,9 @@ function AssetsGridComponent({
                             {/* edite role */}
                             {/* {thisuserpermissionArray.includes("update role") && ( */}
                               <a
+                                onClick={() =>
+                                  handleUpdate(Assets.id, Assets)
+                                }
                               >
                                 <BiEdit className="text-yellow-400 hover:text-yellow-500 text-2xl" />
                               </a>

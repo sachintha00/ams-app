@@ -1441,3 +1441,199 @@
         }
     ]
 }
+
+{
+    "p_model_number": "freferfref",
+    "p_serial_number": "ferfererf",
+    "p_responsible_person": 2,
+    "p_location": "colombo",
+    "p_department": 1,
+    "p_thumbnail_image": [],
+    "p_assets_type": 1,
+    "p_category": 3,
+    "p_sub_category": 5,
+    "p_assets_value": "100000.00",
+    "p_assets_document": [],
+    "p_supplier": 1,
+    "p_purchase_order_number": "eregegeg",
+    "p_purchase_cost": "100000.00",
+    "p_purchase_type": 3,
+    "p_received_condition": "Brand New",
+    "p_warranty": "10 years",
+    "p_other_purchase_details": "test",
+    "p_purchase_document": [],
+    "p_insurance_number": "cd53672",
+    "p_insurance_document": [],
+    "p_expected_life_time": "10 years",
+    "p_depreciation_value": "49.99"
+}
+
+{
+    "p_model_number": "freferfref",
+    "p_serial_number": "ferfererf",
+    "p_responsible_person": "2",
+    "p_location": "colombo",
+    "p_department": "1",
+    "p_assets_type": "1",
+    "p_category": "3",
+    "p_sub_category": "5",
+    "p_assets_value": "100000.00",
+    "p_supplier": "1",
+    "p_purchase_order_number": "eregegeg",
+    "p_purchase_cost": "100000.00",
+    "p_purchase_type": "3",
+    "p_received_condition": "Brand New",
+    "p_warranty": "10 years",
+    "p_other_purchase_details": "test",
+    "p_insurance_number": "cd53672",
+    "p_expected_life_time": "10 years",
+    "p_depreciation_value": "49.99"
+}
+
+[
+    {
+        "modelNumber": "cd2345",
+        "serialNumber": "cs345454",
+        "selectedUser": 1,
+        "storedLocation": "colombo",
+        "organization": 1
+    }
+]
+
+{
+    "p_thumbnail_image": [
+        {
+            "path": "man3.jpg"
+        },
+        {
+            "path": "linkindimage.jpeg"
+        }
+    ],
+    "p_assets_type": 1,
+    "p_category": 3,
+    "p_sub_category": 6,
+    "p_assets_value": "500.00",
+    "p_assets_document": [
+        {
+            "path": "man3.jpg"
+        }
+    ],
+    "p_supplier": 1,
+    "p_purchase_order_number": "eregegeg",
+    "p_purchase_cost": "100.00",
+    "p_purchase_type": 3,
+    "p_received_condition": "Brand New",
+    "p_warranty": "10 years",
+    "p_other_purchase_details": "test",
+    "p_purchase_document": [
+        {
+            "path": "man3.jpg"
+        }
+    ],
+    "p_insurance_number": "cd53672",
+    "p_insurance_document": [
+        {
+            "path": "man3.jpg"
+        }
+    ],
+    "p_expected_life_time": "10 years",
+    "p_depreciation_value": "40",
+    "asset_details": [
+        {
+            "modelNumber": "ferfr",
+            "serialNumber": "frefre",
+            "selectedUser": {
+                "id": 2,
+                "user_name": "Dushayntha Randeni",
+                "email": "chamoddushantha2014@gmail.com",
+                "name": "Dushyantha randeni",
+                "contact_no": "0769816111",
+                "profie_image": "uploads/profile_image/1723805678_Dushyantha randeni419654350_3549269158662478_8352046662697649957_n.jpg",
+                "contact_person": null,
+                "website": null,
+                "address": "Bujjampola,",
+                "email_verified_at": null,
+                "is_email_verified": false,
+                "employee_code": null,
+                "security_question": null,
+                "security_answer": null,
+                "activation_code": null,
+                "is_user_blocked": false,
+                "is_trial_account": false,
+                "first_login": null,
+                "user_description": "test",
+                "status": true,
+                "created_user": null,
+                "tenant_db_name": null,
+                "created_at": "2024-08-16T10:54:38.000000Z",
+                "updated_at": "2024-08-16T10:54:38.000000Z",
+                "designation_id": null,
+                "roles": [
+                    {
+                        "id": 1,
+                        "name": "Super Admin",
+                        "guard_name": "api",
+                        "created_at": "2024-08-12T09:38:18.000000Z",
+                        "updated_at": "2024-08-12T09:38:18.000000Z",
+                        "description": "test",
+                        "pivot": {
+                            "model_type": "App\\Models\\User",
+                            "model_id": 2,
+                            "role_id": 1
+                        }
+                    }
+                ]
+            },
+            "storedLocation": "frefrf",
+            "organization": 1
+        },
+        {
+            "modelNumber": "frefr",
+            "serialNumber": "refref",
+            "selectedUser": {
+                "id": 1,
+                "user_name": "chamod randeni",
+                "email": "chamoddushyantha2017@gmail.com",
+                "name": "Chamod",
+                "contact_no": "0769816111",
+                "profie_image": null,
+                "contact_person": null,
+                "website": null,
+                "address": null,
+                "email_verified_at": null,
+                "is_email_verified": false,
+                "employee_code": null,
+                "security_question": null,
+                "security_answer": null,
+                "activation_code": null,
+                "is_user_blocked": false,
+                "is_trial_account": false,
+                "first_login": null,
+                "user_description": null,
+                "status": true,
+                "created_user": null,
+                "tenant_db_name": "tenant_731ae",
+                "created_at": "2024-08-12T09:38:18.000000Z",
+                "updated_at": "2024-08-13T03:56:54.000000Z",
+                "designation_id": null,
+                "roles": [
+                    {
+                        "id": 1,
+                        "name": "Super Admin",
+                        "guard_name": "api",
+                        "created_at": "2024-08-12T09:38:18.000000Z",
+                        "updated_at": "2024-08-12T09:38:18.000000Z",
+                        "description": "test",
+                        "pivot": {
+                            "model_type": "App\\Models\\User",
+                            "model_id": 1,
+                            "role_id": 1
+                        }
+                    }
+                ]
+            },
+            "storedLocation": "frefref",
+            "organization": 1
+        }
+    ]
+}

@@ -1,325 +1,295 @@
 'use client'
 import React, { useEffect, useState, useContext, useRef } from 'react';
-import { useAssestListQuery, useSubmitAssestRegisterFormMutation } from '@/app/_lib/redux/features/assetsmanagement/assets_management_api';
+import { useDispatch, useSelector } from 'react-redux';
+import { useAddNewSupplierQuotationMutation, useUpdateSupplierQuotationMutation } from '@/app/_lib/redux/features/supplierquotation/supplierquotation_api';
+import { handleClosePopupModel } from '@/app/_lib/redux/features/popupModel/popupModelSlice';
+import { useUsersListQuery } from '@/app/_lib/redux/features/user/user_api';
 import SelectInput from '../../components/inputs/SelectInput';
+import renderResponsiblePerson from './menulist/renderResponsiblePerson';
+import { useAssestListQuery, useSubmitAssestUpdateFormMutation } from '@/app/_lib/redux/features/assetsmanagement/assets_management_api';
+import { useDropzone } from 'react-dropzone';
+import { FaFilePdf, FaFileCsv } from 'react-icons/fa';
 import renderAssetTypeItem from './menulist/renderAssetTypeItem';
+import renderAssetCategories from './menulist/renderAssetCategories';
 import renderAssetSubCategories from './menulist/renderAssetSubCategories';
 import { useGetSupplierlistQuery } from '@/app/_lib/redux/features/supplier/supplier_api';
 import renderSupplier from './menulist/renderSupplier';
-import { IoClose } from "react-icons/io5";
-import { IoAddOutline } from "react-icons/io5";
-import { useUsersListQuery } from '@/app/_lib/redux/features/user/user_api';
-import renderResponsiblePerson from './menulist/renderResponsiblePerson';
-import { BiEdit } from "react-icons/bi";
+import renderPurchaseType from './menulist/renderPurchaseType';
 import dynamic from "next/dynamic";
-import { useDispatch, useSelector } from 'react-redux';
-import { getorganizationid } from '@/app/_lib/redux/features/assestrequisition/organization_slice';
-import { FaFileAlt } from "react-icons/fa";
-import { useDropzone } from 'react-dropzone';
-import { FaFilePdf, FaFileCsv } from 'react-icons/fa';
-import { handleClosePopupModel } from '@/app/_lib/redux/features/popupModel/popupModelSlice';
+import { IoAddOutline } from "react-icons/io5";
+import { IoClose } from "react-icons/io5";
 
 const OrganizationComponent = dynamic(() => import("./menulist/organization"), {
     ssr: false,
   });
 
-function AddNewAssetsForm({ }) {
-        const usedispatch = useDispatch();
-        const { data: assestList } = useAssestListQuery();
+function UpdateAssetsForm({ }) {
+    const dispatch = useDispatch()
+    const { value } = useSelector((state) => state.popupModel);
+
+    const savedAssestId = value.id;
+    const savedModelNumber = value.model_number;
+    const savedSerialNumber = value.serial_number;
+    const savedlocation = value.location;
+    const savedAssetsType = value.assets_type_id;
+    const savedCategoryId = value.category_id;
+    const savedsubCategoryId = value.sub_category_id;
+    const savedSupplierId = value.supplier_id;
+    const savedPurchaseTypeId = value.purchase_type_id;
+    const savedassetsValue = value.assets_value;
+    const savedPurchaseOrderNumber = value.purchase_order_number;
+    const savedpurchaseCost = value.purchase_cost;
+    const savedwarranty = value.warranty;
+    const savedOtherPurchaseDetails = value.other_purchase_details;
+    const savedOtherInsuranceNumber = value.insurance_number;
+    const savedexpectedLifeTime = value.expected_life_time;
+    const savedDepreciationValue = value.depreciation_value;
+    const savedReceivedCondition = value.received_condition;
+    const responsiblePersonID = value.responsible_person_id;
 
 
-        const [files1, setFiles1] = useState([]);
-        const [files2, setFiles2] = useState([]);
-        const [files3, setFiles3] = useState([]);
-        const [image, setImage] = useState([]);
+    const [files1, setFiles1] = useState([]);
+    const [files2, setFiles2] = useState([]);
+    const [files3, setFiles3] = useState([]);
+    const [image, setImage] = useState([]);
 
-        const getPreview = (file) => {
-            if (file.type.startsWith('image/')) {
-              return <img src={URL.createObjectURL(file)} alt={file.name} style={{ width: '50px', height: '50px' }} />;
-            } else if (file.type === 'application/pdf') {
-              return <FaFilePdf size={32} color="red" />;
-            } else if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
-              return <FaFileCsv size={32} color="green" />;
-            } else {
-              return <span>Unsupported file type</span>;
+    const getPreview = (file) => {
+        if (file.type.startsWith('image/')) {
+          return <img src={URL.createObjectURL(file)} alt={file.name} style={{ width: '50px', height: '50px' }} />;
+        } else if (file.type === 'application/pdf') {
+          return <FaFilePdf size={32} color="red" />;
+        } else if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+          return <FaFileCsv size={32} color="green" />;
+        } else {
+          return <span>Unsupported file type</span>;
+        }
+    };
+
+    // Assets Related Document
+    const { getRootProps: getRootProps1, getInputProps: getInputProps1 } = useDropzone({
+        multiple: true,
+        accept: {
+          'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff'],
+          'application/pdf': ['.pdf'],
+          'text/csv': ['.csv']
+        },
+        onDrop: (acceptedFiles) => {
+            if (files1.length + acceptedFiles.length > 5) {
+              alert('You can only upload up to 5 files.');
+              return;
             }
-        };
+            setFiles1((prevFiles) => [...prevFiles, ...acceptedFiles]);
+        }
+      });
 
-        // Assets Related Document
-        const { getRootProps: getRootProps1, getInputProps: getInputProps1 } = useDropzone({
-            multiple: true,
-            accept: {
-              'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff'],
-              'application/pdf': ['.pdf'],
-              'text/csv': ['.csv']
-            },
-            onDrop: (acceptedFiles) => {
-                if (files1.length + acceptedFiles.length > 5) {
-                  alert('You can only upload up to 5 files.');
-                  return;
-                }
-                setFiles1((prevFiles) => [...prevFiles, ...acceptedFiles]);
+    // Purchase Document
+    const { getRootProps: getRootProps2, getInputProps: getInputProps2 } = useDropzone({
+        multiple: true,
+        accept: {
+        'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff'],
+        'application/pdf': ['.pdf'],
+        'text/csv': ['.csv']
+        },
+        onDrop: (acceptedFiles) => {
+            if (files2.length + acceptedFiles.length > 5) {
+                alert('You can only upload up to 5 files.');
+                return;
             }
-          });
+            setFiles2((prevFiles) => [...prevFiles, ...acceptedFiles]);
+        }
+    });
 
-        // Purchase Document
-        const { getRootProps: getRootProps2, getInputProps: getInputProps2 } = useDropzone({
-            multiple: true,
-            accept: {
-            'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff'],
-            'application/pdf': ['.pdf'],
-            'text/csv': ['.csv']
-            },
-            onDrop: (acceptedFiles) => {
-                if (files2.length + acceptedFiles.length > 5) {
-                    alert('You can only upload up to 5 files.');
-                    return;
-                }
-                setFiles2((prevFiles) => [...prevFiles, ...acceptedFiles]);
+    // Insurance related Documents
+    const { getRootProps: getRootProps3, getInputProps: getInputProps3 } = useDropzone({
+        multiple: true,
+        accept: {
+        'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff'],
+        'application/pdf': ['.pdf'],
+        'text/csv': ['.csv']
+        },
+        onDrop: (acceptedFiles) => {
+            if (files3.length + acceptedFiles.length > 5) {
+                alert('You can only upload up to 5 files.');
+                return;
             }
-        });
+            setFiles3((prevFiles) => [...prevFiles, ...acceptedFiles]);
+        }
+    });
 
-        // Insurance related Documents
-        const { getRootProps: getRootProps3, getInputProps: getInputProps3 } = useDropzone({
-            multiple: true,
-            accept: {
-            'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff'],
-            'application/pdf': ['.pdf'],
-            'text/csv': ['.csv']
-            },
-            onDrop: (acceptedFiles) => {
-                if (files3.length + acceptedFiles.length > 5) {
-                    alert('You can only upload up to 5 files.');
-                    return;
-                }
-                setFiles3((prevFiles) => [...prevFiles, ...acceptedFiles]);
-            }
-        });
+    // Thumbnail image
+    const { getRootProps: getRootPropsImage, getInputProps: getInputPropsImage } = useDropzone({
+        multiple: true,
+        accept: {
+        'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff']
+        },
+        onDrop: (acceptedFiles) => {
+            setImage((prevFiles) => [...prevFiles, ...acceptedFiles]);
+        }
+    });
 
-        // Thumbnail image
-        const { getRootProps: getRootPropsImage, getInputProps: getInputPropsImage } = useDropzone({
-            multiple: true,
-            accept: {
-            'image/*': ['.jpeg', '.png', '.jpg', '.gif', '.bmp', '.tiff']
-            },
-            onDrop: (acceptedFiles) => {
-                setImage((prevFiles) => [...prevFiles, ...acceptedFiles]);
-            }
-        });
+    // Function to remove a file by index from a given file list
+    const removeFile = (index, setFiles) => {
+        setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+    };
 
-        // Function to remove a file by index from a given file list
-        const removeFile = (index, setFiles) => {
-            setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
-        };
-
-        // assests type
-        const [assetsTypeArray, setAssetsTypeArray] = useState([]);
-        const [selectedAssetsType, setSelectedAssetsType] = useState(null);
-        const [assetsTypeSearchInput, setAssetsTypeSearchInput] = useState('');
+    // asset type
+    const { data: assestList } = useAssestListQuery();
+    const [assetsTypeArray, setAssetsTypeArray] = useState([]);
+    const [selectedAssetsType, setSelectedAssetsType] = useState(null);
+    const [assetsTypeSearchInput, setAssetsTypeSearchInput] = useState('');
       
-        useEffect(() => {
-          if (assestList) {
-            const Allassesttype = Object.values(assestList.allassesttype);
-            const filteredassesttype = Allassesttype.filter(item => item.name.toLowerCase().includes(assetsTypeSearchInput.toLowerCase()));
-            setAssetsTypeArray(filteredassesttype);
-          }
-        }, [assestList, assetsTypeSearchInput]);
+    useEffect(() => {
+        if (assestList) {
+        const Allassesttype = Object.values(assestList.allassesttype);
+        const filteredassesttype = Allassesttype.filter(item => item.name.toLowerCase().includes(assetsTypeSearchInput.toLowerCase()));
+        setAssetsTypeArray(filteredassesttype);
+        }
+    }, [assestList, assetsTypeSearchInput]);
 
-        // Assets Categories
-        const [assetCategories, setAssetCategories] = useState([]);
-        const [selectedAssetCategories, setSelectedAssetCategories] = useState(null);
-        const [assetCategoriesSearchInput, setAssetCategoriesSearchInput] = useState('');
-        useEffect(() => {
-            if (assestList) {
-              const Allassetcategories = Object.values(assestList.Allassetcategories);
-              const filteredassetcategories = Allassetcategories.filter(item => item.name.toLowerCase().includes(assetCategoriesSearchInput.toLowerCase()));
-              setAssetCategories(filteredassetcategories);
-            }
-        }, [assestList, assetCategoriesSearchInput]);
+    useEffect(() => {
+        if (savedAssetsType && assestList) {
+            // Find and set the current selected asset type based on the existing asset data
+            const currentAssetType = assestList.allassesttype.find(
+                item => item.assest_type_id === savedAssetsType
+            );
+            setSelectedAssetsType(currentAssetType);
+            setAssetsTypeSearchInput(currentAssetType ? currentAssetType.name : '');
+        }
+    }, [savedAssetsType, assestList]);
 
-        const handleSelectCategory = (category) => {
-            setSelectedAssetCategories(category);
-        };
-        
-        // Assets Sub Categories
-        const [subCategories, setSubCategories] = useState([]);
-        const [selectedSubAssetCategories, setSelectedAssetSubCategories] = useState(null);
-        const [assetSubCategoriesSearchInput, setAssetSubCategoriesSearchInput] = useState('');
+    // Assets Categories
+    const [assetCategories, setAssetCategories] = useState([]);
+    const [selectedAssetCategories, setSelectedAssetCategories] = useState(null);
+    const [assetCategoriesSearchInput, setAssetCategoriesSearchInput] = useState('');
+    useEffect(() => {
+        if (assestList) {
+            const Allassetcategories = Object.values(assestList.Allassetcategories);
+            const filteredassetcategories = Allassetcategories.filter(item => item.name.toLowerCase().includes(assetCategoriesSearchInput.toLowerCase()));
+            setAssetCategories(filteredassetcategories);
+        }
+    }, [assestList, assetCategoriesSearchInput]);
 
-        useEffect(() => {
+    const handleSelectCategory = (category) => {
+        setSelectedAssetCategories(category);
+    };
+
+    useEffect(() => {
+        if (savedCategoryId && assestList) {
+            // Find and set the current selected asset type based on the existing asset data
+            const currentCategory = assestList.Allassetcategories.find(
+                item => item.ac_id === savedCategoryId
+            );
+            setSelectedAssetCategories(currentCategory);
+            setAssetCategoriesSearchInput(currentCategory ? currentCategory.name : '');
+        }
+    }, [savedCategoryId, assestList]);
+
+    // Assets Sub Categories
+    const [subCategories, setSubCategories] = useState([]);
+    const [selectedSubAssetCategories, setSelectedAssetSubCategories] = useState(null);
+    const [assetSubCategoriesSearchInput, setAssetSubCategoriesSearchInput] = useState('');
+
+    useEffect(() => {
+        if (selectedAssetCategories && selectedAssetCategories.sub_categories) {
+            const Allassetsubcategories = Object.values(selectedAssetCategories.sub_categories);
+            setSubCategories(Allassetsubcategories);
+        } else {
+            setSubCategories([]);
+        }
+    }, [selectedAssetCategories, assetSubCategoriesSearchInput]);
+    console.log(selectedSubAssetCategories);
+
+    useEffect(() => {
+        if (savedsubCategoryId && selectedAssetCategories) {
+            // Find and set the current selected asset type based on the existing asset data
             if (selectedAssetCategories && selectedAssetCategories.sub_categories) {
-                const Allassetsubcategories = Object.values(selectedAssetCategories.sub_categories);
-                setSubCategories(Allassetsubcategories);
-            } else {
-                setSubCategories([]);
+                const currentSubCategoryId = selectedAssetCategories.sub_categories.find(
+                    item => item.assc_id === savedsubCategoryId
+                );
+                setSelectedAssetSubCategories(currentSubCategoryId);
+                setAssetSubCategoriesSearchInput(currentSubCategoryId ? currentSubCategoryId.assc_name : '');
             }
-        }, [selectedAssetCategories, assetSubCategoriesSearchInput]);
-        console.log(selectedSubAssetCategories);
+        }
+    }, [savedsubCategoryId, selectedAssetCategories]);
 
-        // select Supplier
-        const {data: Supplier} = useGetSupplierlistQuery();
+    // select Supplier
+    const {data: Supplier} = useGetSupplierlistQuery();
 
-        const [supplierList, setSupplierList] = useState([]);
-        const [selectedSupplier, setSelectedSupplier] = useState(null);
-        const [supplierSearchInput, setSupplierSearchInput] = useState('');
+    const [supplierList, setSupplierList] = useState([]);
+    const [selectedSupplier, setSelectedSupplier] = useState(null);
+    const [supplierSearchInput, setSupplierSearchInput] = useState('');
 
-        useEffect(() => {
-            if (Supplier) {
-                const allsupplair = Object.values(Supplier.data);
-                const filteredsupplair = allsupplair.filter(supplair => supplair.name.toLowerCase().includes(supplierSearchInput.toLowerCase()));
-                setSupplierList(filteredsupplair);
-            }
-          }, [Supplier, supplierSearchInput]);
+    useEffect(() => {
+        if (Supplier) {
+            const allsupplair = Object.values(Supplier.data);
+            const filteredsupplair = allsupplair.filter(supplair => supplair.name.toLowerCase().includes(supplierSearchInput.toLowerCase()));
+            setSupplierList(filteredsupplair);
+        }
+        }, [Supplier, supplierSearchInput]);
 
-        
-        // Purchase Type
-        const [purchaseType, setPurchaseType] = useState([]);
-        const [selectedPurchaseType, setSelectedPurchaseType] = useState(null);
-        const [purchaseTypeSearchInput, setPurchaseTypeSearchInput] = useState('');
+    useEffect(() => {
+        if (savedSupplierId && Supplier) {
+            // Find and set the current selected asset type based on the existing asset data
+            const currentSupplier = Supplier.data.find(
+                item => item.id === savedSupplierId
+            );
+            setSelectedSupplier(currentSupplier);
+            setSupplierSearchInput(currentSupplier ? currentSupplier.name : '');
+        }
+    }, [savedSupplierId, Supplier]);
 
-        useEffect(() => {
-            if (assestList) {
-              const Allpurchasetype = Object.values(assestList.allavailabilitytype);
-              const filteredpurchasetype = Allpurchasetype.filter(item => item.name.toLowerCase().includes(purchaseTypeSearchInput.toLowerCase()));
-              setPurchaseType(filteredpurchasetype);
-            }
-        }, [assestList, purchaseTypeSearchInput]);
 
-        // Responsible Person select
-        const { data: userList } = useUsersListQuery();
-        const [usersList, setUsersList] = useState([]);
-        const [selectedUser, setSelectedUser] = useState(null);
-        const [selectedUserAllDetails, setSelectedUserAllDetails] = useState(null);
-        const [usersListSearchInput, setUsersListSearchInput] = useState('');
+    // Purchase Type
+    const [purchaseType, setPurchaseType] = useState([]);
+    const [selectedPurchaseType, setSelectedPurchaseType] = useState(null);
+    const [purchaseTypeSearchInput, setPurchaseTypeSearchInput] = useState('');
 
-        useEffect(() => {
-            if (userList) {
-              const Allusers = Object.values(userList.Users);
-              const filteredusers = Allusers.filter(item => item.name.toLowerCase().includes(usersListSearchInput.toLowerCase()));
-              setUsersList(filteredusers);
-            }
-        }, [userList, usersListSearchInput]);
+    useEffect(() => {
+        if (assestList) {
+            const Allpurchasetype = Object.values(assestList.allavailabilitytype);
+            const filteredpurchasetype = Allpurchasetype.filter(item => item.name.toLowerCase().includes(purchaseTypeSearchInput.toLowerCase()));
+            setPurchaseType(filteredpurchasetype);
+        }
+    }, [assestList, purchaseTypeSearchInput]);
 
-        //file uploading
+    useEffect(() => {
+        if (savedPurchaseTypeId && assestList) {
+            // Find and set the current selected asset type based on the existing asset data
+            const currentallavailabilitytype = assestList.allavailabilitytype.find(
+                item => item.availability_type_id === savedPurchaseTypeId
+            );
+            setSelectedPurchaseType(currentallavailabilitytype);
+            setPurchaseTypeSearchInput(currentallavailabilitytype ? currentallavailabilitytype.name : '');
+        }
+    }, [savedPurchaseTypeId, assestList]);
 
-        // const [files, setFiles] = useState([]);
-        // const handleFileChange = (event) => {
-        //     const fileList = event.target.files;
-        //     const newFiles = Array.from(fileList);
-        //     setFiles([...files, ...newFiles]);
-        // };
-        
-        // const handleRemoveFile = (index) => {
-        //     const updatedFiles = files.filter((_, i) => i !== index);
-        //     setFiles(updatedFiles);
-        // };
+    // received condition
+    const [receivedCondition, setReceivedCondition] = useState(savedReceivedCondition);
 
-        // const renderFile = (file, index) => {
-        //     const fileType = file.type.split("/")[0]; // Get the file type (e.g., 'image', 'application')
-        
-        //     if (fileType === "image") {
-        //     return (
-        //         <div key={index}>
-        //         <img
-        //             src={URL.createObjectURL(file)}
-        //             alt={`Image ${index}`}
-        //             className="w-28"
-        //         />
-        //         <span className="text-gray-700 flex w-[10px]">{file.name}</span>
-        //         <button
-        //             type="button"
-        //             onClick={() => handleRemoveFile(index)}
-        //             className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
-        //             data-modal-toggle="crud-modal"
-        //         >
-        //             <IoClose className="text-2xl hover:text-white" />
-        //             <span className="sr-only">Close modal</span>
-        //         </button>
-        //         </div>
-        //     );
-        //     } else {
-        //     // Render file name with corresponding icon for non-image files
-        //     let icon;
-        //     if (file.type.includes("pdf")) {
-        //         icon = <FaFilePdf className="text-6xl" />; // Example PDF icon
-        //     } else {
-        //         icon = <i className="fa fa-file-o" aria-hidden="true"></i>; // Default file icon
-        //     }
-        //     return (
-        //         <div key={index}>
-        //         {icon}
-        //         <span className="text-gray-700 ">{file.name}</span>
-        //         <button
-        //             type="button"
-        //             onClick={() => handleRemoveFile(index)}
-        //             className="text-gray-400 bg-transparent hover:bg-red-400 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-red-400 dark:hover:text-white"
-        //             data-modal-toggle="crud-modal"
-        //         >
-        //             <IoClose className="text-2xl hover:text-white" />
-        //             <span className="sr-only">Close modal</span>
-        //         </button>
-        //         </div>
-        //     );
-        //     }
-        // }; 
+    // responsible persone
+    const { data: userList } = useUsersListQuery();
+    const [usersList, setUsersList] = useState([]);
+    const [selectedUserAllDetails, setSelectedUserAllDetails] = useState(null);
+    const [usersListSearchInput, setUsersListSearchInput] = useState('');
 
-        //assetsDocument uploading
-        // const [assetsDocument, setAssetsDocument] = useState([]);
+    useEffect(() => {
+        if (userList) {
+          const Allusers = Object.values(userList.Users);
+          const filteredusers = Allusers.filter(item => item.name.toLowerCase().includes(usersListSearchInput.toLowerCase()));
+          setUsersList(filteredusers);
+        }
+    }, [userList, usersListSearchInput]);
 
-        // const handleFileDrop = (e) => {
-        //   e.preventDefault();
-        //   const files = Array.from(e.dataTransfer.files);
-        //   setAssetsDocument((prevFiles) => [...prevFiles, ...files]);
-        // };
-      
-        // const handleAssetFileUpload = (e) => {
-        //   const files = Array.from(e.target.files);
-        //   setAssetsDocument((prevFiles) => [...prevFiles, ...files]);
-        // };
-      
-        // const removeAssetFile = (indexToRemove) => {
-        //   setAssetsDocument((prevFiles) =>
-        //     prevFiles.filter((_, index) => index !== indexToRemove)
-        //   );
-        // };
-
-        // purchasingFiles and insuranceDocument uploard
-        // const [assetsDocument, setAssetsDocument] = useState([]);
-        // const [purchasingFiles, setPurchasingFiles] = useState([]);
-        // const [insuranceDocument, setInsuranceDocument] = useState([]);
-
-        // const handleFileUpload = (e, setFileState) => {
-        //     console.log(setFileState);
-        //     const files = Array.from(e.target.files);
-        //     setFileState(prevFiles => [...prevFiles, ...files]);
-        // };
-        
-        // const handleDrop = (e, setFileState) => {
-        //     e.preventDefault();
-        //     const files = Array.from(e.dataTransfer.files);
-        //     setFileState(prevFiles => [...prevFiles, ...files]);
-        // };
-        
-        // const removeFile = (index, setFileState, fileState) => {
-        //     setFileState(fileState.filter((_, i) => i !== index));
-        // };
-
-        // const getFileIcon = (file) => {
-        //     const fileType = file.type.split('/')[1];
-        //     switch (fileType) {
-        //       case 'jpeg':
-        //       case 'jpg':
-        //       case 'png':
-        //       case 'gif':
-        //         return <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />;
-        //       case 'pdf':
-        //         return <FaFilePdf className='text-red-500 text-[100px]'/>;
-        //       case 'csv':
-        //         return <FaFileCsv className='text-green-500 text-[100px]'/>;
-        //       default:
-        //         return <FaFileAlt className='text-gray-500 text-[100px]'/>;
-        //     }
-        //   };
+    useEffect(() => {
+        if (responsiblePersonID && userList) {
+            // Find and set the current selected asset type based on the existing asset data
+            const currentresponsiblePerson = userList.Users.find(
+                item => item.id === responsiblePersonID
+            );
+            setSelectedUserAllDetails(currentresponsiblePerson);
+            setUsersListSearchInput(currentresponsiblePerson ? currentresponsiblePerson.name : '');
+        }
+    }, [responsiblePersonID, userList]);
 
         //organization
         const [isOpenOrganizationStructure, setIsOpenOrganizationStructure] = useState(false);
@@ -352,136 +322,177 @@ function AddNewAssetsForm({ }) {
             setOrganization(organizationid);
         }, [organizationid]);
 
-        //add assest details
-        const [assestValue, setAssestValue] = useState('');
-        const [purchaseOrderNumbe, setPurchaseOrderNumbe] = useState('');
-        const [purchaseCost, setPurchaseCost] = useState('');
-        const [warranty, setWarranty] = useState('');
-        const [otherPurchaseDetails, setOtherPurchaseDetails] = useState('');
-        const [insuranceNumber, setInsuranceNumber] = useState('');
-        const [expectedLifeTime, setExpectedLifeTime] = useState('');
-        const [estimatedDepreciationValue, setEstimatedDepreciationValue] = useState('');
-        const [receivedCondition, setReceivedCondition] = useState('');
-        const [assestDetails, setAssestDetails] = useState([]);
-        const [modelNumber, setModelNumber] = useState('');
-        const [serialNumber, setSerialNumber] = useState('');
-        const [storedLocation, setStoredLocation] = useState('');
-        const [editIndex, setEditIndex] = useState(null); // Track index of item being edited
-        const [items, setItems] = useState([]);
+    const [storedLocation, setStoredLocation] = useState(savedlocation);
+    const [assestValue, setAssestValue] = useState(savedassetsValue);
+    const [purchaseOrderNumbe, setPurchaseOrderNumbe] = useState(savedPurchaseOrderNumber);
+    const [purchaseCost, setPurchaseCost] = useState(savedpurchaseCost);
+    const [warranty, setWarranty] = useState(savedwarranty);
+    const [otherPurchaseDetails, setOtherPurchaseDetails] = useState(savedOtherPurchaseDetails);
+    const [insuranceNumber, setInsuranceNumber] = useState(savedOtherInsuranceNumber);
+    const [expectedLifeTime, setExpectedLifeTime] = useState(savedexpectedLifeTime);
+    const [estimatedDepreciationValue, setEstimatedDepreciationValue] = useState(savedDepreciationValue);
 
-        // Load form data from localStorage when the component mounts
-        useEffect(() => {
-            const savedFormData = JSON.parse(localStorage.getItem('assetRegister'));
-            if (savedFormData) {
-                setModelNumber(savedFormData.modelNumber || '');
-                setSerialNumber(savedFormData.serialNumber || '');
-                setSelectedUser(savedFormData.selectedUser || '');
-                setStoredLocation(savedFormData.storedLocation || '');
-                setOrganization(savedFormData.organization || '');
-            }
-        }, []);
+    // console.log(value.quotation);
+    // const quotation =  value.quotation;
+    // const procurement =  value.procurement;
+    // const [procuremenSelectedItems, setProcuremenSelectedItems] = useState([]);
+    // const quotation_id = quotation.id;
+    // const date = quotation.date;
+    // const procurement_id = procurement.id;
+    // const selected_supplier_id = quotation.selected_supplier_id;
+    // const AvailableDate = quotation.available_date;
 
-        // Save form data to localStorage whenever it changes
-        const saveFormDataToLocalStorage = (data) => {
-            localStorage.setItem('assetRegister', JSON.stringify(data));
-        };
-    
-        const updateFormData = (newState) => {
-            saveFormDataToLocalStorage(newState);
-        };
+    // useEffect(() => {
+    //     if (value) {
+    //         setProcuremenSelectedItems(value.quotation.selected_items);
+    //     }
+    // }, []);
 
-        const handleChange = (setter) => (e) => {
-            const newValue = e.target.value;
-            setter(newValue);
-            updateFormData({
-                modelNumber: setter === setModelNumber ? newValue : modelNumber,
-                serialNumber: setter === setSerialNumber ? newValue : serialNumber,
-                selectedUser,
-                storedLocation: setter === setStoredLocation ? newValue : storedLocation,
-                organization: setter === setOrganization ? newValue : organization,
+    // // update qty and price
+    // const updateSelectedItem = (itemId, field, value) => {
+    //     setProcuremenSelectedItems((prevItems) =>
+    //         prevItems.map((item) =>
+    //         item.id === itemId ? { ...item, [field]: value } : item
+    //         )
+    //     );
+    //     };
+  
+    // const handleInputChange = (itemId, field, value) => {
+    //     updateSelectedItem(itemId, field, value);
+    // };
+
+    const [submitAssestUpdateForm] = useSubmitAssestUpdateFormMutation(); 
+
+    // save From
+    const updateassetsdetails = async e => {
+        e.preventDefault();
+        try {
+            const assetsDetails = { ID: savedAssestId, p_model_number: savedModelNumber, p_serial_number: savedSerialNumber, p_responsible_person: selectedUserAllDetails.id, p_location: storedLocation, p_department: organizationid, p_thumbnail_image: image, p_assets_type: selectedAssetsType.assest_type_id, p_category: selectedAssetCategories.ac_id, p_sub_category: selectedSubAssetCategories.assc_id, p_assets_value: assestValue, p_assets_document: files1, p_supplier: selectedSupplier.id, p_purchase_order_number: purchaseOrderNumbe, p_purchase_cost: purchaseCost, p_purchase_type: selectedPurchaseType.availability_type_id, p_received_condition: receivedCondition, p_warranty: warranty, p_other_purchase_details: otherPurchaseDetails, p_purchase_document: files2, p_insurance_number: insuranceNumber, p_insurance_document: files3, p_expected_life_time: expectedLifeTime, p_depreciation_value: estimatedDepreciationValue}
+            console.log(assetsDetails); 
+            submitAssestUpdateForm(assetsDetails) 
+            .unwrap()
+            .then((response) => {
+                console.log("New node added:", response);
+                // router.push("/dashboard/usergroups");
+                dispatch(handleClosePopupModel());
+            })
+            .catch((error) => {
+                console.error("Error adding new node:", error);
             });
-        };
-
-        const handleSelectedUser = (user) => {
-            setSelectedUser(user);
-            setSelectedUserAllDetails(user)
-            updateFormData({ selectedUser: user });
-        };
-
-        const handleAddAssest = () => {
-    
-            if (editIndex !== null) {
-                // If editIndex is set, update the item at that index
-                const updatedAssest = [...assestDetails];
-                updatedAssest[editIndex] = { modelNumber, serialNumber, selectedUser, storedLocation, organization };
-                setAssestDetails(updatedAssest);
-                // Reset editIndex
-                setEditIndex(null);
-            } else {
-                // Add new item to the list
-                const newAssest = { modelNumber, serialNumber, selectedUser, storedLocation, organization };
-                setAssestDetails([...assestDetails, newAssest]);
-            }
-          // Reset form fields
-          setModelNumber('');
-          setSerialNumber('');
-          setSelectedUser('');
-          setStoredLocation('');
-          usedispatch(getorganizationid(null));
-          localStorage.removeItem('assetRegister');
-        };
-
-        const handleEditAssest = (index) => {
-          // Populate form fields with data from the item being edited
-          const itemToEdit = assestDetails[index];
-          setModelNumber(itemToEdit.modelNumber);
-          setSerialNumber(itemToEdit.serialNumber);
-          setSelectedUser(itemToEdit.selectedUser);
-          setStoredLocation(itemToEdit.storedLocation);
-          usedispatch(getorganizationid(organization));
-          // Set editIndex to track the item being edited
-          setEditIndex(index);
-        };
-
-        const handleRemoveAssest = (index) => {
-          const updatedAssest = [...assestDetails];
-          updatedAssest.splice(index, 1);
-          setAssestDetails(updatedAssest);
-        };
-
-        const [submitAssestRegisterForm] = useSubmitAssestRegisterFormMutation();
-
-        // save From
-        const submitassetsdetails = async e => {
-            e.preventDefault();
-            try {
-                const assetsDetails = {p_thumbnail_image: image, p_assets_type: selectedAssetsType.assest_type_id, p_category: selectedAssetCategories.ac_id, p_sub_category: selectedSubAssetCategories.assc_id, p_assets_value: assestValue, p_assets_document: files1, p_supplier: selectedSupplier.id, p_purchase_order_number: purchaseOrderNumbe, p_purchase_cost: purchaseCost, p_purchase_type: selectedPurchaseType.availability_type_id, p_received_condition: receivedCondition, p_warranty: warranty, p_other_purchase_details: otherPurchaseDetails, p_purchase_document: files2, p_insurance_number: insuranceNumber, p_insurance_document: files3, p_expected_life_time: expectedLifeTime, p_depreciation_value: estimatedDepreciationValue, asset_details: assestDetails}
-
-                console.log(assetsDetails);
-                submitAssestRegisterForm(assetsDetails)
-                .unwrap()
-                .then((response) => {
-                    console.log("New node added:", response);
-                    // router.push("/dashboard/usergroups");
-                    usedispatch(handleClosePopupModel());
-                })
-                .catch((error) => {
-                    console.error("Error adding new node:", error);
-                });
-            } catch (error) {
-                console.error("Login error:", error);
-            }
+        } catch (error) {
+            console.error("Login error:", error);
         }
+    }
 
-        console.log(selectedUserAllDetails);
     return (
-            <>
-                {/* Modal header */}
-                    <form
-                        className="px-2 pt-6 overflow-y-scroll h-auto max-h-[600px] min-h-[450px]"
-                        style={{ scrollbarWidth: "2px", scrollbarColor: "#888" }}
-                        encType="multipart/form-data"
-                    >
+        <>
+            <div 
+                className="px-2 pt-2 overflow-y-scroll h-auto max-h-[600px]"
+                style={{ scrollbarWidth: "2px", scrollbarColor: "#888" }}
+            >
+                        <div className="grid mb-6 gap-6 md:grid-cols-3">
+                                <div>
+                                    <label
+                                        htmlFor="last_name"
+                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                    >
+                                        Assest Model Number
+                                    </label>
+                                    <input 
+                                        type="text"
+                                        disabled
+                                        name="ModelNumber"
+                                        value={savedModelNumber} 
+                                        className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label
+                                        htmlFor="last_name"
+                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                    >
+                                        Serial Number
+                                    </label>
+                                    <input 
+                                        type="text"
+                                        disabled
+                                        name="SerialNumber"
+                                        value={savedSerialNumber} 
+                                        className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label
+                                        htmlFor="last_name"
+                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                    >
+                                        Responsible Person
+                                    </label>
+                                    <SelectInput
+                                        placeholder="Search and Select Responsible Person"
+                                        data={usersList}
+                                        onSelect={setSelectedUserAllDetails}
+                                        selected={selectedUserAllDetails}
+                                        searchInput={usersListSearchInput}
+                                        setSearchInput={setUsersListSearchInput}
+                                        renderItem={renderResponsiblePerson}
+                                        name={'name'}
+                                    />
+                                </div>
+                        </div>
+                        <div className="grid gap-6 mb-6 md:grid-cols-3">
+                            <div>
+                                <label
+                                    htmlFor="last_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Stored Location
+                                </label>
+                                <input 
+                                    type="text" 
+                                    value={storedLocation}
+                                    onChange={(e) => setStoredLocation(e.target.value)}
+                                    placeholder="Enter Stored Location" 
+                                    className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                />
+                            </div>
+                            <div className='col-span-2'>
+                                <label
+                                    htmlFor="user_name"
+                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Department
+                                </label>
+                                <a
+                                    id="dropdownSearchButton"
+                                    data-dropdown-toggle="dropdownSearch"
+                                    className="flex justify-between items-center bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                    type="button"
+                                    onClick={toggleOrganizationStructureHandler}
+                                >
+                                    Select Organization structure
+                                    <IoAddOutline className=" dark:text-white" />
+                                </a>
+                                {/* Dropdown menu */}
+                                <div
+                                    data-collapse={isOpenOrganizationStructure}
+                                    ref={refOrganizationStructure}
+                                    className="relative"
+                                >
+                                    <div
+                                    id="dropdownSearch"
+                                    className="z-10 hidden absolute bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] rolelist w-[100%] mr-2"
+                                    >
+                                    <div
+                                        className="container mx-auto p-4 relative overflow-y-scroll h-[335px] overflow-x-scroll w-[99%]"
+                                        style={{ scrollbarWidth: "thin" }}
+                                    >
+                                        <OrganizationComponent />
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div className="grid gap-6 md:grid-cols-4">
                             <div className='col-span-3 grid gap-6 md:grid-cols-2'>
                                 <div>
@@ -534,7 +545,7 @@ function AddNewAssetsForm({ }) {
                                         selected={selectedAssetCategories}
                                         searchInput={assetCategoriesSearchInput}
                                         setSearchInput={setAssetCategoriesSearchInput}
-                                        renderItem={renderAssetTypeItem}
+                                        renderItem={renderAssetCategories}
                                         name={'name'}
                                     />
                                 </div>
@@ -702,6 +713,7 @@ function AddNewAssetsForm({ }) {
                                 </label>
                             </div>
                         </div>
+
                         <div className="grid gap-6 mb-6 md:grid-flow-col mb-grid-rows-3">
                             <div className='row-span-3'>
                                 <label
@@ -793,7 +805,7 @@ function AddNewAssetsForm({ }) {
                                     selected={selectedPurchaseType}
                                     searchInput={purchaseTypeSearchInput}
                                     setSearchInput={setPurchaseTypeSearchInput}
-                                    renderItem={renderSupplier}
+                                    renderItem={renderPurchaseType}
                                     name={'name'}
                                 />
                             </div>
@@ -846,6 +858,7 @@ function AddNewAssetsForm({ }) {
                                 </ul>
                             </div>
                         </div>
+
                         <div className="grid gap-6 mb-6 md:grid-flow-col mb-grid-rows-3">
                             <div className='col-span-2'>
                                 <label
@@ -939,6 +952,7 @@ function AddNewAssetsForm({ }) {
                                 </label>
                             </div>
                         </div>
+
                         <div className="grid gap-6 mb-6 md:grid-flow-col mb-grid-rows-3">
                             <div className='col-span-2'>
                                 <label
@@ -1050,195 +1064,18 @@ function AddNewAssetsForm({ }) {
                                 </label>
                             </div>
                         </div>
-                        <div className="grid gap-6 mb-6">
-                            <div className='border border-black-800 p-3 rounded-lg dark:border-[#3c4042]'>
-                            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Assest Details
-                            </h2>
-                                {/* Display added items */}
-                                {assestDetails && assestDetails.length > 0 && (
-                                    <div className="overflow-x-auto border border-gray-200 dark:border-[#3c4042] sm:rounded-lg w-[-webkit-fill-available] mb-6">
-                                    <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                                        <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-[#606368] dark:text-gray-400">
-                                        <tr>
-                                            <th scope="col" className="px-6 py-3">
-                                            Model Number
-                                            </th>
-                                            <th scope="col" className="px-6 py-3">
-                                            Serial Number
-                                            </th>
-                                            <th scope="col" className="px-6 py-3">
-                                            Responsible person
-                                            </th>
-                                            <th scope="col" className="px-6 py-3">
-                                            Stored Location
-                                            </th>
-                                            <th scope="col" className="px-6 py-3">
-                                            Actions
-                                            </th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {assestDetails.map((item, index) => (
-                                            <tr
-                                            key={index}
-                                            className="odd:bg-white odd:dark:bg-[#1e1e1e] even:bg-gray-50 even:dark:bg-[#3c4042] border-b dark:border-gray-700"
-                                            >
-                                            <td className="px-6 py-4">{item.modelNumber}</td>
-                                            <td className="px-6 py-4">{item.serialNumber}</td>
-                                            <td className="px-6 py-4">{item.storedLocation}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex justify-evenly">
-                                                <a
-                                                    onClick={() => handleEditAssest(index)}
-                                                    className="text-gray-400 bg-yellow-500 hover:bg-yellow-600 hover:text-white rounded-lg text-sm w-8 h-8 ml-0 inline-flex justify-center items-center dark:bg-yellow-500 dark:hover:bg-yellow-600 dark:hover:text-white"
-                                                    data-modal-toggle="crud-modal"
-                                                >
-                                                    <BiEdit className="text-2xl text-white" />
-                                                    <span className="sr-only">Close modal</span>
-                                                </a>
-                                                <a
-                                                    type="button"
-                                                    onClick={() => handleRemoveAssest(index)}
-                                                    className="text-gray-400 bg-red-400 hover:bg-red-500 hover:text-white rounded-lg text-sm w-8 h-8 ml-0 inline-flex justify-center items-center dark:bg-red-400 dark:hover:bg-red-500 dark:hover:text-white"
-                                                    data-modal-toggle="crud-modal"
-                                                >
-                                                    <IoClose className="text-2xl text-white" />
-                                                    <span className="sr-only">Close modal</span>
-                                                </a>
-                                                </div>
-                                            </td>
-                                            </tr>
-                                        ))}
-                                        </tbody>
-                                    </table>
-                                    </div>
-                                )
-                                }
-                                <div className="grid gap-6 mb-6 md:grid-cols-3">
-                                    <div>
-                                        <label
-                                            htmlFor="last_name"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Assest Model Number
-                                        </label>
-                                        <input 
-                                            type="text" 
-                                            value={modelNumber}
-                                            onChange={handleChange(setModelNumber)}
-                                            placeholder="Enter Model Number" 
-                                            className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label
-                                            htmlFor="last_name"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Serial Number
-                                        </label>
-                                        <input 
-                                            type="text" 
-                                            value={serialNumber}
-                                            onChange={handleChange(setSerialNumber)}
-                                            placeholder="Enter Serial Number" 
-                                            className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label
-                                            htmlFor="last_name"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Responsible Person
-                                        </label>
-                                        <SelectInput
-                                            placeholder="Search and Select Responsible Person"
-                                            data={usersList}
-                                            onSelect={handleSelectedUser}
-                                            selected={selectedUserAllDetails}
-                                            searchInput={usersListSearchInput}
-                                            setSearchInput={setUsersListSearchInput}
-                                            renderItem={renderResponsiblePerson}
-                                            name={'name'}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid gap-6 mb-6 md:grid-cols-3">
-                                    <div>
-                                        <label
-                                            htmlFor="last_name"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Stored Location
-                                        </label>
-                                        <input 
-                                            type="text" 
-                                            value={storedLocation}
-                                            onChange={handleChange(setStoredLocation)}
-                                            placeholder="Enter Stored Location" 
-                                            className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                        />
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <label
-                                            htmlFor="user_name"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Department
-                                        </label>
-                                        <a
-                                            id="dropdownSearchButton"
-                                            data-dropdown-toggle="dropdownSearch"
-                                            className="flex justify-between items-center bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5 dark:bg-[#3c4042] dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            type="button"
-                                            onClick={toggleOrganizationStructureHandler}
-                                        >
-                                            Select Organization structure
-                                            <IoAddOutline className=" dark:text-white" />
-                                        </a>
-                                        {/* Dropdown menu */}
-                                        <div
-                                            data-collapse={isOpenOrganizationStructure}
-                                            ref={refOrganizationStructure}
-                                            className="relative"
-                                        >
-                                            <div
-                                            id="dropdownSearch"
-                                            className="z-10 hidden absolute bg-white border border-gray-200 rounded-lg shadow dark:bg-[#1e1e1e] rolelist w-[100%] mr-2"
-                                            >
-                                            <div
-                                                className="container mx-auto p-4 relative overflow-y-scroll h-[335px] overflow-x-scroll w-[99%]"
-                                                style={{ scrollbarWidth: "thin" }}
-                                            >
-                                                <OrganizationComponent />
-                                            </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="grid gap-6 mb-6 md:grid-cols-2 w-[40%]">
-                                    <a
-                                        onClick={handleAddAssest}
-                                        className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-green-500 hover:bg-green-600 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800"
-                                    >
-                                        <IoAddOutline className="h-3.5 w-3.5 mr-2 -ml-1 text-white" />
-                                        {editIndex !== null ? "Save Changes" : "Add Assest"}
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+
                         <div className="grid gap-6 mb-6 md:grid-cols-2 w-[40%]">
                             <a
-                                onClick={submitassetsdetails}
+                                onClick={updateassetsdetails}
                                 className="text-white bg-[#213389] hover:bg-[#213389] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-[#213389] dark:hover:bg-[#213389] dark:focus:ring-blue-800"
                             >
-                                Submit
+                                Update
                             </a>
                         </div>
-                    </form>
-            </>
+            </div>
+        </>
     );
 }
 
-export default AddNewAssetsForm;
+export default UpdateAssetsForm;
