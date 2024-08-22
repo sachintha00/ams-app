@@ -9,6 +9,16 @@ function AssetsListTable({ data, thisuserpermissionArray }) {
     const dispatch = useDispatch();
     console.log(data);
 
+    const handleQuotationView = async (id, modelvalue) => {
+      console.log(id);
+      dispatch(
+        handleOpenPopupModel({
+          id,
+          value: modelvalue,
+          formType: FORM_TYPE.VIEW,
+        })
+      );
+    };
     const handleToggleAddPermisionModel = async (id, modelvalue) => {
         console.log(id);
         dispatch(
@@ -75,7 +85,11 @@ function AssetsListTable({ data, thisuserpermissionArray }) {
                         return(
                         <tr className="odd:bg-white odd:dark:bg-[#1e1e1e] even:bg-gray-50 even:dark:bg-[#3c4042] border-b dark:border-gray-700">
                             <td className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                              <img className="h-[100px] w-[100px] rounded-lg shadow-xl dark:shadow-gray-800" src="/laptopavater.png"/>
+                              <img
+                                className="h-[100px] w-[100px] rounded-lg shadow-xl dark:shadow-gray-800"
+                                src={`${process.env.NEXT_PUBLIC_API_URL}${Assets.thumbnail_image[0] || defaultAvatar}`}
+                                alt={`${Assets.model_number}`}
+                              />
                             </td>
                             <td className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                               {Assets.category_name}
@@ -95,13 +109,16 @@ function AssetsListTable({ data, thisuserpermissionArray }) {
                             <td className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                               {Assets.warranty}
                             </td>
-                            <td className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                              <div className="flex w-auto justify-between items-center">
+                            <td className="px-1 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                              <div className="flex w-auto justify-around items-center">
                                     {/* add permission to role */}
                                     {/* {thisuserpermissionArray.includes(
                                       "give permissions to role"
                                     ) && ( */}
                                       <a
+                                        onClick={() =>
+                                        handleQuotationView(Assets.id, Assets)
+                                      }
                                       >
                                         <FaEye className="text-3xl text-gray-700 dark:text-white" />
                                       </a>
@@ -110,6 +127,9 @@ function AssetsListTable({ data, thisuserpermissionArray }) {
                                     {/* edite role */}
                                     {/* {thisuserpermissionArray.includes("update role") && ( */}
                                       <a
+                                        onClick={() =>
+                                          handleUpdate(Assets.id, Assets)
+                                        }
                                       >
                                         <BiEdit className="text-yellow-400 hover:text-yellow-500 text-3xl" />
                                       </a>
@@ -118,6 +138,9 @@ function AssetsListTable({ data, thisuserpermissionArray }) {
                                     {/* delete role */}
                                     {/* {thisuserpermissionArray.includes("delete role") && ( */}
                                       <a
+                                        onClick={() =>
+                                          handleDelete(Assets.id, Assets)
+                                        }
                                       >
                                         <MdDelete className="text-red-400 hover:text-red-500 text-3xl" />
                                       </a>
