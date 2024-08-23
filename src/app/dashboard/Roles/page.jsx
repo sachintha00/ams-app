@@ -61,6 +61,7 @@ export default function Page() {
   //                         Role.name.toLowerCase().includes(searchQuery.toLowerCase())
   //                       );
   useEffect(() => {
+    console.log(RoleList);
     if (!isLoading && !isError && RoleList) {
       const roleitem = Object.values(RoleList.Role);
 
@@ -69,6 +70,8 @@ export default function Page() {
       const filteredroles = sortedRoles.filter((role) =>
         role.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
+
+
       setFilteredData(filteredroles);
     }
   }, [isLoading, isError, RoleList, searchQuery, refetch]);
@@ -83,18 +86,18 @@ export default function Page() {
     },
     updateForm: {
       modelTitle: "Update Supplier Quotation",
-      formComponent: <UpdateRolesForm/>,
+      formComponent: <UpdateRolesForm />,
       modelPageSize: "w-1/2",
     },
     viewForm: {
       modelTitle: "Managing Parmison",
-      formComponent: <AddPermisionModel/>,
+      formComponent: <AddPermisionModel />,
       modelPageSize: "w-[95%]",
     },
     deleteForm: {
       modelTitle: "Remove Supplier Quotation",
-      formComponent: <DeleteRolesForm/>,
-      showModelTitle:{showModelTitle},
+      formComponent: <DeleteRolesForm />,
+      showModelTitle: { showModelTitle },
     },
   };
 
@@ -105,49 +108,49 @@ export default function Page() {
   ];
 
   return (
-    <div className="p-4 pl-8 border-gray-200 rounded-lg subcontent dark:border-gray-700 mt-10">
-        <PageHeader 
-          HeaderIcon={
-            <FaUserCog className="mr-3 font-semibold text-gray-700 dark:text-white text-[25px]" />
-          }
-          menuPath={menuPath}
-          headerTitle="User Roles"
-          headerDescription="Manage all your existing Roles or add a new one"
-          headerButtonText="Add New User Role"
-          form={form}
-          // You can hide the component related to that option in the page header by uncommenting the option below
-          // showHeaderLineA={showHeaderLineA}
-          // showHeaderLineB={showHeaderLineB}
-          // showHeaderLineC={showHeaderLineC}
-          // showAddButton={showAddButton}
-          // showSearchBar={showSearchBar} 
-          // showGridListButton={showGridListButton}
-          // showModelTitle={showModelTitle}
-          Searchplaceholder="Search Roles name"
+    <div className="p-4 pl-8 mt-10 border-gray-200 rounded-lg subcontent dark:border-gray-700">
+      <PageHeader
+        HeaderIcon={
+          <FaUserCog className="mr-3 font-semibold text-gray-700 dark:text-white text-[25px]" />
+        }
+        menuPath={menuPath}
+        headerTitle="User Roles"
+        headerDescription="Manage all your existing Roles or add a new one"
+        headerButtonText="Add New User Role"
+        form={form}
+        // You can hide the component related to that option in the page header by uncommenting the option below
+        // showHeaderLineA={showHeaderLineA}
+        // showHeaderLineB={showHeaderLineB}
+        // showHeaderLineC={showHeaderLineC}
+        // showAddButton={showAddButton}
+        // showSearchBar={showSearchBar} 
+        // showGridListButton={showGridListButton}
+        // showModelTitle={showModelTitle}
+        Searchplaceholder="Search Roles name"
+      />
+      {view === "list" ? (
+        <PageListView
+          component={RoleListTable}
+          data={filteredData}
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          setCurrentPage={setCurrentPage}
+          thisuserpermissionArray={thisuserpermissionArray}
         />
-        {view === "list" ? (
-          <PageListView 
-            component={RoleListTable}
-            data={filteredData}
-            currentPage={currentPage}
-            itemsPerPage={itemsPerPage}
-            setCurrentPage={setCurrentPage}
-            thisuserpermissionArray={thisuserpermissionArray}
-          />
-        ) : (
-          <PageGridView
-            component={RolesGridComponent}
-            gridcolume={gridviewColume}
-            data={filteredData}
-            currentPage={currentPage}
-            itemsPerPage={itemsPerPage}
-            setCurrentPage={setCurrentPage}
-            thisuserpermissionArray={thisuserpermissionArray}
-            icon={
-              <FaUserCog className="mr-3 font-semibold text-gray-700 dark:text-white text-[54px]" />
-            }
-          />
-        )}
+      ) : (
+        <PageGridView
+          component={RolesGridComponent}
+          gridcolume={gridviewColume}
+          data={filteredData}
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          setCurrentPage={setCurrentPage}
+          thisuserpermissionArray={thisuserpermissionArray}
+          icon={
+            <FaUserCog className="mr-3 font-semibold text-gray-700 dark:text-white text-[54px]" />
+          }
+        />
+      )}
     </div>
   );
 }
