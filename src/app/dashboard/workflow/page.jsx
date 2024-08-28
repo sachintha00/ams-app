@@ -19,10 +19,10 @@ export default function Roles() {
   useEffect(() => {
     if (isSuccess) {
       setWorkflowDataArray(workflowsData.data)
+      console.log("hello ", workflowsData?.data)
     }
   }, [workflowsData])
 
-  console.log("hello ", workflowsData?.data)
 
   const form = {
     addForm: {

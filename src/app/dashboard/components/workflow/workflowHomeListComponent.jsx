@@ -41,7 +41,7 @@ function WorkflowHomeListComponent({ data }) {
     );
   };
   return (
-    <div className="overflow-x-auto border border-gray-200 sm:rounded-lg w-[-webkit-fill-available]">
+    <div className="w-full overflow-x-auto border border-gray-200 sm:rounded-lg">
       <table className="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-[#606368] dark:text-gray-400">
           <tr>
