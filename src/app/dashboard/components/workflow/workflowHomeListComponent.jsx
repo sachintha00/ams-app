@@ -5,6 +5,7 @@ import React from "react";
 import { FaPenToSquare } from "react-icons/fa6";
 import { MdDelete } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
+import { BiEdit } from "react-icons/bi";
 
 function WorkflowHomeListComponent({ data }) {
   const dispatch = useDispatch();
@@ -41,7 +42,7 @@ function WorkflowHomeListComponent({ data }) {
     );
   };
   return (
-    <div className="overflow-x-auto border border-gray-200 sm:rounded-lg w-[-webkit-fill-available]">
+    <div className="overflow-x-auto border border-gray-200 sm:rounded-lg w-[100%]">
       <table className="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-[#606368] dark:text-gray-400">
           <tr>
@@ -61,7 +62,6 @@ function WorkflowHomeListComponent({ data }) {
               Updated At
             </th>
             <th scope="col" className="px-6 py-3">
-              Action
             </th>
           </tr>
         </thead>
@@ -99,23 +99,23 @@ function WorkflowHomeListComponent({ data }) {
               >
                 {workflow.updated_at}
               </td>
-              <td className="px-6 py-4">
-                <div className="flex w-[35%] justify-between">
+              <td className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                <div className="flex w-auto justify-between items-center">
                   <a
-                    className="cursor-pointer"
+                    className="cursor-pointer mx-1"
                     onClick={() =>
                       handleUpdate(workflow.id, workflow.workflow_name)
                     }
                   >
-                    <FaPenToSquare className="text-[#DBAE58] text-2xl" />
+                    <BiEdit className="text-yellow-400 hover:text-yellow-500 text-3xl" />
                   </a>
                   <a
-                    className="cursor-pointer"
+                    className="cursor-pointer mx-1"
                     onClick={() =>
                       handleDelete(workflow.id, workflow.workflow_name)
                     }
                   >
-                    <MdDelete className="text-[#D32D41] text-2xl" />
+                    <MdDelete className="text-red-400 hover:text-red-500 text-3xl" />
                   </a>
                 </div>
               </td>

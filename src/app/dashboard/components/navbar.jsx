@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useSelector } from 'react-redux';
 import { useUserLogoutMutation } from '@/app/_lib/redux/features/auth/logout_api';
 import { redirect, useRouter } from 'next/navigation';
+import ProfileImage from './imagedisplay/ProfileImage';
 
 const Navbar = ({ onToggleSidebar }) => {
 
@@ -675,11 +676,12 @@ const Navbar = ({ onToggleSidebar }) => {
                 onClick={toggleUserMenuHandler}
                 >
                 <span className="sr-only">Open user menu</span>
-                <img
+                {/* <img
                     className="w-8 h-8 rounded-full"
                     src="/avater.png"
                     alt="user photo"
-                />
+                /> */}
+                <ProfileImage image={user.profie_image} name={user.name} size="w-8 h-8"/>
                 </button>
                 {/* Dropdown menu */}
                 <div data-collapse={isOpenUserMenu} ref={refUser} className='absolute maindivusermenu'>

@@ -14,10 +14,10 @@ export const authApi = apiSlice.injectEndpoints({
       async onQueryStarted(arg, { queryFulfilled, dispatch }) {
         try {
           const result = await queryFulfilled;
-          console.log(result)
           dispatch(
             userLoggedIn({
               accessToken: result.data.access_token,
+              tenantToken: result.data.tenant_token,
               user: result.data.user,
               permissions: result.data.permissions,
               sidebaritem: result.data.sidebaritem,

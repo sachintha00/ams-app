@@ -9,6 +9,8 @@ import { FaUserAlt } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useStatuschangeUserMutation } from "@/app/_lib/redux/features/user/user_api";
+import ProfileImage from "../../components/imagedisplay/ProfileImage";
+import { MdLockReset } from "react-icons/md";
 
 function UsersListTable({ data, thisuserpermissionArray }) {
     const dispatch = useDispatch();
@@ -50,7 +52,7 @@ function UsersListTable({ data, thisuserpermissionArray }) {
     const handleToggleStatus = (userId, newStatus) => {
         console.log(userId);
         try {
-            const user = { ID: userId, status: newStatus }
+            const user = { ID: userId, is_user_blocked: newStatus }
             statuschangeUser(user)
                 .unwrap()
                 .then((response) => {
@@ -72,7 +74,7 @@ function UsersListTable({ data, thisuserpermissionArray }) {
         handleToggleStatus(userId, !currentStatus);
     };
     return (
-            <div className="overflow-x-auto border border-gray-200 sm:rounded-lg w-[-webkit-fill-available]">
+            <div className="overflow-x-auto border border-gray-200 sm:rounded-lg w-[100%]">
                 <table className="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-[#606368] dark:text-gray-400">
                     <tr>
@@ -107,20 +109,7 @@ function UsersListTable({ data, thisuserpermissionArray }) {
                         return(
                         <tr className="odd:bg-white odd:dark:bg-[#1e1e1e] even:bg-gray-50 even:dark:bg-[#3c4042] border-b dark:border-gray-700">
                             <td className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                              {Users.profie_image ? (
-                                <img
-                                  className="w-12 h-12 mb-3 rounded-full shadow-lg"
-                                  src={`${process.env.NEXT_PUBLIC_API_URL}${Users.profie_image}`}
-                                  alt={`${Users.name} profile`}/>
-                              ) 
-                              : 
-                              (
-                                <img
-                                  className="w-12 h-12 mb-3 rounded-full shadow-lg"
-                                  src="/avater.png"
-                                  alt="Bonnie image"
-                                />
-                              )}
+                              <ProfileImage image={Users.profie_image} name={Users.name} size="w-12 h-12 mb-3"/>
                             </td>
                             <td className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">{Users.user_name}</td>
                             <td className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">{Users.email}</td>
@@ -145,16 +134,16 @@ function UsersListTable({ data, thisuserpermissionArray }) {
                                   ))}
                             </td>
                             <td className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                              {Users.status === true ? (
+                              {Users.is_user_blocked === true ? (
                                 <span>Active</span>
                               ) 
                               : 
-                              Users.status === false ?(
+                              Users.is_user_blocked === false ?(
                                 <span>DeActive</span>
                               ): null}
                             </td>
                             <td className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                              <div className="flex mt-4 md:mt-6 w-auto justify-between items-center">
+                              <div className="flex w-auto justify-between items-center">
                                       {/* <div className='flex flex-col w-[50%] justify-between items-center'>
                                           <span className="text-sm text-gray-500 dark:text-gray-400">
                                               {Users.status ? 'Active' : 'Inactive'}
@@ -169,7 +158,7 @@ function UsersListTable({ data, thisuserpermissionArray }) {
                                       </div> */}
                                       {thisuserpermissionArray.includes('user status change') && (
                                               <label className="inline-flex items-center cursor-pointer mx-1">
-                                                  <input type="checkbox" checked={Users.status} className="sr-only peer" onChange={() => handleToggle(Users.id, Users.status)} />
+                                                  <input type="checkbox" checked={Users.is_user_blocked} className="sr-only peer" onChange={() => handleToggle(Users.id, Users.is_user_blocked)} />
                                                   <div className="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600" />
                                               </label>
                                       )}
@@ -179,7 +168,7 @@ function UsersListTable({ data, thisuserpermissionArray }) {
                                               className="mx-1"
                                               // onClick={() => handleToggleResetpasswordModel(Users.id)}
                                           >
-                                              <RiLockPasswordLine className='text-3xl text-gray-700 dark:text-white' />
+                                              <MdLockReset className='text-3xl text-gray-700 dark:text-white' />
                                           </a>
                                       )}
 

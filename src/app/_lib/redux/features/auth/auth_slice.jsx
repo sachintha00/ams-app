@@ -11,6 +11,7 @@ const safeParseJSON = (item) => {
 
 const initialState = {
   user: null,
+  tenantToken: null,
   accessToken: null,
   permissions: null,
   sidebaritem: null,
@@ -18,6 +19,7 @@ const initialState = {
 
 if (typeof window !== "undefined") {
   initialState.user = safeParseJSON(localStorage.getItem("user")) || null;
+  initialState.tenantToken = localStorage.getItem("tenantToken") || null;
   initialState.accessToken = localStorage.getItem("accessToken") || null;
   initialState.permissions = localStorage.getItem("permissions") || null;
   initialState.sidebaritem = localStorage.getItem("sidebaritem") || null;
@@ -29,12 +31,14 @@ const authSlice = createSlice({
   reducers: {
     userLoggedIn: (state, action) => {
       state.accessToken = action.payload.accessToken;
+      state.tenantToken = action.payload.tenantToken;
       state.user = action.payload.user;
       state.permissions = action.payload.permissions;
       state.sidebaritem = action.payload.sidebaritem;
 
       if (typeof window !== "undefined") {
         localStorage.setItem("accessToken", action.payload.accessToken);
+        localStorage.setItem("tenantToken", action.payload.tenantToken);
         localStorage.setItem(
           "permissions",
           JSON.stringify(action.payload.permissions)
@@ -54,5 +58,6 @@ export default authSlice.reducer;
 
 export const selectCurrentUser = (state) => state.auth.user;
 export const selectCurrentAccessToken = (state) => state.auth.accessToken;
+export const selectTenantToken = (state) => state.auth.tenantToken;
 export const selectCurrentpermissions = (state) => state.auth.permissions;
 export const selectCurrentsidebaritem = (state) => state.auth.sidebaritem;

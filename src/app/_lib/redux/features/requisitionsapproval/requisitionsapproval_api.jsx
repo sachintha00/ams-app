@@ -48,7 +48,7 @@ export const roleApi = apiSlice.injectEndpoints({
 export const {
     useRequestTypesQuery,
     useRequestTypesWorkflowsMutation,
-    useGetFirstApruvelMutation,
+    useGetFirstApruvelMutation, 
     useWorkflowAprovelListMutation,
     useSubmitRequisitionApprovelMutation,
 } = roleApi;
