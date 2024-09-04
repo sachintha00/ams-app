@@ -150,7 +150,7 @@ function AddNewSupplierForm() {
                                 <Radio.Button value="Individual">Individual</Radio.Button>
                             </Radio.Group>
                         </Form.Item>
-                        <span className='font-bold'>{supplierRegNo}</span>
+                        {/* <span className='font-bold'>{supplierRegNo}</span> */}
                     </div>
 
                     <div className='mt-10'>
@@ -418,7 +418,12 @@ function AddNewSupplierForm() {
                     </Form.Item>
                 </Form>)
                     :
-                    <Requisitionsapproval RequisitionId={supplierRegNo} formData={formSubmitData} modelData={"Supplier Registration"} requestType={2} />
+                    <Requisitionsapproval 
+                    RequisitionId={supplierRegNo} 
+                    formData={{ ...formSubmitData, "Requisition Id": supplierRegNo }} 
+                    modelData={"Supplier Registration"} 
+                    requestType={2} 
+                    />
             }
         </div>
     );

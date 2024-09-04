@@ -159,6 +159,13 @@ function PageHeader({
                   modelPageSize={form.viewForm.modelPageSize}
                   showModelTitle = {form.viewForm.showModelTitle}
                 />
+              ) : formType === FORM_TYPE.OTHER ? (
+                <PopupModel
+                  popupModelTitle={form.otherForm.modelTitle}
+                  Form={form.otherForm.formComponent}
+                  modelPageSize={form.otherForm.modelPageSize}
+                  showModelTitle = {form.otherForm.showModelTitle}
+                />
               ) : (
                 formType === FORM_TYPE.DELETE && (
                   <PopupModel

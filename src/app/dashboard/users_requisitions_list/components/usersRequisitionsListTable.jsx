@@ -96,11 +96,13 @@ function UsersRequisitionsListTable({ data }) {
                 <div className="w-[100%] dark:bg-[#121212]">
                     {data.map((item) => {
                         // Extract and format next_approver_details for Select component
-                        const options = item.next_approver_details.map(approver => ({
+                        const options = item.next_approver_details 
+                        ? item.next_approver_details.map(approver => ({
                             value: approver.id,
                             label: approver.name,
                             image: approver.profile_image || '/avater.png' // Provide a default image URL if profile_image is null
-                        }));
+                          }))
+                        : null;
                         
                         return (
                             <React.Fragment key={item.id}>
